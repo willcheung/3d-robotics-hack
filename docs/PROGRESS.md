@@ -8,6 +8,15 @@ For each future slice record ID/status, base SHA, branch/PR, last runnable and e
 
 Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof remain pending. No automation is activated by publishing the source.
 
+## FAMILY-02 — Parent email and student onboarding design
+
+- Status: design review; no application implementation or release. Branch: `codex/family-onboarding-plan`; base: `684db70b4c0c1aaa2f19f745aa52238483a2a14c`. The design PR records its exact documentation commit and publication checks.
+- Owner request: familiar, fast parent email access; student login details when adding children; limited setup notifications. Confirmed preference: first successful student sign-in only.
+- Design: one Parent email → one-time code flow; preserve and resume existing families; batch student login cards plus one combined setup email; one first-sign-in notice per newly enrolled child, with a parent preference. Current parent/student codes and saved work remain valid. See [PLAN.md](PLAN.md#family-02-design-email-sign-in-and-quick-family-onboarding).
+- Delivery: FAMILY-02A parent email authentication, FAMILY-02B student cards/credential email and FAMILY-02C first-sign-in notification are separately runnable draft slices. The complete request is not implemented until all three are accepted. Retryable creation, encrypted temporary mail payloads, atomic sign-in events and durable delivery are explicit gates; tests are specified in ENGINEERING-CHECKS.md.
+- Evidence: inspected current family setup/recovery UI and API/store behavior; checked primary Resend, Vercel Queues and OWASP documentation. Repository publication/link checks validate the plan only. No email was sent, provider resource configured, credential changed, student record read or application code altered.
+- Next action: finalize FAMILY-02A's challenge/abuse/migration contract before an implementation kickoff. FAMILY-02B separately needs an authorized, tested background-delivery path and frozen mail budgets/key retention. Existing released missions and usage automation are unaffected.
+
 ## RECOVERY-02 — Visible email verification confirmation
 
 - Status: done; [PR #1](https://github.com/willcheung/3d-robotics-hack/pull/1) merged and the tested app was promoted to [RoboLab](https://robolab.vibecodingdad.com) on October 12, 2026 after explicit release approval.
