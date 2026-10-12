@@ -45,3 +45,11 @@ Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof rema
 - Added blank lines between each explanation-and-code group in the Python and Java starters for Missions 1 and 2. Worked/reference examples inherit the same spacing. Nonblank source lines are identical; saved drafts and student records are not reformatted or replaced.
 - Made this readability convention part of FOUNDATION.md for future lessons. Existing drafts can opt into the revised starter with Restore example, which replaces that draft.
 - Passed locally: 8 model/schema checks, TypeScript/build and both complete Mission 2 language walkthroughs (starter miss, both correction directions, transfer and reset). Refreshed Python/Java screenshots inspected; existing final-head CI remains the acceptance gate and is recorded in PR #2.
+
+### S03 owner feedback — Python loading at the original preview URL
+
+- Reproduced a 45-second Python load timeout on the owner's original local preview: its server still expected one origin pair while shared app/runtime build directories had been replaced by a build for another pair. Browser/runtime isolation correctly rejected the mismatch.
+- Restored the same app origin with matched, dedicated build assets. Reload preserved the displayed draft exactly; the owner's existing Python program then reached FINISHED with real Read/Decision/Now output.
+- Local preview servers now snapshot the paired build assets at startup, preventing subsequent builds from changing an active preview. Shutdown and failed startup clean up those temporary files. No runtime-origin permissions, production settings, accounts or student records were changed.
+- Added three CI regressions for replacing both build directories while previews are running, port-conflict cleanup, and incomplete-build cleanup. The asset-replacement test failed before the fix and passed afterward. Existing real Python/Java browser tests remain the execution proof; static HTTP fixtures do not simulate Python.
+- Final tested commit and full CI results are recorded in the same PR #2 and private resume receipt. No merge or deployment.

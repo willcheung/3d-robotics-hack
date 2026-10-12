@@ -9,6 +9,8 @@ This review covers S03 / L02 on [PR #2](https://github.com/willcheung/3d-robotic
 - **Laptop label overlap:** the decorative “Crew pickup point” legend overlapped the 3D crew status at a 1280-pixel viewport. Removed the redundant legend; the 3D crew status and accessible status below the scene remain.
 - **Coverage gap:** added a complete student journey through real checked Mission 1 prerequisites and Mission 2 completion, including a wrong program, second-device sign-in, saved draft, shared family results and an independent sibling. Added explicit checks that all three hints open in both languages without awarding a badge.
 
+- **Original preview Python loading:** restored matched app/runtime assets at the reported URL after a shared-directory rebuild changed their configured origins. The unchanged draft survived reload and ran to completion. Local previews now keep a private asset snapshot; three new regressions cover rebuild isolation and cleanup.
+
 ## Requirements and evidence
 
 | Requirement | Evidence |
@@ -20,7 +22,7 @@ This review covers S03 / L02 on [PR #2](https://github.com/willcheung/3d-robotic
 | Family progress and unlocks | Real local isolated Java plus the application HTTP evaluator verifies the six rescues. A fresh student cannot check L02 early; a wrong program does not earn completion. Saved completion/drafts survive another browser context; the sibling stays locked with separate work. Local account/recovery regression tests also pass. |
 | Delivery | TypeScript/build, targeted local walkthroughs, inspected screenshots and required final-head CI. CI runs the full regression suite and packages both Vercel targets. Use the PR's checks for the exact final source, not a test count from an older commit. |
 
-Local checks after the fixes: 10 account browser tests and 5 Mission 2 browser tests passed. The full CI suite contains 102 tests (8 model/schema, 22 account/recovery, 10 account browser, 15 isolated Java, 47 browser). The account fixture uses in-memory data and local Java, explicitly prevents cloud-runtime fallback, and does not prove Vercel Sandbox/Blob behavior. Its held-response navigation fixture tests a UI race only, not execution or completion.
+Local checks after the fixes: 10 account browser tests and 5 Mission 2 browser tests passed. The full CI suite contains 105 tests (8 model/schema, 3 preview isolation/cleanup, 22 account/recovery, 10 account browser, 15 isolated Java, 47 browser). The account fixture uses in-memory data and local Java, explicitly prevents cloud-runtime fallback, and does not prove Vercel Sandbox/Blob behavior. Its held-response navigation fixture tests a UI race only, not execution or completion.
 
 ## Owner checklist
 
