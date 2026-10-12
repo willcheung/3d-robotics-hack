@@ -1,0 +1,42 @@
+{
+  "name": "robolab-signal-station",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "dev": "node scripts/serve.mjs --dev",
+    "build": "tsc --noEmit && vite build && node scripts/build-runtime.mjs",
+    "preview": "node scripts/serve.mjs",
+    "test": "node --experimental-strip-types --test tests/model.test.ts",
+    "test:browser": "playwright test",
+    "check": "npm run test && npm run test:family && npm run test:family-ui && npm run test:java && npm run build && npm run test:browser",
+    "build:vercel": "node scripts/vercel-build.mjs",
+    "setup:java": "docker build --network=default -t robolab-java:s02 java",
+    "test:java": "node --test tests/java.test.mjs",
+    "test:family": "node --test tests/family.test.mjs tests/recovery.test.mjs",
+    "test:provider": "node --test tests/provider.test.mjs",
+    "test:storage-provider": "node --test tests/storage-provider.test.mjs tests/recovery-storage.test.mjs",
+    "test:hosted": "playwright test --config playwright.hosted.config.ts",
+    "test:family-ui": "playwright test --config playwright.family-ui.config.ts",
+    "check:publication": "node scripts/check-publication.mjs"
+  },
+  "dependencies": {
+    "@vercel/blob": "2.8.1",
+    "@vercel/sandbox": "3.6.1",
+    "highlight.js": "11.12.0",
+    "iron-session": "9.0.1",
+    "pyodide": "314.0.7",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/three": "0.183.1",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3",
+    "vite": "8.3.4"
+  },
+  "license": "MIT"
+}

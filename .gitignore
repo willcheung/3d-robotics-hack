@@ -1,0 +1,24 @@
+node_modules/
+dist/
+runtime-dist/
+work/
+playwright-report/
+test-results/
+.env*
+!.env.example
+.DS_Store
+.vercel/
+.vercel
+
+test-results-hosted/
+
+test-results-family-ui/
+
+# Private credentials, account exports and local audit receipts
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*private-receipt*.json
+*family-access*.json

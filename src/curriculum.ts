@@ -1,0 +1,23 @@
+/** Teaching order differs from implementation slice numbers. Only L01 is released. */
+export const curriculum = [
+ ['L01','Signal Station','Aim a rescue searchlight with numbers, motor power and servo angles.','Start here'],
+ ['L02','Read, then choose','Use a direction sensor and one condition to correct the light.','L01'],
+ ['L03','Ranger patrol','Repeat a sequence to inspect several checkpoints.','L02'],
+ ['L04','Parcel Port','Move an arm and gripper to hand a parcel to a worker.','L03'],
+ ['L05','A reusable handoff','Write an arm function with a destination parameter.','L04'],
+ ['L06','Adapt and debug','Explain and repair a program when the job changes.','L05'],
+ ['R01','Deliver to the dock','Coordinate two wheel motors to deliver a battery.','L06'],
+ ['R01b','Turn by measurement','Use heading feedback to point the rover into a bay.','R01'],
+ ['R02','Stop where the person is','Read distance and stop with a safe gap.','R01b'],
+ ['R03','Make the delivery round','Use a list of route steps and reusable movement functions.','R02'],
+ ['R04','Fix a misleading reading','Debug units and stop safely when a sensor is unavailable.','R03'],
+ ['C01','Stock the relief station','Dock the rover, then coordinate an arm to unload it.','R04 + L05'],
+ ['P01','Find the inspection strip','Calibrate a light sensor to find a bright marker.','R02'],
+ ['P02','Read the supply label','Classify red, green and blue readings; handle unknown colors.','P01'],
+ ['C02','Sort the relief supplies','Combine docking, color sensing and the robotic arm.','C01 + P02'],
+ ['C03','Follow the route and dock','Combine light, distance and color while choosing safe priorities.','C01 + P02'],
+ ['V01','Find the inspection area','Read a small camera image as a grid of colored pixels.','P02 + R03'],
+ ['V02','Dock beneath the marker','Use image position and distance to guide the rover.','V01 + C03'],
+ ['F01','Bring the instrument home','Control thrust to land a science capsule gently.','R04'],
+ ['F02','Launch, measure, return','Combine launch, measurement and landing as mission phases.','F01 + C01'],
+] as const;

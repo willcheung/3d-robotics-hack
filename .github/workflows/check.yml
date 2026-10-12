@@ -1,0 +1,37 @@
+name: Workshop checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+concurrency:
+  group: workshop-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run setup:java
+      - run: npm run check
+      - name: Package both Vercel sites without deployment
+        run: |
+          VERCEL_TARGET=app APP_ORIGIN=https://app.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
+          VITE_HOSTED=1 VERCEL_TARGET=app APP_ORIGIN=https://app.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
+          VERCEL_TARGET=runtime APP_ORIGIN=https://app.example.test APP_ALTERNATE_ORIGIN=https://robolab.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workshop-browser-evidence
+          path: |
+            test-results-family-ui/
+            test-results/
+            playwright-report/
