@@ -2,7 +2,8 @@
 
 An open-source robotics workshop for teens. Edit real Python or Java and control an explorable 3D rescue searchlight. Learn what each motor, servo, sensor and line of code does through a useful mission.
 
-**[Play RoboLab](https://robolab.vibecodingdad.com)** · [Student guide](PLAY.md) · [Curriculum](docs/CURRICULUM.md) · [MIT license](LICENSE)
+**[Play RoboLab](https://robolab.vibecodingdad.com)**
+[Student guide](PLAY.md) · [Curriculum](docs/CURRICULUM.md) · [MIT license](LICENSE)
 
 <img width="1166" height="612" alt="image" src="https://github.com/user-attachments/assets/2c590ed5-bbc0-43aa-9aae-b962365d381a" />
 
