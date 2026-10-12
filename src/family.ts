@@ -32,7 +32,7 @@ export function attachFamily(hooks:Hooks){
  const shell=document.createElement('div');shell.innerHTML=`
  <nav class="learning-nav" aria-label="Learning and family"><button id="curriculum-open">Curriculum & unlocks</button><button id="family-open">Family & progress</button><span id="profile-label">Guest practice</span></nav>
  <dialog id="curriculum-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Your robotics curriculum</h2><button data-close aria-label="Close curriculum">Close ✕</button></div><p>16 core sessions, about an hour each, plus 4 optional extensions. Only Mission 1 is released. More missions become playable as they are built and their prerequisites are met.</p><div id="curriculum-list" class="curriculum-grid"></div><p>Completing a rescue shows that your program worked. Explain why it worked and how a real robot could use it to check your understanding.</p></dialog>
- <dialog id="family-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Family & progress</h2><button data-close aria-label="Close family progress">Close ✕</button></div><p>Take separate turns on the same missions and share family progress. Experiment freely: retries and help never cost points.</p><p id="family-message" role="status" aria-live="polite"></p><div id="recovery-flow"></div><div id="setup-receipt"></div><div id="family-content"></div></dialog>`;
+ <dialog id="family-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Family & progress</h2><button data-close aria-label="Close family progress">Close ✕</button></div><p>Take separate turns on the same missions and share family progress. Experiment freely: retries and help never cost points.</p><section id="email-verification-notice" class="verification-notice" role="status" aria-live="polite" aria-atomic="true" hidden></section><p id="family-message" role="status" aria-live="polite"></p><div id="recovery-flow"></div><div id="setup-receipt"></div><div id="family-content"></div></dialog>`;
  document.querySelector('.intro')!.before(shell);
  const q=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
  const dialog=(id:string)=>q<HTMLDialogElement>(id);
@@ -99,6 +99,18 @@ export function attachFamily(hooks:Hooks){
   catch(e){say((e as Error).message);}
   finally{creating=false;render();q('setup-receipt').scrollIntoView({block:'nearest'});}
  }
+ function renderVerificationNotice(){
+  const notice=q('email-verification-notice');
+  // Show only the server-confirmed address for this parent. A pending link must
+  // not borrow a previous address's verified status, even if that link fails.
+  const email=family?.profile.role==='parent'&&!recoveryLink?family.recoveryEmail:null;
+  if(!email){notice.hidden=true;notice.replaceChildren();return;}
+  // Keep an unchanged live region intact so ordinary re-renders do not announce it again.
+  if(notice.querySelector('[data-verified-email]')?.textContent!==email){
+   notice.innerHTML=`<span class="verification-icon" aria-hidden="true">✓</span><div><h3>Email verified</h3><p><strong data-verified-email>${escape(email)}</strong> is ready for parent account recovery. If you lose your parent code, choose “Lost your parent code?” to regain access.</p></div>`;
+  }
+  notice.hidden=false;
+ }
  function renderRecovery(){
   const host=q('recovery-flow');host.replaceChildren();if(!recoveryLink)return;
   const isVerify=recoveryLink.mode==='verify-email';
@@ -106,13 +118,13 @@ export function attachFamily(hooks:Hooks){
   q<HTMLButtonElement>('recovery-confirm').disabled=isVerify&&family?.profile.role!=='parent';
   q('recovery-dismiss').onclick=()=>{clearRecovery();render();};
   q('recovery-confirm').onclick=async()=>{const link=recoveryLink;if(!link)return;const button=q<HTMLButtonElement>('recovery-confirm');button.disabled=true;
-   try{await stopCheck();hooks.stop();if(isVerify){await request('/emailverify',{token:link.token});clearRecovery();await refresh();say('Recovery email verified. You can now recover a lost parent code by email.');}
+   try{await stopCheck();hooks.stop();if(isVerify){await request('/emailverify',{token:link.token});clearRecovery();await refresh();say('Recovery email verified. You can now recover a lost parent code by email.');q('email-verification-notice').scrollIntoView({block:'nearest'});}
    else{const result=await request('/recover',{token:link.token,key:link.key});parentCode=result.code;studentCode='';keepSetup(undefined);clearRecovery();await refresh(true);say('Parent access recovered. Save your new parent code. Your students and their progress are still here.');}}
    catch(e){say((e as Error).message);}finally{render();}
   };
  }
  function render(){
-  renderRecovery();renderSetup();
+  renderVerificationNotice();renderRecovery();renderSetup();
   document.documentElement.dataset.profile=family?.profile.id??'';
   q('profile-label').textContent=family?`${family.profile.name} · private family`:'Guest practice';
   if(!hosted){q('family-content').innerHTML='<p>Family accounts are available on the hosted release. This local workshop keeps anonymous practice drafts on this device.</p>';return;}
