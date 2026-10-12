@@ -1,10 +1,10 @@
-# Hosted Mission 1 and private family foundation
+# Hosted missions and private family foundation
 
-Mission 1 supports hosted Java/Python, private family progress and optional parent recovery. See DEPLOYMENT.md for your own hosting configuration and VALIDATION.md for evidence boundaries.
+Missions 1 and 2 support hosted Java/Python, private family progress and optional parent recovery. See DEPLOYMENT.md for your own hosting configuration, PROGRESS.md for release receipts and VALIDATION.md for evidence boundaries.
 
 ## Student experience
 
-The top navigation opens **Curriculum & unlocks** and **Family & progress**. The curriculum contains the existing 16 core outlines and four optional extensions. Only L01 is playable. Each student has a private access code, separate Python/Java drafts, a bounded experiment history, and three checked rescue milestones. Completing all three finishes Mission 1; unreleased lessons remain coming soon. Correct execution and demonstrated understanding remain distinct.
+The top navigation opens **Curriculum & unlocks** and **Family & progress**. The curriculum contains the existing 16 core outlines and four optional extensions. L01 and L02 are playable. Each student has a private access code, separate drafts for each mission/language, a bounded experiment history, and three checked rescue milestones per mission. All three checked Mission 1 rescues unlock checked Mission 2 progress; students can practice either mission first. Completing all three checked rescues finishes that mission; unreleased lessons remain coming soon. Correct execution and demonstrated understanding remain distinct.
 
 Family multiplayer means independent attempts with shared family progress. It does not mean simultaneous control. Retries/help do not subtract points. There is no official competitive ranking in this release. Parents create up to six active student aliases, rotate codes or revoke access. Student codes use 192 bits of randomness; parent codes derive from a random 192-bit setup credential and a server HMAC. Codes appear only during setup/code generation, masked with Copy and Show controls; no child email or password is needed. The retained-profile limit is 24 students, including revoked profiles. Revocation retains work.
 

@@ -65,7 +65,7 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## S03 — Sensor feedback and one complete lesson
 
-- Status: review candidate; [PR #2](https://github.com/willcheung/3d-robotics-hack/pull/2), with local validation recorded in PROGRESS.md and exact-head CI required. S02 is landed; no usage scheduling gate applies to this manually authorized request.
+- Status: done; [PR #2](https://github.com/willcheung/3d-robotics-hack/pull/2) merged and released after explicit authorization. Exact-source CI, protected staging, production-candidate and public acceptance evidence are recorded in PROGRESS.md. Learner/device/pacing observation remains pending; no later slice is authorized by this release.
 - Ready contract: [MISSION-02.md](MISSION-02.md) freezes three starts, units, objective tolerances, good/wrong/transfer fixtures, teaching and acceptance. Minimal mission-aware integration with the existing family framework is included to preserve drafts and checked progress.
 - Depends on: S02 landed
 - Working outcome: finish a short sensor-choice lesson with prediction, one conditional correction, hints and a transfer check in either language.

@@ -1,6 +1,6 @@
 # Foundation contract and future acceptance gates
 
-Updated from early play-test feedback. Mission 1 now runs online in Python and Java with private student accounts and shared family results; the full curriculum and unattended scheduler remain planned. TASKS.md controls slice readiness; this contract applies to every future slice. Preserve an executable student experience at every checkpoint.
+Updated from early play-test feedback. Missions 1 and 2 run online in Python and Java with private student accounts and shared family results; the full curriculum and unattended scheduler remain planned. TASKS.md controls slice readiness; this contract applies to every future slice. Preserve an executable student experience at every checkpoint.
 
 ## What exists and what remains planned
 
@@ -11,9 +11,9 @@ Updated from early play-test feedback. Mission 1 now runs online in Python and J
 | Mission 1 | Rescue searchlight with three practice locations, visible job/consequence, value/range guide, comments on every executable starter line, real-life machine connection and transfer questions. |
 | Progression | Next-rescue action preserves code; three unique local successes count once per visit. Reload starts a new visit; draft remains. Signed-in students also have persistent server-checked milestones and a private experiment history. Neither is proof of mastery or an official competitive score. |
 | Java | S02 local build: real JDK compilation/execution, equivalent robot behavior and separately saved drafts; see JAVA.md for setup and exact limits. DEPLOY-01 now has live Vercel Sandbox Java/Python evidence; its server gateway is live. See HOSTED.md. |
-| Lessons / experiment history | S03 adds L02 sensor choice, a versioned teaching contract, two-mission navigation, separate mission/language drafts and existing journal integration. Checked L02 milestones require checked L01 completion. S03H retains durable understanding records and the remaining history/migration work; see MISSION-02.md and the current review receipt. |
+| Lessons / experiment history | Released S03 adds L02 sensor choice, a versioned teaching contract, two-mission navigation, separate mission/language drafts and existing journal integration. Checked L02 milestones require checked L01 completion. S03H retains durable understanding records and the remaining history/migration work; see MISSION-02.md and the release receipt in PROGRESS.md. |
 | Expanded curriculum | 16 core outlines: six foundations, five rover lessons including measured heading (S11H), two light/color lessons (S16/S17) and three combined jobs (S15/S18/S19). Four optional outlines: X01/X02 Rocket Lab and X03/X04 image sensing/docking. CURRICULUM.md specifies prerequisites, hardware connections, numeric/contact contracts and readiness. L01 and L02 use the same implemented searchlight and direction sensor; no arm, rover, optical or flight model is implemented. |
-| Accounts / family multiplayer | Live DEPLOY-01: private student access codes, separate cross-device drafts/history, parent provision/rotate/revoke, and shared server-checked L01 milestones. FAMILY-01 adds in-app parent setup and code delivery. Official S06 rankings and live co-control are not implemented. |
+| Accounts / family multiplayer | Live DEPLOY-01 and S03: private student access codes, separate cross-device drafts/history, parent provision/rotate/revoke, and shared server-checked L01/L02 milestones. FAMILY-01 adds in-app parent setup and code delivery. Official S06 rankings and live co-control are not implemented. |
 | Unattended development | OPS-01 remains unverified. Manual remote-ref ownership has evidence; scheduled usage/repository/toolchain access and atomic cycle ownership do not yet. |
 
 ## Boundaries to keep as the framework grows

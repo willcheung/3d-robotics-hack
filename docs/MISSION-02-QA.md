@@ -1,6 +1,6 @@
 # Mission 2 owner QA
 
-This review covers S03 / L02 on [PR #2](https://github.com/willcheung/3d-robotics-hack/pull/2). It is a local owner-QA candidate. The PR records the final tested commit and CI results; review is not a merge or live release.
+This review covers S03 / L02 on [PR #2](https://github.com/willcheung/3d-robotics-hack/pull/2), now merged and [live](https://robolab.vibecodingdad.com) after the separately authorized release. The original local audit is below; PROGRESS.md records the exact source, CI and hosted release evidence.
 
 ## Audit findings and fixes
 
@@ -28,7 +28,7 @@ Local checks after the fixes: 10 account browser tests and 7 Mission 2 browser t
 
 ## Owner checklist
 
-Use the current local preview supplied with the PR. It keeps guest drafts on that browser origin; family provider checks require a later authorized staging release.
+Use the live app or the current local preview supplied with the PR. Guest drafts belong to that browser origin. Sign in with a student code and use Save draft / Check & save progress for cross-device work. Protected staging and public release checks have passed; learner observation remains the purpose of this checklist.
 
 1. Open Mission 2 in Python. Before coding, explain who needs the light, what the motor/servo do, and what the sensor measures. Note any wording you would need to explain to a teen.
 2. Predict the turn from 30° toward 60°. Run the starter and inspect **Read**, **Decision** and **Now**. The crew should remain waiting. Open each hint; no points or progress should be lost.
@@ -36,16 +36,18 @@ Use the current local preview supplied with the PR. It keeps guest drafts on tha
 4. Try a decision angle of 70 from both starting sides: the corrected program still stops at 60°, the fixed crew target. Explain which lines determine distance. Then try the lower-cove transfer. Unchanged destination values should miss. Change `decision_angle` (Python) or `decisionAngle` (Java) to −60 and `tilt` to 60, keep the comparison, and run. Expect −60° direction, 60° tilt and three visit badges. Explain why the same comparison works with negative numbers.
 5. Change the wait to 0, run, and confirm the error preserves your draft. Restore 50 and recover. Reset should restore the selected case's starting pose without erasing code.
 6. Repeat steps 2–5 in Java. Check that comments explain the syntax and that switching back restores the Python draft. Visit Mission 1 and return, then reload to check saved code. Visit badges restart on reload; server-checked family completion is separate and persistent.
-7. Review the family screenshot/evidence below: Pilot A has completed Missions 1 and 2 while Pilot B has no checked rescues. Later staging QA should repeat this with disposable student accounts in both hosted languages, including sign-out/re-entry and a second device.
+7. Review the family screenshot/evidence below. The released family view shows separate completed Python/Java students and an uncompleted sibling. Both hosted languages passed staging and live checks for sign-out/re-entry and a fresh browser context. Checked Mission 2 progress requires all three checked Mission 1 rescues; practice is always available.
 8. Try your intended laptop/browser and a narrow window. Check label/command readability and keyboard editing. Record whether the explanation, hints and transfer feel engaging, and what a teen could complete without adult help.
 
 Comparison clarification: [Python comments](images/mission-02-decision-python.png), [Java comments](images/mission-02-decision-java.png), [number guide](images/mission-02-decision-guide.png), [narrow guide](images/mission-02-decision-narrow.png).
 
 Earlier framework evidence: [Python lesson](images/mission-02-python.png), [Java lesson](images/mission-02-java.png), [narrow diagram](images/mission-02-narrow.png), [synthetic family completion](images/mission-02-family-progress.png).
 
+Hosted release evidence: [desktop family results](images/mission-02-live-family-desktop.png), [narrow family results](images/mission-02-live-family-narrow.png). Both languages completed all three rescues and retained both missions' drafts/progress across fresh-browser and sign-out/sign-in checks on protected staging and the public domain. Real Blob concurrency checks and the protected production-candidate API checks passed before promotion. All disposable records were removed; existing student data and shared limits were preserved.
+
 ## Remaining limits
 
-- Hosted Mission 2 Sandbox/Blob/origin acceptance and production deployment have not been performed. They need a separate authorized release pass.
+- Release checks used disposable pre-provisioned families and retained the existing daily signup quota. Fresh-family signup, email delivery and the full unchanged sandbox-adversarial matrix were not rerun during this release; earlier provider evidence and current CI regressions remain separate.
 - Teen independence, enjoyment, accessibility with assistive technology, intended-device support and one-hour pacing remain unobserved. Automated completion does not establish understanding.
 - This is one ideal sensor read with declared 30° starting offsets. Continuous feedback, noisy sensors, arms/rovers, official rankings and Mission 3 remain future work. Practice badges reset per visit; durable understanding records and the remaining S03H journal work are separately scoped.
 
