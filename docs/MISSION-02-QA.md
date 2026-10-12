@@ -6,6 +6,7 @@ This review covers S03 / L02 on [PR #2](https://github.com/willcheung/3d-robotic
 
 - **Rescue selection during a check:** reproduced a mismatch where the selector showed a new rescue while the pending server check and scene still used the previous one. The selector now stays on the checked rescue and tells the student to stop the check before switching. The new browser test failed before the fix and passed afterward; mission/language guards remain covered.
 - **Mission-specific feedback:** success previously described a “recover from 30° crew” and asked about timing. Success now names the north-ridge or lower-cove crew and asks how the sensor reading chose the turn. A miss directs students to their Read/Decision console lines and destination values. Mission 1 retains its timing explanation.
+- **Laptop label overlap:** the decorative “Crew pickup point” legend overlapped the 3D crew status at a 1280-pixel viewport. Removed the redundant legend; the 3D crew status and accessible status below the scene remain.
 - **Coverage gap:** added a complete student journey through real checked Mission 1 prerequisites and Mission 2 completion, including a wrong program, second-device sign-in, saved draft, shared family results and an independent sibling. Added explicit checks that all three hints open in both languages without awarding a badge.
 
 ## Requirements and evidence
