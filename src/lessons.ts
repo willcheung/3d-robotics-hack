@@ -6,9 +6,10 @@ export const sensorPython = `# Job: recover the light so rescuers can find the c
 # Import controls and the direction sensor; no hardware moves yet.
 from robot import motor, servo, wait, angle
 
-# Our destination is a direction, in degrees (-150 to 150).
-# A variable alone has no API range check. Compare it with the reading.
-goal = 60
+# Comparison value in degrees: the if below uses it to choose a branch.
+# It is not a move-to command and does not move the crew’s target.
+# The sensor reads -150..150 degrees; this variable has no API range check.
+decision_angle = 60
 
 # Servo target: 0..180 degrees, inclusive; 120 points 30 degrees up.
 tilt = 120
@@ -19,7 +20,7 @@ tilt = 120
 reading = await angle()
 
 # print shows the measurement; it needs no await and causes no motion.
-print("Read:", reading, "degrees; goal:", goal)
+print("Read:", reading, "degrees; decision angle:", decision_angle)
 
 # The servo setting is accepted now; arrival needs wait below.
 await servo(tilt)
@@ -27,7 +28,7 @@ await servo(tilt)
 # A comparison is true or false. if runs its indented branch when true.
 # DEBUG CHALLENGE: is > the right comparison for a right turn?
 # Change just the comparison, then test BOTH starting positions.
-if reading > goal:
+if reading > decision_angle:
     # Power -1..1 inclusive; +0.5 turns right at 30 degrees/second.
     await motor(0.5)
 
@@ -42,13 +43,15 @@ else:
 
 # Outside both branches: advance 50 whole ticks = 1 simulated second.
 # wait accepts 1..600 whole ticks; both motor AND servo move during it.
-# Each authored start is exactly 30 degrees from its goal.
+# Power and this duration set the turn distance, not decision_angle.
+# Each case starts 30 degrees from the crew’s fixed target.
 await wait(50)
 
 # Power 0 holds the turn still. Without it the rescue cannot complete.
 await motor(0)
 
 # Read AGAIN: the old reading variable does not update by itself.
+# Check where the light actually stopped against the crew’s target.
 # Round the display to a whole degree; the sensor/model keeps its precision.
 print("Now:", round(await angle()), "degrees")`;
 export const sensorJava = `// Job: recover the light so rescuers can find the crew.
@@ -59,9 +62,11 @@ public class Main {
     // Java starts in main. throws Exception lets errors reach the console.
     public static void main(String[] args) throws Exception {
 
-        // double holds decimal numbers; = assigns a value, ; ends a statement.
-        // Our destination is a direction, in degrees (-150..150).
-        double goal = 60;
+        // double stores decimals; = assigns; ; ends a statement.
+        // Comparison value in degrees; if uses it to pick a branch.
+        // Not a move-to command: the crew’s target stays fixed.
+        // Sensor reads -150..150; this value has no API range check.
+        double decisionAngle = 60;
 
         // Tilt: 0..180 degrees inclusive; 120 points 30 degrees up.
         double tilt = 120;
@@ -71,7 +76,7 @@ public class Main {
         double reading = Robot.angle();
 
         // + joins text and numbers. println displays the measured reading.
-        System.out.println("Read: " + reading + " degrees; goal: " + goal);
+        System.out.println("Read: " + reading + " degrees; decision angle: " + decisionAngle);
 
         // Accept a servo setting now. Only waitTicks advances its movement.
         Robot.servo(tilt);
@@ -79,7 +84,7 @@ public class Main {
         // if tests true/false; braces group the commands for each branch.
         // DEBUG CHALLENGE: is > the right comparison for a right turn?
         // Change just the comparison, then test BOTH starting positions.
-        if (reading > goal) {
+        if (reading > decisionAngle) {
             // Power -1..1 inclusive; +0.5 turns right at 30 degrees/second.
             Robot.motor(0.5);
 
@@ -94,24 +99,27 @@ public class Main {
         } // Both branches rejoin here.
 
         // 50 whole ticks = 1 simulated second. Allowed: 1..600 per call.
-        // BOTH motor and servo move. Each start is 30 degrees from its goal.
+        // Both parts move; power and duration set the turn distance.
+        // decisionAngle does not set the distance or stop the motor there.
+        // Each case starts 30 degrees from the crew’s fixed target.
         Robot.waitTicks(50);
 
         // Power 0 holds the light still; a powered motor cannot complete.
         Robot.motor(0);
 
         // Read again: the old reading variable never updates by itself.
+        // Check where the light actually stopped against the crew’s target.
         // Math.round displays a whole degree; it does not change the model.
         System.out.println("Now: " + Math.round(Robot.angle()) + " degrees");
     } // End main.
 } // End Main.`;
 export const sensorReference = {
-  python: sensorPython.replace('if reading > goal:', 'if reading < goal:').replace('DEBUG CHALLENGE: is > the right comparison for a right turn?', 'WORKED STEP: a smaller reading needs a right turn.'),
-  java: sensorJava.replace('if (reading > goal)', 'if (reading < goal)').replace('DEBUG CHALLENGE: is > the right comparison for a right turn?', 'WORKED STEP: a smaller reading needs a right turn.'),
+  python: sensorPython.replace('if reading > decision_angle:', 'if reading < decision_angle:').replace('DEBUG CHALLENGE: is > the right comparison for a right turn?', 'WORKED STEP: a smaller reading needs a right turn.'),
+  java: sensorJava.replace('if (reading > decisionAngle)', 'if (reading < decisionAngle)').replace('DEBUG CHALLENGE: is > the right comparison for a right turn?', 'WORKED STEP: a smaller reading needs a right turn.'),
 };
 export const sensorTransfer = {
-  python: sensorReference.python.replace('goal = 60', 'goal = -60').replace('tilt = 120', 'tilt = 60'),
-  java: sensorReference.java.replace('goal = 60', 'goal = -60').replace('tilt = 120', 'tilt = 60'),
+  python: sensorReference.python.replace('decision_angle = 60', 'decision_angle = -60').replace('tilt = 120', 'tilt = 60'),
+  java: sensorReference.java.replace('decisionAngle = 60', 'decisionAngle = -60').replace('tilt = 120', 'tilt = 60'),
 };
 export type Lesson = {
   id: LessonId; version: number; title: string; job: string; beneficiary: string;
@@ -123,7 +131,7 @@ export type Lesson = {
 };
 export const lessons: Lesson[] = [
   {id:'L01',version:1,title:'Signal Station',job:'Light the stranded crew’s pickup point.',beneficiary:'Stranded hikers and the rescue team',consequence:'A stopped, settled beam marks the crew’s pickup point.',application:'A pan-and-tilt camera turns and tilts to see a doorway.',source:'https://learn.adafruit.com/mini-pan-tilt-kit-assembly?view=all',otherApplications:'Aim a stage spotlight or an inspection camera.',prerequisites:[],conceptId:'commands-values',concept:'Commands and named values',recap:'Code sends instructions to a motor and servo.',units:'Power −1..1; servo 0..180 degrees; wait 1..600 whole ticks, 0.02 s each.',comments:'Every executable starter line explains its purpose; await acknowledges a call, not arrival.',hints:['Watch where the first beam stops.','Half power turns 30 degrees each second.','Change turn_ticks from 50 to 100 for the north ridge.'],transfer:'Aim at the lower cove; explain how the turn direction and tilt change.',scenarios:lessonTargets.L01,next:'L02',transferTarget:'reverse',transferReference:{python:pythonStarter.replace('turn_ticks = 50','turn_ticks = 100').replace('servo(120)','servo(60)').replace('motor(0.5)','motor(-0.5)'),java:javaStarter.replace('turn_ticks = 50','turn_ticks = 100').replace('servo(120)','servo(60)').replace('motor(0.5)','motor(-0.5)')},starters:{python:pythonStarter,java:javaStarter},reference:{python:pythonStarter.replace('turn_ticks = 50','turn_ticks = 100'),java:javaStarter.replace('turn_ticks = 50','turn_ticks = 100')},wrong:{python:pythonStarter,java:javaStarter}},
-  {id:'L02',version:1,title:'Read, then choose',job:'The searchlight was moved while the station was offline. Read its direction and recover the beam so rescuers can find the crew.',beneficiary:'The crew waiting for its pickup point to be lit again',consequence:'The beam reaches the crew and stays still after a correction from either side.',application:'An absolute position sensor can tell a robot controller where a rotating part is. Your program compares that measurement with a destination before choosing a motor direction.',source:'https://docs.wpilib.org/en/stable/docs/software/hardware-apis/sensors/encoders-software.html',otherApplications:'A camera can turn toward a doorway from either side. A robot arm can choose which way to move a joint toward a shelf. Each needs its own calibration, limits and repeated feedback.',prerequisites:['L01'],conceptId:'sensor-conditional',concept:'One sensor reading and an if/else decision',recap:'Motor power picks direction and speed; the servo picks tilt. Only wait advances motion. Now let a measurement choose the turn.',units:'angle returns −150..150 degrees inclusive, at the last completed tick; negative is left of zero. No arguments. Starts are 30 degrees from the goal. ±0.5 power for 50 ticks moves 30 degrees. Existing motor/servo/wait limits apply.',comments:'Explain reading versus goal, assignment versus comparison, true/false, branch grouping and a fresh sensor read in both languages.',hints:['Compare the LIGHT DIRECTION reading with the goal. At 30° with a 60° goal, which way should the base turn?','A smaller reading needs a positive/right turn. A larger reading needs a negative/left turn. The starter has the comparison reversed.','Use reading < goal in the if condition. Keep the positive motor call inside if and the negative call inside else; test 30° AND 90° starts.'],transfer:'A crew moves to the lower cove. Start at −30°, face −60° and tilt to 60°. Change goal and tilt; keep the same decision rule. Explain why negative numbers still use the same comparison.',scenarios:lessonTargets.L02,next:null,transferTarget:'sensor-transfer',transferReference:sensorTransfer,starters:{python:sensorPython,java:sensorJava},reference:sensorReference,wrong:{python:sensorPython,java:sensorJava}},
+  {id:'L02',version:1,title:'Read, then choose',job:'The searchlight was moved while the station was offline. Read its direction and recover the beam so rescuers can find the crew.',beneficiary:'The crew waiting for its pickup point to be lit again',consequence:'The beam reaches the crew and stays still after a correction from either side.',application:'An absolute position sensor can tell a robot controller where a rotating part is. Your program compares that measurement with a decision angle to choose a motor direction. The motor’s power and running time then determine how far it turns.',source:'https://docs.wpilib.org/en/stable/docs/software/hardware-apis/sensors/encoders-software.html',otherApplications:'A camera can turn toward a doorway from either side. A robot arm can choose which way to move a joint toward a shelf. Each needs its own calibration, limits and repeated feedback.',prerequisites:['L01'],conceptId:'sensor-conditional',concept:'One sensor reading and an if/else decision',recap:'Motor power picks direction and speed; the servo picks tilt. Only wait advances motion. The decision angle is a comparison value for choosing a branch. It does not command an arrival or change the crew’s target.',units:'angle returns −150..150 degrees inclusive, at the last completed tick; negative is left of zero. No arguments. Starts are 30 degrees from the crew’s fixed target. ±0.5 power for 50 ticks moves 30 degrees. Existing motor/servo/wait limits apply.',comments:'Distinguish the measured reading, comparison value, turn distance and fixed crew target; explain assignment versus comparison, true/false, branch grouping and a fresh sensor read in both languages.',hints:['Compare the LIGHT DIRECTION reading with the crew’s target. Which way would close the gap? Trace which branch your comparison selects.','A smaller reading needs a positive/right turn. A larger reading needs a negative/left turn. The starter has the comparison reversed.','Use a less-than comparison between reading and the decision angle in the if condition. Keep the positive motor call inside if and the negative call inside else; test 30° AND 90° starts.'],transfer:'A crew moves to the lower cove. Start at −30°, face −60° and tilt to 60°. Decide how to adapt the comparison value and tilt while keeping the same rule. Explain your prediction before testing negative directions.',scenarios:lessonTargets.L02,next:null,transferTarget:'sensor-transfer',transferReference:sensorTransfer,starters:{python:sensorPython,java:sensorJava},reference:sensorReference,wrong:{python:sensorPython,java:sensorJava}},
 ];
 export function validateLessons(items: Lesson[]) {
   const ids=new Set<string>();

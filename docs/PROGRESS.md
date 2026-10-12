@@ -53,3 +53,11 @@ Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof rema
 - Local preview servers now snapshot the paired build assets at startup, preventing subsequent builds from changing an active preview. Shutdown and failed startup clean up those temporary files. No runtime-origin permissions, production settings, accounts or student records were changed.
 - Added three CI regressions for replacing both build directories while previews are running, port-conflict cleanup, and incomplete-build cleanup. The asset-replacement test failed before the fix and passed afterward. Existing real Python/Java browser tests remain the execution proof; static HTTP fixtures do not simulate Python.
 - Final tested commit and full CI results are recorded in the same PR #2 and private resume receipt. No merge or deployment.
+
+
+### S03 owner feedback — comparison value versus destination
+
+- Same PR #2, branch and scope; base `4c822dffb3978c6529a8b78cece1e03ca35000ac`. Renamed Mission 2’s starter `goal` to Python `decision_angle` and Java `decisionAngle`. Explained that the value selects a branch, power/time determine movement, and the crew’s target stays fixed. Success still uses actual stopped/settled pose.
+- Default comments and number guide invite an experiment without supplying the working comparison or transfer edits. Existing opt-in hints and worked explanations remain available. Added this distinction and discovery-first guidance to the future teaching contract.
+- Saved student source, lesson versions, Mission 1 and progress data remain unchanged. Older `goal` drafts still run; Restore example opts into the new commented starter.
+- Validation: both-language browser regressions cover the same result with a nearby comparison value, a changed branch, changed wait duration, and preserved runnable legacy drafts. Final local results, exact tested commit and CI links are recorded in PR #2 and the private resume receipt. No merge, deployment or later mission work.

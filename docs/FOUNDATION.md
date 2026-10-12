@@ -44,6 +44,8 @@ For every input, document inclusive/exclusive ends, integer/decimal requirements
 | wait ticks | Whole number 1 through 600 inclusive per call | One tick is 0.02 simulated seconds; 50 ticks is 1 second. Fractions, zero and out-of-range counts stop the run. |
 | direction sensor | Read-only degrees, −150 through 150 | The motor has physical travel stops in the model: clamp at a stop rather than raising an input-range error. A powered motor does not count as holding still. |
 
+Name comparison values for their decision role and distinguish them from the mission’s target and commands that move hardware. Explain what changing a value can and cannot change; a successful physical outcome does not prove a variable is the unique correct value. Default comments/help should invite prediction without giving away the debugging or transfer edit; explicit solutions belong in opt-in hints/worked explanations.
+
 A Python variable itself has no robot-specific range; validation happens when its value is passed to the API. Distinguish invalid code/commands, valid attempts that miss, and resource-limit failures. Errors stop the run, preserve the draft, explain a correction and allow a fresh Run. An error does not complete a target, unlock a lesson or earn a score. `round` changes displayed precision; `print` writes the console; neither moves a robot. Simulation seconds are not a promise about real-world elapsed time or calibrated hardware.
 
 ## Experiment history, progression and family scoring

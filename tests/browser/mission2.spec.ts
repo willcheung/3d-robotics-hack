@@ -12,9 +12,10 @@ for(const language of ['python','java'] as const){
   await expect(page.locator('#practice-progress')).toContainText('0 of 3');
   await expect(page.locator('#show-solution')).toBeDisabled();await run(page);
   await expect(page.locator('#feedback')).not.toHaveClass(/success/);await expect(page.locator('#practice-progress')).toContainText('0 of 3');
-  await expect(page.locator('#feedback')).toContainText('Read and Decision');
+  await expect(page.locator('#feedback')).toContainText('Read, Decision and Now');
   await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toBeVisible();
-  await run(page,sensorReference[language].replace('goal = 60','goal = 1.0472'));await expect(page.locator('#feedback')).not.toHaveClass(/success/);
+  const decision=language==='python'?'decision_angle':'decisionAngle';
+  await run(page,sensorReference[language].replace(`${decision} = 60`,`${decision} = 1.0472`));await expect(page.locator('#feedback')).not.toHaveClass(/success/);
   await run(page,sensorReference[language]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#console')).toContainText('Decision: turn right');await expect(page.locator('#pointer-value')).toHaveText('60.0°');
   await expect(page.locator('#feedback')).toContainText('north ridge crew');await expect(page.locator('#feedback')).toContainText('sensor reading chose the turn');
   await page.locator('#next-rescue').click();await expect(page.locator('#code')).toHaveValue(sensorReference[language]);await expect(page.locator('#pointer-value')).toHaveText('90.0°');
@@ -24,6 +25,35 @@ for(const language of ['python','java'] as const){
   await page.screenshot({path:`test-results/s03-${language}-transfer.png`,fullPage:true});await page.locator('.world-panel').screenshot({path:`test-results/s03-${language}-diagram.png`});
   await page.locator('#reset').click();await expect(page.locator('#pointer-value')).toHaveText('-30.0°');await expect(page.locator('#crew-status')).toContainText('waiting');await expect(page.locator('#code')).toHaveValue(sensorTransfer[language]);
   await page.locator('#target').selectOption('sensor-left');await run(page,sensorReference[language]);await expect(page.locator('#practice-progress')).toContainText('3 of 3');
+ });
+}
+for(const language of ['python','java'] as const){
+ test(`Mission 2 ${language}: comparison value chooses a branch, not a destination`,async({page})=>{
+  await page.goto('/');await page.locator('#lesson').selectOption('L02');await page.locator('#language').selectOption(language);
+  const decision=language==='python'?'decision_angle':'decisionAngle';
+  await expect(page.locator('#value-guide')).toContainText(decision);
+  const nearby=sensorReference[language].replace(`${decision} = 60`,`${decision} = 70`);
+  for(const target of ['sensor-left','sensor-right']){
+   await page.locator('#target').selectOption(target);await run(page,nearby);
+   await expect(page.locator('#console')).toContainText('decision angle: 70');
+   await expect(page.locator('#console')).toContainText(target==='sensor-left'?'Decision: turn right':'Decision: turn left');
+   await expect(page.locator('#console')).toContainText('Now: 60 degrees');
+   await expect(page.locator('#pointer-value')).toHaveText('60.0°');await expect(page.locator('#feedback')).toHaveClass(/success/);
+   await expect(page.locator('#goal-angle')).toHaveText('60°');
+  }
+  // Crossing the measured value changes the branch, while the crew stays put.
+  await run(page,nearby.replace(`${decision} = 70`,`${decision} = 110`));
+  await expect(page.locator('#console')).toContainText('Decision: turn right');await expect(page.locator('#pointer-value')).toHaveText('120.0°');
+  await expect(page.locator('#goal-angle')).toHaveText('60°');await expect(page.locator('#feedback')).not.toHaveClass(/success/);
+  // More time changes the distance even with the same comparison and branch.
+  await page.locator('#target').selectOption('sensor-left');
+  await run(page,nearby.replace(language==='python'?'await wait(50)':'Robot.waitTicks(50)',language==='python'?'await wait(100)':'Robot.waitTicks(100)'));
+  await expect(page.locator('#console')).toContainText('Decision: turn right');await expect(page.locator('#pointer-value')).toHaveText('90.0°');
+  await expect(page.locator('#feedback')).not.toHaveClass(/success/);
+  // A saved draft with the previous variable name remains untouched and runnable.
+  const legacy=sensorReference[language].replaceAll(decision,'goal');
+  await page.locator('#code').fill(legacy);await page.reload();await expect(page.locator('#code')).toHaveValue(legacy);
+  await run(page);await expect(page.locator('#pointer-value')).toHaveText('60.0°');await expect(page.locator('#feedback')).toHaveClass(/success/);
  });
 }
 test('four independent drafts, reload, curriculum navigation and storage denial',async({page})=>{
