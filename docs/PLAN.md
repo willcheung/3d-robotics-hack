@@ -39,7 +39,7 @@ Show the selected “Python · Mission 1” or “Java · Mission 1,” keep sep
 5. Complete a challenge with gradually reduced guidance.
 6. Connect the mechanism to a real device, then explain or demonstrate the idea in a small variation. Ask what the code accomplished, not only which number worked.
 
-Target each lesson at 10–15 minutes, with an optional harder challenge. Introduce one main new idea per lesson and revisit earlier concepts. These are design targets to validate with learners, not established learning outcomes.
+Target the core explanation and first small win at 10–15 minutes within an approximately one-hour weekly session, leaving time for debugging, variations, transfer and reflection. Introduce one main new idea per lesson and revisit earlier concepts. These are design targets to validate with learners, not established learning outcomes.
 
 Hints progress from a visual clue to a concept reminder, a small code change, and finally a worked example. Hints and AI help do not erase progress. After repeated difficulty, offer a shorter practice mission and an easier starting state. Advanced students can skip explanations after a short mastery check.
 

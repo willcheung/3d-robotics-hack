@@ -8,11 +8,15 @@ for(const language of ['python','java'] as const){
   await expect(page.locator('.real-world')).toContainText('robot arm');await expect(page.locator('#value-guide')).not.toContainText('turn_ticks');await expect(page.locator('#value-guide')).toContainText('50 ticks = 1 second');await expect(page.locator('#motor-label')).toContainText('SENSOR · angle()');
   await page.locator('#prediction').selectOption('left');await expect(page.locator('#prediction-feedback')).toContainText('opens the gap');
   await page.locator('#prediction').selectOption('right');await expect(page.locator('#prediction-feedback')).toContainText('closes the gap');
+  for(const label of ['Hint 1','Hint 2','Hint 3']){await page.getByText(label,{exact:true}).click();await expect(page.getByText(label,{exact:true}).locator('..').locator('p')).toBeVisible();}
+  await expect(page.locator('#practice-progress')).toContainText('0 of 3');
   await expect(page.locator('#show-solution')).toBeDisabled();await run(page);
   await expect(page.locator('#feedback')).not.toHaveClass(/success/);await expect(page.locator('#practice-progress')).toContainText('0 of 3');
+  await expect(page.locator('#feedback')).toContainText('Read and Decision');
   await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toBeVisible();
   await run(page,sensorReference[language].replace('goal = 60','goal = 1.0472'));await expect(page.locator('#feedback')).not.toHaveClass(/success/);
   await run(page,sensorReference[language]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#console')).toContainText('Decision: turn right');await expect(page.locator('#pointer-value')).toHaveText('60.0°');
+  await expect(page.locator('#feedback')).toContainText('north ridge crew');await expect(page.locator('#feedback')).toContainText('sensor reading chose the turn');
   await page.locator('#next-rescue').click();await expect(page.locator('#code')).toHaveValue(sensorReference[language]);await expect(page.locator('#pointer-value')).toHaveText('90.0°');
   await run(page);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#console')).toContainText('Decision: turn left');await expect(page.locator('#practice-progress')).toContainText('2 of 3');
   await page.locator('#next-rescue').click();await run(page);await expect(page.locator('#feedback')).not.toHaveClass(/success/);

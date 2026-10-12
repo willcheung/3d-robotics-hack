@@ -151,8 +151,10 @@ function setStatus(next: RunStatus, detail?: string) {
     const worked=el<HTMLButtonElement>('show-solution');if(worked)worked.disabled=false;
     success = reached(state, targets[selected]);
     if (success) completedLocations.add(selected);
-    if (success) feedback('Crew located. Pickup point lit!', `Your code held the light on the ${missions[selected].location.toLowerCase()} crew. The rescue team can now see where to go. Try another crew, then explain how your timing helped.`, 'success');
-    else feedback('A useful experiment. Try one change.', `The crew is still waiting for a steady light. Direction: ${state.angle.toFixed(1)}° / ${targets[selected].angle}°. Tilt servo: ${state.scanner.toFixed(1)}° / ${targets[selected].scanner}°. ${state.power ? `Remember ${language==='java'?'Robot.motor(0);':'await motor(0)'} to stop.` : 'Change your timing or direction, then Run again.'}`, 'try-again');
+    if (success) feedback('Crew located. Pickup point lit!', lesson==='L02'
+      ? `Your code recovered the light for the ${selected==='sensor-transfer'?'lower cove':'north ridge'} crew. Explain how the sensor reading chose the turn, and why the same comparison works from the other side. Then try another case.`
+      : `Your code held the light on the ${missions[selected].location.toLowerCase()} crew. The rescue team can now see where to go. Try another crew, then explain how your timing helped.`, 'success');
+    else feedback('A useful experiment. Try one change.', `The crew is still waiting for a steady light. Direction: ${state.angle.toFixed(1)}° / ${targets[selected].angle}°. Tilt servo: ${state.scanner.toFixed(1)}° / ${targets[selected].scanner}°. ${state.power ? `Remember ${language==='java'?'Robot.motor(0);':'await motor(0)'} to stop.` : lesson==='L02'?'Compare the Read and Decision lines in your console with the goal. Check your comparison and destination values, then Run again.':'Change your timing or direction, then Run again.'}`, 'try-again');
   }
   if (next === 'stopped') feedback('Stopped. Your code is safe.', 'Run again from this case’s starting direction, or Reset. Your draft stays.');
   if (next === 'error') {
@@ -196,7 +198,8 @@ el('stop').onclick = () => runner?.stop();
 el('reset').onclick = reset;
 el('restore').onclick = () => { reset(); code.value = starters[language]; saveDraft(); feedback('Example restored. Give it a try.', lesson==='L01'?'Run the original, then change turn_ticks to bring the light to the crew.':'Run the original, then fix the comparison. Each starting case resets to its declared direction.'); };
 function selectLocation(value: string) {
-  if(!locationOrder.includes(value)||family.isChecking())return;
+  if(family.isChecking()){el<HTMLSelectElement>('target').value=selected;feedback('Wait for the progress check.','Stop the check before changing rescues.');return;}
+  if(!locationOrder.includes(value))return;
   reset(); selected = value;state=initialState(selected);
   el<HTMLSelectElement>('target').value = value;
   el('mission-job').textContent = missions[selected].job;

@@ -1,6 +1,6 @@
 # Public progress
 
-Implemented and previously validated: S01 rescue searchlight in Python, S02 real Java and syntax colors, DEPLOY-01 hosted runtimes and private family progress, FAMILY-01 in-app family/student setup, and RECOVERY-01 verified parent email recovery. Only Mission 1 is playable; its three rescue variations are one lesson. Later curriculum entries remain plans.
+Implemented and previously validated: S01 rescue searchlight in Python, S02 real Java and syntax colors, DEPLOY-01 hosted runtimes and private family progress, FAMILY-01 in-app family/student setup, and RECOVERY-01 verified parent email recovery. Mission 1 is live; its three rescue variations are one lesson. Mission 2 is playable on its review branch, described below. Later curriculum entries remain plans.
 
 OPEN-01 prepares the public source distribution: privacy review, MIT license, dependency notices, generic setup/contribution/security documentation and publication guardrails. The publication receipt records its exact source and checks after validation. Private historical operations receipts are not part of the public source distribution.
 
@@ -31,3 +31,10 @@ Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof rema
 - Inspected visual evidence: [Python lesson](images/mission-02-python.png), [Java lesson](images/mission-02-java.png), [narrow sensor/motor/servo diagram](images/mission-02-narrow.png). The number guide uses Mission 2's actual variables and wait call.
 - Unmet release/learning gates: no new cloud Sandbox/Blob provider or deployed-origin acceptance; no teen/device pilot or validated one-hour pacing. The local authoritative HTTP test uses real isolated Java with in-memory storage, not a Vercel provider. No scheduler/usage/reset/configuration changes.
 - Next action: review final-head CI and the runnable lesson, collect a supervised teen walkthrough, and obtain explicit merge/deployment authorization before a protected hosted acceptance/release. Do not start S03H or another mission from this review branch.
+
+### S03 owner-QA pass
+
+- Same PR #2 and branch; audit base `90144aba20569204de63aff75ece8aaa10fa3e91`. See [readiness report and owner checklist](MISSION-02-QA.md). Final exact tested SHA and CI links are recorded in the PR and private resume receipt.
+- Reproduced and fixed rescue-selector drift during a pending progress check. Added a failing-before/passing-after browser regression, including existing mission/language guards. Corrected Mission 2 result feedback to name the crew and explain the sensor decision; retained Mission 1 behavior.
+- Passed locally: 10 account browser tests, including a real isolated Java prerequisite/completion journey and cross-device/sibling separation; 5 real Python/Java Mission 2 walkthroughs including all hints, mistakes, transfer, Stop/Reset and draft preservation; TypeScript/build. Desktop, narrow and synthetic family screenshots inspected. Final-head CI is required before handoff and is linked in PR #2.
+- Boundaries: in-memory local account fixtures and real local Java are not cloud-provider proof. No merge/deploy, production-data changes, automation changes or later mission work. Learner/device/pacing and hosted release checks remain pending.
