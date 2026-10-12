@@ -374,7 +374,7 @@ print(round(await angle()), round(await scanner()), round(await clock(), 2))`);
   await expect(page.locator('#feedback')).not.toHaveClass(/error|success/);
 });
 
-test('next rescue preserves code, counts unique successes and explains the last available lesson', async ({page}) => {
+test('next rescue preserves code, counts unique successes and advances to Mission 2 without losing Mission 1', async ({page}) => {
   const next=page.locator('#next-rescue'); await expect(next).toBeDisabled();
   await run(page,good.replace('wait(100)','wait(50)')); await done(page); await expect(next).toBeDisabled();
   await run(page,good); await done(page); await expect(next).toBeEnabled();
@@ -386,7 +386,9 @@ test('next rescue preserves code, counts unique successes and explains the last 
   await expect(page.getByLabel('Challenge target')).toHaveValue('reverse');
   await run(page,good.replace('servo(120)','servo(60)').replace('motor(0.5)','motor(-0.5)')); await done(page);
   await expect(page.locator('#practice-progress')).toHaveText('3 of 3 crew locations reached in this visit.');
-  await expect(next).toBeHidden(); await expect(page.locator('#next-help')).toContainText('More lessons are planned');
+  await expect(next).toBeHidden(); await expect(page.locator('#next-help')).toContainText('Continue to Mission 2');
+  await page.locator('#next-lesson').click();await expect(page.locator('#lesson')).toHaveValue('L02');await expect(page.locator('#code')).toHaveValue(/reading = await angle/);
+  await page.locator('#lesson').selectOption('L01');await expect(page.locator('#code')).toHaveValue(/motor\(-0.5\)/);
   await page.screenshot({path:'test-results/s01-complete.png',fullPage:true});
   await page.reload(); await expect(page.locator('#practice-progress')).toHaveText('0 of 3 crew locations reached in this visit.');
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(/motor\(-0.5\)/);

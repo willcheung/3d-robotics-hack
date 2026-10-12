@@ -231,3 +231,7 @@ FAMILY-01 removes local-file provisioning from the parent journey: create a fami
 ## Parent recovery and returning students
 
 RECOVERY-01 adds optional verified parent recovery email; students continue with their individual access codes and can ask their parent for a replacement without losing drafts or progress. Verification requires the current parent session/code plus email proof. Recovery preserves the same family and rotates only parent credentials. Every future account change must retain expired/replay/race, partial-write recovery, non-enumerating responses, email limits, role isolation and saved-progress tests. Preserve the original host during custom-domain migration; local browser drafts and cookies do not automatically cross hosts.
+
+## Current next build: Mission 2
+
+The user authorized S03 / L02 in both languages. [MISSION-02.md](MISSION-02.md) is its concrete design and acceptance contract. Reuse the existing editor, model, accounts and teaching controls. Bring forward only the mission-aware draft/navigation/checked-progress work needed to deliver a complete second lesson; keep the remaining S03H journal/understanding work separately scoped. Every later mission must pair a real job with observable consequences, other hardware applications, a commented starter, graduated hints, prediction/transfer and penalty-free challenges. No release or learner-pilot claim follows from implementation alone.

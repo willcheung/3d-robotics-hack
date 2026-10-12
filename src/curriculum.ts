@@ -1,4 +1,4 @@
-/** Teaching order differs from implementation slice numbers. Only L01 is released. */
+/** Teaching order differs from implementation slice numbers. L01 and L02 are playable in this build. */
 export const curriculum = [
  ['L01','Signal Station','Aim a rescue searchlight with numbers, motor power and servo angles.','Start here'],
  ['L02','Read, then choose','Use a direction sensor and one condition to correct the light.','L01'],

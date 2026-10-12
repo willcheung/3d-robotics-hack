@@ -1,4 +1,4 @@
-# Signal Station: light the rescue pickup point
+# RoboLab: rescue missions with Python and Java
 
 Open the local preview at **http://127.0.0.1:4173** on the computer running RoboLab. Start it with the commands in README.md. Take turns at the same keyboard; this preview has no accounts.
 
@@ -53,16 +53,16 @@ Selecting a crew resets the robot and keeps your code. Reaching a target is prac
 
 The **Next rescue** button becomes available after reaching a location. It keeps your code so you can adapt it for the next crew. Unique locations count once in “3 crew locations reached”; retries do not lose points. This count lasts for the current visit and resets on page reload; your saved code remains.
 
-These are three practice rescues within Mission 1. After the lower cove, use the location selector to revisit unfinished rescues. The page states that more lessons are planned. Choose Python or Java above the editor; these are two languages for the same mission, not different lessons.
+These are three practice rescues within Mission 1. After the lower cove, use the location selector to revisit unfinished rescues. After all three, the Next Mission button opens Mission 2. You can also use the mission selector or Curriculum & unlocks to practice either lesson. Choose Python or Java above the editor; each mission keeps a separate draft in each language.
 
-Future family mode uses separate attempts on the same challenge and shared results. Experiment history will help compare code changes without penalizing retries; official results will rank reliability, then simulated completion time. Persistent history, accounts and official scores are planned slices, not hidden features in this build.
+Future family mode uses separate attempts on the same challenge and shared results. Experiment history will help compare code changes without penalizing retries; official results will rank reliability, then simulated completion time. The hosted family app already saves a private history and checked progress; official competition scores remain planned.
 
 ## Controls
 
 - The editor supports Tab to indent, Shift+Tab to unindent, Enter indentation, native undo/redo, and Escape then Tab to leave the editor. Comments beginning with `#` explain each executable starter line. The number guide is linked beside the editor.
 - **Run code** starts a fresh Python worker and resets the mechanism before executing your draft. ⌘Enter or Ctrl+Enter also runs.
 - **Stop** immediately ends the worker, including an infinite loop. The last observed pose and your draft remain.
-- **Reset** stops the worker and returns the mechanism to zero, with the tilt servo at 90° (level). It keeps your code.
+- **Reset** stops the runtime and returns the mechanism to the selected case’s starting direction, with the tilt servo at 90° (level). It keeps your code.
 - **Restore example** stops the worker and replaces your draft with the original commented example.
 - Drag the scene to orbit. Right-drag to pan. Scroll or use +/− to zoom. Top view and Reset camera only change your view. With the scene focused, arrow keys orbit, +/− zoom, and Home resets.
 - Drafts save in this browser on this device, when storage is available. Copy important code elsewhere before clearing browser data.
@@ -93,7 +93,7 @@ Read the console: Python syntax and runtime errors include `student.py` and a li
 
 Long runs stop after 20 wall-clock seconds; loading has a separate 45-second deadline. Console output is limited to 8 KB, code to 16,000 characters, commands to 2,000, and simulated time to 30 seconds. Use Stop any time and Run again to get a clean runtime. `input()` and installing extra packages are not supported. If 3D is unavailable, the app explains WebGL requirements; angle readouts and Python remain usable.
 
-This development preview runs real Python and Java for supervised local play. Java needs the isolated runner in JAVA.md. Accounts, live AI, official scoring and a hosted family-play link remain later gates. Actual child feedback and testing on the children's devices are still pending.
+This development preview runs real Python and Java for supervised local play. Java needs the isolated runner in JAVA.md. The hosted app supports private families and saved progress. Live AI and official competition scoring remain future work. Actual child feedback and testing on the children's devices are still pending.
 
 ## Try the same robot in Java
 
@@ -104,3 +104,20 @@ Java starts in the `main` method inside `class Main`. Keep the braces and semico
 Switch back to Python: its draft is still there. Switching stops the current run and resets the robot, while crew completion in this visit stays. Restore example affects only the selected language. Run starts fresh; Stop and errors never erase your draft or earn a completion. Try the east lookout and lower cove in either language.
 
 If Java is unavailable, keep the draft and try Python; the workshop owner can follow [Java setup](docs/JAVA.md). No student installation is needed when using a workshop with its runner already started.
+
+
+## Mission 2: read, then choose
+
+Choose **2 · Read, then choose**. The light was moved while its station was offline. Help the rescue crew by recovering the beam from either side, using a direction measurement to choose a turn.
+
+1. Predict a turn from 30° toward 60°. Read the sensor/condition comments and Run the starter. Its reversed comparison is a deliberate debugging challenge.
+2. Inspect `Read:` and `Decision:` in the console. Use a free hint if needed. Change the comparison so a smaller reading turns right.
+3. Run the same program at the 90° start. The other branch must turn left. The sensor reads the real simulated pose; it does not return a canned correct answer.
+4. Try **Lower cove transfer**: the start is −30°, the goal is −60° and the tilt is 60°. Adapt the destination values; keep the decision rule. A fixed positive turn or the old goal misses.
+5. Earn the three recovery badges. Retries and hints never cost points. Explain why both branches work and why the original `reading` variable does not automatically change when the motor moves.
+
+Every case starts exactly 30° from its destination. Half power for 50 ticks moves that distance; stopping holds the beam steady. This is one read and one decision, not a continuous tracking controller. A real camera or arm uses calibrated sensor measurements, hardware drivers and repeated feedback.
+
+Mission/language changes keep separate drafts. The hosted **Save draft** stores the selected mission/language; history restoration first saves the work it would replace and never runs code automatically. Checked Mission 2 badges unlock after all three checked Mission 1 rescues. Local badges last for the visit; server-checked badges persist. Mission 3 remains coming soon.
+
+Use **Reset** for the declared starting pose, **Restore example** to replace only the active draft, and the mission selector to revisit Mission 1. Suggested one-hour activities and teacher acceptance are in [Mission 2's guide](docs/MISSION-02.md). Actual teen feedback remains pending.

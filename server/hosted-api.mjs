@@ -4,7 +4,7 @@ import {recoveryService,resendMailer} from './recovery.mjs';
 import {randomUUID} from 'node:crypto';
 import {BlobStore,HttpError,current,view,login,addStudent,studentAccess,saveDraft,reserveRun,releaseRun,recordAttempt,sourceInput,bindRun,cancelRun,createFamily,setupIdentity,reserveServiceRun,releaseServiceRun} from './family-store.mjs';
 import {SandboxRun,relayReply,stopSandbox} from './sandbox-run.mjs';
-import {initialState,command,tick,reached,targets} from '../src/model.ts';
+import {initialState,command,tick,reached,targets,lessonTargets,targetLesson} from '../src/model.ts';
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
 async function body(req){let size=0;const parts=[];for await(const part of req){size+=part.length;if(size>70000)throw new HttpError(413,'Request too large.');parts.push(part);}try{const data=JSON.parse(Buffer.concat(parts).toString('utf8'));if(!data||typeof data!=='object'||Array.isArray(data))throw Error();return data;}catch{throw new HttpError(400,'Invalid request.');}}
 export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=process.env.APP_ORIGIN,password=process.env.SESSION_PASSWORD,mail=resendMailer(),alternateOrigin=process.env.APP_ALTERNATE_ORIGIN,recoveryOrigin=process.env.RECOVERY_ORIGIN,recoveryNow}={}){
@@ -54,9 +54,10 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
    }
    if(path==='/api/java/run'||path==='/api/family/verify'){
     const verify=path.endsWith('/verify');sourceInput({...data,language:verify?data.language:'java'});
-    if(verify&&!Object.hasOwn(targets,data.target))throw new HttpError(400,'Unknown rescue target.');
+    if(verify&&(typeof data.target!=='string'||!Object.hasOwn(targets,data.target)))throw new HttpError(400,'Unknown rescue target.');
+    if(verify&&targetLesson(data.target)==='L02'&&!lessonTargets.L01.every(t=>profile.completed.includes(t)))throw new HttpError(403,'Check all three Mission 1 rescues to unlock checked Mission 2 progress. You can still practice.');
     const id=verify?data.id:randomUUID();await reserveRun(store,session,id);
-    let run,state=initialState(),outcome='error',error='',done=false,terminal,released=false,serviceReserved=false;
+    let run,state=initialState(verify?data.target:'beacon'),outcome='error',error='',done=false,terminal,released=false,serviceReserved=false;
     const release=async()=>{const results=await Promise.allSettled([releaseRun(store,session,id),...(serviceReserved?[releaseServiceRun(store,session,id)]:[])]);const failed=results.find(r=>r.status==='rejected');if(failed)throw failed.reason;released=true;};
     try {
      await reserveServiceRun(store,session,id);serviceReserved=true;

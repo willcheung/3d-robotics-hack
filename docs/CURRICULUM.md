@@ -168,3 +168,7 @@ Keep experiments and help penalty-free. Save source/outcome history through S03H
 | Editor and automation proposals were stale | Preserve the tested lightweight editor; a replacement needs a demonstrated learner need. Preserve existing trigger eligibility/duplicate protection, OPS-01 proof, one writer/one slice, current BUDGET.md exception and review-before-dependent-work. |
 
 This review refines S01’s await comments/help and its runtime acceptance fixture, and updates future plans. It does not implement any later mission or change the existing automation, deployment or settings.
+
+## Mission 2 implementation contract
+
+The next authorized lesson is L02 / S03, **Read, then choose**. [MISSION-02.md](MISSION-02.md) freezes the useful rescue job, real hardware connections, three sensor-choice/transfer cases, free hints and finite badges, both-language comments, a one-hour session hypothesis and mandatory tests. Future lessons must retain these same purpose, prediction, trace, transfer, draft, family and error-recovery requirements; engagement and independence still need observed teen feedback.

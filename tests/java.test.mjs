@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { JavaRun } from '../server/java-run.mjs';
-import { command, initialState, tick } from '../src/model.ts';
+import { command, initialState, tick, reached, targets } from '../src/model.ts';
 import { parseMessage } from '../src/protocol.ts';
 const docker = args => new Promise((resolve,reject)=>execFile('docker',args,{timeout:15000},(e,out)=>e?reject(e):resolve(out.trim())));
 const main=body=>`public class Main {\n  public static void main(String[] args) throws Exception {\n${body}\n  }\n}`;
 async function execute(source, options={}) {
-  const messages=[]; let state=initialState(), run, cleanup;
+  const messages=[]; let state=initialState(options.target??'beacon'), run, cleanup;
   run=new JavaRun(source, message=>{
     messages.push(message);
     if(message.type==='command') {
@@ -170,4 +170,40 @@ test('UTF-8 source survives a character split across HTTP request chunks',async(
     });
     assert.match(output,/launch 🚀/);assert.doesNotMatch(output,/�/);assert.match(output,/"type":"done"/);
   } finally {await api.stop();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
+
+// These use real javac and the existing isolated command/sensor bridge.
+test('Mission 2 real Java: reversed condition fails; one reading selects both directions and transfer',async()=>{
+  const {sensorJava,sensorReference,sensorTransfer}=await import('../src/lessons.ts');
+  for(const target of ['sensor-left','sensor-right','sensor-transfer']){
+    const wrong=await execute(sensorJava,{target});assert.equal(wrong.messages.at(-1).type,'done');assert.equal(reached(wrong.state,targets[target]),false);
+    const good=await execute(target==='sensor-transfer'?sensorTransfer.java:sensorReference.java,{target});
+    assert.equal(good.messages.at(-1).type,'done');assert.equal(reached(good.state,targets[target]),true);assert.equal(good.state.ticks,50);
+    assert.match(good.text,target==='sensor-left'?/Read: 30.0.*Decision: turn right/s:target==='sensor-right'?/Read: 90.0.*Decision: turn left/s:/Read: -30.0.*Decision: turn left/s);
+  }
+  const hardcoded=sensorReference.java.replace('double reading = Robot.angle();','double reading = 30;');
+  assert.equal(reached((await execute(hardcoded,{target:'sensor-right'})).state,targets['sensor-right']),false);
+});
+
+test('Mission 2 authoritative HTTP check uses authored starts, rejects client pose/results and stores only real outcomes',async()=>{
+  const {createServer}=await import('node:http');const {randomUUID}=await import('node:crypto');
+  const {hostedApi}=await import('../server/hosted-api.mjs');const {MemoryStore}=await import('./helpers/memory-store.mjs');
+  const {provision,login,recordAttempt,current}=await import('../server/family-store.mjs');const {sensorReference,sensorJava,sensorTransfer}=await import('../src/lessons.ts');
+  const store=new MemoryStore(),seed=await provision(store),session=await login(store,seed.code);
+  // Prerequisite fixture only: Mission 1 runtime behavior has separate real tests.
+  for(const target of ['beacon','farther','reverse'])await recordAttempt(store,session,{id:randomUUID(),source:'fixture',language:'java',target,outcome:'reached',seconds:2},true);
+  let api;const server=createServer((req,res)=>void api(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
+  // Replace the cloud VM transport with the real local isolated compiler/runtime.
+  // The application evaluator, HTTP auth, command bridge and storage remain real.
+  class LocalJava extends JavaRun {constructor(source,onMessage,onClosed){super(source,m=>onMessage(parseMessage(m)),onClosed);}}
+  api=hostedApi({store,Run:LocalJava,appOrigin:origin,password:'test-only-mission-two-session-password-32-characters'});
+  let cookie='';const post=(path,data)=>fetch(origin+'/api/family'+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Cookie:cookie,'X-RoboLab-Profile':session.profileId},body:JSON.stringify(data)});
+  try{
+    const entered=await post('/login',{code:seed.code});cookie=entered.headers.get('set-cookie').split(';')[0];
+    for(const [target,source,wanted] of [['sensor-left',sensorJava,'missed'],['sensor-right',sensorJava,'missed'],['sensor-left',sensorReference.java,'reached'],['sensor-right',sensorReference.java,'reached'],['sensor-transfer',sensorReference.java,'missed'],['sensor-transfer',sensorTransfer.java,'reached']]){
+      const response=await post('/verify',{id:randomUUID(),target,source,language:'java',state:{angle:60,power:0},outcome:'reached',score:999});assert.equal(response.status,200);const result=await response.json();assert.equal(result.outcome,wanted);assert.equal(result.seconds,1);
+    }
+    const p=(await current(store,session)).profile;assert.equal(p.completed.length,6);assert.equal(p.history[0].lesson,'L02');assert.equal(p.history[0].verified,true);
+    assert.equal((await post('/verify',{id:randomUUID(),target:'__proto__',source:sensorReference.java,language:'java'})).status,400);
+  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });

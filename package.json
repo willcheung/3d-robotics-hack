@@ -10,7 +10,7 @@
     "dev": "node scripts/serve.mjs --dev",
     "build": "tsc --noEmit && vite build && node scripts/build-runtime.mjs",
     "preview": "node scripts/serve.mjs",
-    "test": "node --experimental-strip-types --test tests/model.test.ts",
+    "test": "node --experimental-strip-types --test tests/model.test.ts tests/lessons.test.ts",
     "test:browser": "playwright test",
     "check": "npm run test && npm run test:family && npm run test:family-ui && npm run test:java && npm run build && npm run test:browser",
     "build:vercel": "node scripts/vercel-build.mjs",
