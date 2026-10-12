@@ -174,4 +174,6 @@ Record status, branch, PR, tested commit, met/unmet acceptance criteria, check c
 
 ## Parent recovery regressions
 
+Verification UI must visibly confirm the server-confirmed address, persist after closing/reopening and reload, and clear for signed-out/student profiles. Pending or rejected links must not borrow an existing address's success state. Check live-region semantics, automatic visibility after confirmation, narrow-screen wrapping and synthetic-only screenshots.
+
 Run tests/recovery.test.mjs and the local recovery-ui.spec.ts in ordinary CI. Include current-code reauthentication, parent/student/other-family boundaries, verification replay/expiry, neutral missing/unverified/delivery-failure receipts, private token/index/limit storage, bounded sends, concurrent reset winner, orphan invite rejection, same-browser interrupted-response retry, old parent session invalidation, unchanged student drafts/history/completion, same-tab hash links and new-tab confirmation, and readable narrow screens. Real private Blob and actual email delivery remain separate release checks; a local inbox fixture is never provider proof. Exact two-origin frame/postMessage/CSP acceptance must retain rejection of foreign parents.
