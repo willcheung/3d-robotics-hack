@@ -2,20 +2,25 @@ import {lessonTargets, targets, type LessonId} from './model.ts';
 import {pythonStarter, javaStarter} from './starters.ts';
 export type Language = 'python' | 'java';
 export const sensorPython = `# Job: recover the light so rescuers can find the crew.
+
 # Import controls and the direction sensor; no hardware moves yet.
 from robot import motor, servo, wait, angle
 
 # Our destination is a direction, in degrees (-150 to 150).
 # A variable alone has no API range check. Compare it with the reading.
 goal = 60
+
 # Servo target: 0..180 degrees, inclusive; 120 points 30 degrees up.
 tilt = 120
+
 # await pauses THIS program until a call returns.
 # Reading angle returns the current direction (-150..150 degrees).
 # It measures the last completed tick; it does not move the light.
 reading = await angle()
+
 # print shows the measurement; it needs no await and causes no motion.
 print("Read:", reading, "degrees; goal:", goal)
+
 # The servo setting is accepted now; arrival needs wait below.
 await servo(tilt)
 
@@ -25,37 +30,49 @@ await servo(tilt)
 if reading > goal:
     # Power -1..1 inclusive; +0.5 turns right at 30 degrees/second.
     await motor(0.5)
+
     # This message tells us which branch actually ran.
     print("Decision: turn right")
 else:
     # else runs when the comparison is false. -0.5 turns left.
     await motor(-0.5)
+
     # Indentation puts this message inside the left-turn branch.
     print("Decision: turn left")
+
 # Outside both branches: advance 50 whole ticks = 1 simulated second.
 # wait accepts 1..600 whole ticks; both motor AND servo move during it.
 # Each authored start is exactly 30 degrees from its goal.
 await wait(50)
+
 # Power 0 holds the turn still. Without it the rescue cannot complete.
 await motor(0)
+
 # Read AGAIN: the old reading variable does not update by itself.
 # Round the display to a whole degree; the sensor/model keeps its precision.
 print("Now:", round(await angle()), "degrees")`;
 export const sensorJava = `// Job: recover the light so rescuers can find the crew.
+
 // Main names this program; keep the class and main method below.
 public class Main {
+
     // Java starts in main. throws Exception lets errors reach the console.
     public static void main(String[] args) throws Exception {
+
         // double holds decimal numbers; = assigns a value, ; ends a statement.
         // Our destination is a direction, in degrees (-150..150).
         double goal = 60;
+
         // Tilt: 0..180 degrees inclusive; 120 points 30 degrees up.
         double tilt = 120;
+
         // angle reads the last completed tick's direction (-150..150).
         // Java waits for the reply; no await keyword or motion is needed.
         double reading = Robot.angle();
+
         // + joins text and numbers. println displays the measured reading.
         System.out.println("Read: " + reading + " degrees; goal: " + goal);
+
         // Accept a servo setting now. Only waitTicks advances its movement.
         Robot.servo(tilt);
 
@@ -65,19 +82,24 @@ public class Main {
         if (reading > goal) {
             // Power -1..1 inclusive; +0.5 turns right at 30 degrees/second.
             Robot.motor(0.5);
+
             // Show which branch actually ran.
             System.out.println("Decision: turn right");
         } else { // Otherwise run the left-turn branch.
             // Negative power turns left; its size controls speed.
             Robot.motor(-0.5);
+
             // Show the other branch's decision.
             System.out.println("Decision: turn left");
         } // Both branches rejoin here.
+
         // 50 whole ticks = 1 simulated second. Allowed: 1..600 per call.
         // BOTH motor and servo move. Each start is 30 degrees from its goal.
         Robot.waitTicks(50);
+
         // Power 0 holds the light still; a powered motor cannot complete.
         Robot.motor(0);
+
         // Read again: the old reading variable never updates by itself.
         // Math.round displays a whole degree; it does not change the model.
         System.out.println("Now: " + Math.round(Robot.angle()) + " degrees");

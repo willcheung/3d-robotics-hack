@@ -39,3 +39,9 @@ Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof rema
 - Passed locally: 10 account browser tests, including a real isolated Java prerequisite/completion journey and cross-device/sibling separation; 5 real Python/Java Mission 2 walkthroughs including all hints, mistakes, transfer, Stop/Reset and draft preservation; TypeScript/build. Desktop, narrow and synthetic family screenshots inspected. Final-head CI is required before handoff and is linked in PR #2.
 - Final laptop visual pass removed a redundant pickup-point legend that overlapped the 3D crew status at a 1280-pixel viewport. The useful 3D and accessible crew-status labels remain.
 - Boundaries: in-memory local account fixtures and real local Java are not cloud-provider proof. No merge/deploy, production-data changes, automation changes or later mission work. Learner/device/pacing and hosted release checks remain pending.
+
+### S03 owner feedback — lesson-code spacing
+
+- Added blank lines between each explanation-and-code group in the Python and Java starters for Missions 1 and 2. Worked/reference examples inherit the same spacing. Nonblank source lines are identical; saved drafts and student records are not reformatted or replaced.
+- Made this readability convention part of FOUNDATION.md for future lessons. Existing drafts can opt into the revised starter with Restore example, which replaces that draft.
+- Passed locally: 8 model/schema checks, TypeScript/build and both complete Mission 2 language walkthroughs (starter miss, both correction directions, transfer and reset). Refreshed Python/Java screenshots inspected; existing final-head CI remains the acceptance gate and is recorded in PR #2.
