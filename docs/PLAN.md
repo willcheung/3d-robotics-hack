@@ -39,7 +39,7 @@ Show the selected “Python · Mission 1” or “Java · Mission 1,” keep sep
 5. Complete a challenge with gradually reduced guidance.
 6. Connect the mechanism to a real device, then explain or demonstrate the idea in a small variation. Ask what the code accomplished, not only which number worked.
 
-Target each lesson at 10–15 minutes, with an optional harder challenge. Introduce one main new idea per lesson and revisit earlier concepts. These are design targets to validate with learners, not established learning outcomes.
+Target the core explanation and first small win at 10–15 minutes within an approximately one-hour weekly session, leaving time for debugging, variations, transfer and reflection. Introduce one main new idea per lesson and revisit earlier concepts. These are design targets to validate with learners, not established learning outcomes.
 
 Hints progress from a visual clue to a concept reminder, a small code change, and finally a worked example. Hints and AI help do not erase progress. After repeated difficulty, offer a shorter practice mission and an easier starting state. Advanced students can skip explanations after a short mastery check.
 
@@ -231,3 +231,7 @@ FAMILY-01 removes local-file provisioning from the parent journey: create a fami
 ## Parent recovery and returning students
 
 RECOVERY-01 adds optional verified parent recovery email; students continue with their individual access codes and can ask their parent for a replacement without losing drafts or progress. Verification requires the current parent session/code plus email proof. Recovery preserves the same family and rotates only parent credentials. Every future account change must retain expired/replay/race, partial-write recovery, non-enumerating responses, email limits, role isolation and saved-progress tests. Preserve the original host during custom-domain migration; local browser drafts and cookies do not automatically cross hosts.
+
+## Current next build: Mission 2
+
+The user authorized S03 / L02 in both languages. [MISSION-02.md](MISSION-02.md) is its concrete design and acceptance contract. Reuse the existing editor, model, accounts and teaching controls. Bring forward only the mission-aware draft/navigation/checked-progress work needed to deliver a complete second lesson; keep the remaining S03H journal/understanding work separately scoped. Every later mission must pair a real job with observable consequences, other hardware applications, a commented starter, graduated hints, prediction/transfer and penalty-free challenges. No release or learner-pilot claim follows from implementation alone.

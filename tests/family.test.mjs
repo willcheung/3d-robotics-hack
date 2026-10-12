@@ -55,6 +55,7 @@ test('HTTP boundary: sessions, CSRF, stale profile, forged results and other-fam
   const data=await (await fetch(origin+'/api/family',{headers:{Cookie:cookie}})).json();const profile={'X-RoboLab-Profile':data.profile.id};
   assert.equal((await post('/api/family/draft',{language:'python',source:'private',revision:0},cookie,{'X-RoboLab-Profile':randomUUID()})).status,409);
   assert.equal((await post('/api/family/attempt',attempt({verified:true}),cookie,profile)).status,200);
+  assert.equal((await post('/api/family/verify',attempt({target:'sensor-left'}),cookie,profile)).status,403);
   const after=await (await fetch(origin+'/api/family',{headers:{Cookie:cookie}})).json();assert.deepEqual(after.completed,[]);
   assert.equal((await post('/api/java/reply',{session:'forged',id:1,value:1},cookie,profile)).status,403);
   assert.equal((await post('/api/family/logout',{},cookie)).status,200);
@@ -161,4 +162,27 @@ test('different students with the same attempt ID consume and release separate s
  await releaseServiceRun(store,a,id);assert.equal((await store.read(SERVICE_LIMIT_PATH)).value.runs.length,1);
  await reserveServiceRun(store,b,id);assert.equal((await store.read(SERVICE_LIMIT_PATH)).value.count,2,'retry keeps the other student’s reservation');
  await reserveServiceRun(store,outsider,id);assert.equal((await store.read(SERVICE_LIMIT_PATH)).value.runs.length,2);
+});
+
+test('lesson drafts isolate languages/lessons, retain legacy keys and enforce per-lesson conflicts',async()=>{
+ const {store,a,b}=await fixtures();
+ await saveDraft(store,a,{language:'python',source:'legacy mission one',revision:0});
+ await saveDraft(store,a,{language:'python',lesson:'L02',source:'sensor python',revision:0});
+ await saveDraft(store,a,{language:'java',lesson:'L02',source:'sensor java',revision:0});
+ const drafts=(await current(store,a)).profile.drafts;
+ assert.equal(drafts.python.source,'legacy mission one');assert.equal(drafts['L02.python'].source,'sensor python');assert.equal(drafts['L02.java'].source,'sensor java');
+ assert.deepEqual((await current(store,b)).profile.drafts,{});
+ await assert.rejects(saveDraft(store,a,{language:'python',lesson:'L02',source:'stale',revision:0}),e=>e.status===409);
+ for(const lesson of ['L03',['L02'],{}])await assert.rejects(saveDraft(store,a,{language:'python',lesson,source:'future',revision:0}),e=>e.status===400);
+});
+test('Mission 2 checked unlocks require Mission 1; practice, errors and another student cannot earn badges',async()=>{
+ const {store,a,b}=await fixtures(),sensor=attempt({target:'sensor-left'});
+ await recordAttempt(store,a,{...sensor,verified:true,lesson:'L01',lessonVersion:999});
+ await assert.rejects(recordAttempt(store,a,sensor,true),e=>e.status===403);assert.deepEqual((await current(store,a)).profile.completed,[]);
+ for(const target of ['beacon','farther','reverse'])await recordAttempt(store,a,attempt({target}),true);
+ await recordAttempt(store,a,sensor,true);let p=(await current(store,a)).profile;assert.equal(p.completed.length,4);assert.equal(p.history[0].lesson,'L02');assert.equal(p.history[0].lessonVersion,1);
+ for(const outcome of ['error','stopped','missed','unavailable'])await recordAttempt(store,a,attempt({target:'sensor-right',outcome}),true);
+ assert.equal((await current(store,a)).profile.completed.includes('sensor-right'),false);
+ await assert.rejects(recordAttempt(store,b,attempt({target:'sensor-right'}),true),e=>e.status===403);
+ assert.deepEqual((await current(store,b)).profile.completed,[]);
 });

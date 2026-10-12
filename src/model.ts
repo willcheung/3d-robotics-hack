@@ -8,8 +8,22 @@ export const targets: Record<string, Target> = {
   beacon: { angle: 60, scanner: 120 },
   farther: { angle: 90, scanner: 120 },
   reverse: { angle: -60, scanner: 60 },
+  'sensor-left': { angle: 60, scanner: 120 },
+  'sensor-right': { angle: 60, scanner: 120 },
+  'sensor-transfer': { angle: -60, scanner: 60 },
 };
-export function initialState(): State { return { angle: 0, power: 0, scanner: 90, servoTarget: 90, ticks: 0 }; }
+export const lessonTargets = { L01: ['beacon', 'farther', 'reverse'], L02: ['sensor-left', 'sensor-right', 'sensor-transfer'] } as const;
+export type LessonId = keyof typeof lessonTargets;
+export function targetLesson(target: string): LessonId {
+  if (typeof target !== 'string' || !Object.hasOwn(targets, target)) throw new Error('Unknown rescue target.');
+  return target.startsWith('sensor-') ? 'L02' : 'L01';
+}
+export function draftKey(lesson: LessonId, language: string): string { return lesson === 'L01' ? language : `${lesson}.${language}`; }
+export function initialState(target = 'beacon'): State {
+  targetLesson(target);
+  const starts: Record<string, number> = { 'sensor-left': 30, 'sensor-right': 90, 'sensor-transfer': -30 };
+  return { angle: starts[target] ?? 0, power: 0, scanner: 90, servoTarget: 90, ticks: 0 };
+}
 const clamp = (x: number, min: number, max: number) => Math.max(min, Math.min(max, x));
 export function validateCommand(input: unknown): Command {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Expected a robot command.');

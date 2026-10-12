@@ -2,6 +2,14 @@
 
 The local workshop needs no cloud services. To host both languages and private family progress, use two separate HTTPS origins: an application with a Node 24 Vercel Function, and a public credential-free Python static runtime. Java and checked progress use isolated Vercel Sandboxes. Family data uses a private Vercel Blob store. Optional parent recovery uses a domain-verified Resend sender. These services may incur charges; obtain operator approval before provisioning or deploying.
 
+## Local preview builds
+
+Finish the app/runtime build before starting a preview, and use the same `APP_ORIGIN` and `VITE_RUNTIME_ORIGIN` for both commands. The ports belong to a pair; building for a different pair does not reconfigure a running server. The default pair is 4173/4174.
+
+`npm run preview` takes a temporary snapshot of the app and Python files when it starts. Later builds can replace `dist` and `runtime-dist` without changing that running preview. Restart the preview intentionally to pick up a new build. Normal shutdown and failed startup remove the snapshot. `npm run dev` remains a live development server.
+
+When fixing a reported run failure, test the owner's actual preview URL, verify their draft survives reload, and run the real language there. A passing test on a different port does not establish that the reported preview works. `tests/preview.test.mjs` reproduces replacement of both build directories, checks that an existing preview keeps its original assets, and checks startup/shutdown cleanup. It uses static HTTP fixtures; the browser tests establish real language execution.
+
 ## Server configuration
 
 Create your own projects and dedicated staging/production stores. The app Function needs `APP_ORIGIN`, `SESSION_PASSWORD` (at least 32 random characters), `BLOB_READ_WRITE_TOKEN` and a tested `SANDBOX_SNAPSHOT_ID`. The hosted Sandbox SDK uses project-scoped Vercel OIDC. Optional `APP_ALTERNATE_ORIGIN` permits one additional exact app origin; `RECOVERY_ORIGIN` must be one of those app origins.

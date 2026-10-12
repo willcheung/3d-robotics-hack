@@ -11,9 +11,9 @@ An open-source robotics workshop for teens. Edit real Python or Java and control
 
 ## What works today
 
-Mission 1 has three rescue variations, real Python and Java, syntax colors, Run/Stop/Reset, camera controls and explained values/ranges. The hosted version adds parent-created families, individual student codes, saved drafts, experiment history, server-checked rescues, shared family progress and optional verified parent email recovery.
+This source includes two missions in real Python and Java: Mission 1 aims a rescue searchlight; Mission 2 uses a direction reading and an if/else decision to recover it from either side. Both use syntax colors, Run/Stop/Reset, camera controls, explained values/ranges and separate drafts. Mission 2 adds predictions, three hints, recovery badges and a changed-need transfer. The hosted version adds parent-created families, individual student codes, saved drafts, experiment history, server-checked rescues, shared family progress and optional verified parent email recovery.
 
-Family play means separate attempts with shared results. Later lessons are marked coming soon; completing Mission 1 does not unlock unfinished content. The plan contains 16 core outlines and four optional extensions, including arms, rovers, light/color sensors and simplified flight. Simultaneous co-control, official competition rankings and an AI coach are future work.
+Family play means separate attempts with shared results. Checked Mission 2 progress unlocks after all three Mission 1 rescues. Practice is open; later lessons stay marked coming soon. The plan contains 16 core outlines and four optional extensions, including arms, rovers, light/color sensors and simplified flight. Simultaneous co-control, official competition rankings and an AI coach are future work.
 
 ## Run locally
 

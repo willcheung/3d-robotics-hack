@@ -17,7 +17,8 @@ export class Runner {
   private outputBytes = 0;
   private timer: ReturnType<typeof setTimeout>;
   private listener = (event: MessageEvent) => { void this.receive(event); };
-  constructor(private source: string, private hooks: Hooks, private language: 'python' | 'java' = 'python') {
+  constructor(private source: string, private hooks: Hooks, private language: 'python' | 'java' = 'python', target = 'beacon') {
+    this.state = initialState(target);
     this.origin = permittedOrigin(import.meta.env.VITE_RUNTIME_ORIGIN || 'http://127.0.0.1:4174', location.origin);
     if (source.length > LIMITS.source) throw new Error('Program is too long (16,000 character limit).');
     this.timer = setTimeout(() => this.fail(`${language === 'java' ? 'Java' : 'Python'} did not load in 45 seconds. Check the runtime and try again.`), LIMITS.loadMs);

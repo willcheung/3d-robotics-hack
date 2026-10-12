@@ -65,7 +65,8 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## S03 — Sensor feedback and one complete lesson
 
-- Status: draft
+- Status: review candidate; [PR #2](https://github.com/willcheung/3d-robotics-hack/pull/2), with local validation recorded in PROGRESS.md and exact-head CI required. S02 is landed; no usage scheduling gate applies to this manually authorized request.
+- Ready contract: [MISSION-02.md](MISSION-02.md) freezes three starts, units, objective tolerances, good/wrong/transfer fixtures, teaching and acceptance. Minimal mission-aware integration with the existing family framework is included to preserve drafts and checked progress.
 - Depends on: S02 landed
 - Working outcome: finish a short sensor-choice lesson with prediction, one conditional correction, hints and a transfer check in either language.
 - Scope: minimal versioned lesson schema with job/beneficiary, useful visible outcome, real-device connection, explained ranges, inline syntax/line explanations, prerequisite/new-concept IDs, hints, transfer and reference/wrong fixtures; bounded telemetry, reference/wrong programs and local draft preservation. Use one sensor read and `if` before introducing a feedback loop. Preserve clear current/next/last-available navigation; full persistent progress/history belongs to S03H.
