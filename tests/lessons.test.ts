@@ -29,3 +29,15 @@ test('authored starts, direction readings and independent one-second corrections
 test('lesson scenario ownership matches authoritative family prerequisites',()=>{
  const wrong=structuredClone(lessons);wrong[2].scenarios=['sensor-left'];assert.throws(()=>validateLessons(wrong),/another lesson/);
 });
+
+// Partial storage writes must never pair a draft with another experiment's target.
+import {readExperiment} from '../src/experiment.ts';
+test('experiment context accepts only matching source and lesson; legacy and damaged saves recover safely',()=>{
+ const saved={source:'draft',target:'patrol-cove',prediction:'go left',reflection:'lower tilt',previous:{source:'x'.repeat(17000),target:'patrol-ridge'}};
+ assert.equal(readExperiment(JSON.stringify(saved),'draft','L03').target,'patrol-cove');
+ assert.equal(readExperiment(JSON.stringify(saved),'draft','L03').previous?.source.length,17000,'an oversized draft still needs recovery');
+ assert.equal(readExperiment(JSON.stringify(saved),'other draft','L03').target,'patrol-ridge');
+ assert.equal(readExperiment(JSON.stringify(saved),'draft','L01').target,'beacon');
+ assert.equal(readExperiment('{broken','draft','L03','patrol-cove').target,'patrol-cove');
+ assert.equal(readExperiment(null,'legacy','L02').target,'sensor-left');
+});

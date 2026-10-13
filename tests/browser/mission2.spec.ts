@@ -6,8 +6,7 @@ for(const language of ['python','java'] as const){
   await page.goto('/');await page.locator('#lesson').selectOption('L02');await page.locator('#language').selectOption(language);
   await expect(page.locator('#mission-job')).toContainText('30°');await expect(page.locator('#pointer-value')).toHaveText('30.0°');
   await expect(page.locator('.real-world')).toContainText('robot arm');await expect(page.locator('#value-guide')).not.toContainText('turn_ticks');await expect(page.locator('#value-guide')).toContainText('50 ticks = 1 second');await expect(page.locator('#motor-label')).toContainText('SENSOR · angle()');
-  await page.locator('#prediction').selectOption('left');await expect(page.locator('#prediction-feedback')).toContainText('opens the gap');
-  await page.locator('#prediction').selectOption('right');await expect(page.locator('#prediction-feedback')).toContainText('closes the gap');
+  await page.locator('#prediction').fill('My current > comparison chooses left from 30°, so I expect 0°.');await expect(page.locator('#prediction-feedback')).toContainText('not an automatically graded answer');
   for(const label of ['Hint 1','Hint 2','Hint 3']){await page.getByText(label,{exact:true}).click();await expect(page.getByText(label,{exact:true}).locator('..').locator('p')).toBeVisible();}
   await expect(page.locator('#practice-progress')).toContainText('0 of 3');
   await expect(page.locator('#show-solution')).toBeDisabled();await run(page);

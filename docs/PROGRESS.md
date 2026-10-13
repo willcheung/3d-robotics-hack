@@ -17,6 +17,15 @@ Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof rema
 - Build/evidence: clean exports of runnable checkpoint `d0267d1` installed and produced verified app/runtime Vercel packages without deployment. Final presentation fixes improve checkpoint labels/contrast; inspected synthetic desktop/narrow/downhill images and exact-head checks accompany the review. L01/L02 physics and data keys remain compatible. No live student data was touched.
 - Remaining gates: protected staging with real Sandbox/Blob and both-language checked progress before a separately authorized release; owner/teen/device observation and one-hour pacing. Local memory fixtures are not provider proof or evidence of understanding. Next action: owner QA; preserve review until explicitly accepted. Automation remains unchanged.
 
+## Teaching progression refinement — Missions 1–3 and future plans
+
+- Status: review candidate on the same S08 branch and PR #4; base `f5e0e5a90725fce2e7b4812d024e22b222b99b9e`. Owner authorized holistic teaching improvements and execution. Exclusive remote ownership was claimed before writes; the private receipt records the exact owner lease.
+- [TEACHING-PROGRESSION.md](TEACHING-PROGRESSION.md) maps retrieval, one new demand, prediction/observation and transfer across all 16 core and four optional lessons. Future slice readiness and pilot gates remain in place; no later mission was implemented.
+- All three playable missions now share current-draft prediction/reflection notes, reachable free hints and explanations, first-edit focus and Run above the long commented code. Notes are ungraded and device-local. Profile drafts now pair source with a validated challenge under the existing revision conflict protocol; older saves remain compatible. Restore example preserves one local return copy, including oversized code. Blocked storage retains the newest in-memory profile draft.
+- Patrol feedback separates missing checkpoints from an incorrect final stopped pose. Trusted per-checkpoint best-hold diagnostics explain short holds without changing success semantics, model versions or student command authority. Mission 2 uses comparison-value wording; the curriculum describes its session duration as an unvalidated pacing goal.
+- Local acceptance commands: model/schema/preview, family/recovery/onboarding, family UI, isolated Java, TypeScript/Vite build, all browser suites and publication checks. The final PR receipt identifies exact tested head, results and CI. Local account fixtures are not provider evidence; classroom learning and device/pacing pilots remain unproved.
+- Next action: owner walkthrough across Missions 1–3, followed by separately authorized staging acceptance and release. Preserve the review candidate; no merge, deployment, production data or automation changes.
+
 ## FAMILY-02 — Parent email and student onboarding
 
 - Status: done; [PR #3](https://github.com/willcheung/3d-robotics-hack/pull/3) merged and released on October 12, 2026 (October 13 UTC) after explicit owner authorization. Branch `codex/family-onboarding-plan`, base `09aff269f5c419a1e1c24086c0bc5c3cc588ddb4`.

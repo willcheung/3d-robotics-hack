@@ -199,3 +199,15 @@ test('Mission 3 keeps prior work, requires checked Mission 2 and ignores claimed
  for(const outcome of ['missed','error','stopped','unavailable'])await recordAttempt(store,a,attempt({target:'patrol-extra',outcome}),true);
  assert.equal((await current(store,a)).profile.completed.includes('patrol-extra'),false);await assert.rejects(recordAttempt(store,b,attempt({target:'patrol-extra'}),true),e=>e.status===403);
 });
+
+test('draft saves pair valid challenge context with code, keep old clients compatible and isolate profiles',async()=>{
+ const {store,a,b}=await fixtures();
+ const saved=await saveDraft(store,a,{lesson:'L03',language:'java',source:'cove code',target:'patrol-cove',revision:0});
+ assert.equal(saved.target,'patrol-cove');
+ await assert.rejects(saveDraft(store,a,{lesson:'L03',language:'java',source:'bad pair',target:'beacon',revision:1}),e=>e.status===400);
+ await assert.rejects(saveDraft(store,a,{lesson:'L03',language:'java',source:'stale',target:'patrol-ridge',revision:0}),e=>e.status===409);
+ assert.deepEqual((await current(store,a)).profile.drafts['L03.java'],saved);
+ assert.equal((await current(store,b)).profile.drafts['L03.java'],undefined);
+ const legacy=await saveDraft(store,a,{lesson:'L03',language:'java',source:'older client',revision:1});
+ assert.equal(legacy.target,undefined,'do not silently attach old scenario to changed source from legacy client');
+});

@@ -1,7 +1,7 @@
 /** Signal Station v1 + additive patrol v1. Fixed 20 ms ticks; no renderer or wall clock. */
 export const DT = 0.02;
 export const MAX_TICKS = 1500;
-export type State = { angle: number; power: number; scanner: number; servoTarget: number; ticks: number; patrol?: { id: string; visited: number; dwell: number } };
+export type State = { angle: number; power: number; scanner: number; servoTarget: number; ticks: number; patrol?: { id: string; visited: number; dwell: number; bestDwell: number[] } };
 export type Command = { op: 'motor' | 'servo' | 'wait' | 'angle' | 'scanner' | 'clock'; value?: number };
 export type Target = { angle: number; scanner: number; patrol?: string };
 export const PATROL_DWELL = 25;
@@ -38,7 +38,7 @@ export function initialState(target = 'beacon'): State {
   targetLesson(target);
   const starts: Record<string, number> = { 'sensor-left': 30, 'sensor-right': 90, 'sensor-transfer': -30 };
   const patrol = Object.hasOwn(patrols, target) ? patrols[target] : undefined;
-  return { angle: patrol?.start ?? starts[target] ?? 0, power: 0, scanner: 90, servoTarget: 90, ticks: 0, ...(patrol ? {patrol:{id:target,visited:0,dwell:0}} : {}) };
+  return { angle: patrol?.start ?? starts[target] ?? 0, power: 0, scanner: 90, servoTarget: 90, ticks: 0, ...(patrol ? {patrol:{id:target,visited:0,dwell:0,bestDwell:patrol.angles.map(()=>0)}} : {}) };
 }
 const clamp = (x: number, min: number, max: number) => Math.max(min, Math.min(max, x));
 export function validateCommand(input: unknown): Command {
@@ -65,7 +65,9 @@ export function tick(s: State): State {
     const route = patrols[s.patrol.id], angle = route.angles[s.patrol.visited];
     const holding = angle !== undefined && atPose(next, {angle, scanner:route.tilt}, 1e-9);
     const dwell = holding ? s.patrol.dwell + 1 : 0;
-    next.patrol = {id:s.patrol.id, visited:s.patrol.visited + (dwell >= PATROL_DWELL ? 1 : 0), dwell:dwell >= PATROL_DWELL ? 0 : dwell};
+    const bestDwell=[...s.patrol.bestDwell];
+    if(angle!==undefined)bestDwell[s.patrol.visited]=Math.max(bestDwell[s.patrol.visited],dwell);
+    next.patrol = {bestDwell,id:s.patrol.id, visited:s.patrol.visited + (dwell >= PATROL_DWELL ? 1 : 0), dwell:dwell >= PATROL_DWELL ? 0 : dwell};
   }
   return next;
 }

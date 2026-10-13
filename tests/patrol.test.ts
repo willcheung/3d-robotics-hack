@@ -19,7 +19,7 @@ test('independent route traces log all ordered checkpoints with exact elapsed ti
 });
 test('24 ticks is short, interrupted dwell resets, and only next checkpoint can log',()=>{
   let s=patrol('patrol-ridge',1,100,.5,90,24);assert.equal(s.patrol?.visited,0);assert.equal(s.patrol?.dwell,24);
-  const snapshot=structuredClone(s);s=tick(s);assert.equal(s.patrol?.visited,1);assert.deepEqual(snapshot.patrol,{id:'patrol-ridge',visited:0,dwell:24},'old snapshots are immutable');
+  const snapshot=s;s=tick(s);assert.equal(s.patrol?.visited,1);assert.deepEqual(snapshot.patrol,{id:'patrol-ridge',visited:0,dwell:24,bestDwell:[24,0,0]},'old snapshots are immutable');
   s=wait(s,100);assert.equal(s.patrol?.visited,1,'duplicate dwell cannot advance next point');
   let interrupted=patrol('patrol-ridge',1,100,.5,90,24);interrupted=command(interrupted,{op:'motor',value:.5}).state;interrupted=tick(interrupted);assert.equal(interrupted.patrol?.dwell,0);
   interrupted=command(interrupted,{op:'motor',value:0}).state;interrupted=wait(interrupted,24);assert.equal(interrupted.patrol?.visited,0);assert.equal(tick(interrupted).patrol?.visited,1);
@@ -40,4 +40,11 @@ test('zero/too few/excess repeats, spacing, wrong tilt, missing dwell and forged
   assert.throws(()=>command(initialState('patrol-ridge'),{op:'patrol',visited:3} as never),/Unknown/);
   const all=patrol();assert.equal(reached({...all,power:.01},targets['patrol-ridge']),false);assert.equal(reached({...all,angle:150},targets['patrol-ridge']),false);
   assert.throws(()=>patrol('patrol-ridge',13),/30 simulated seconds/);
+});
+
+test('diagnostics retain short holds without awarding checkpoints or leaking across runs',()=>{
+ const s=patrol('patrol-ridge',3,100,.5,90,10);
+ assert.equal(s.patrol?.visited,0);assert.equal(s.patrol?.dwell,0);
+ assert.deepEqual(s.patrol?.bestDwell,[10,0,0]);assert.equal(reached(s,targets['patrol-ridge']),false);
+ assert.deepEqual(initialState('patrol-ridge').patrol?.bestDwell,[0,0,0]);
 });

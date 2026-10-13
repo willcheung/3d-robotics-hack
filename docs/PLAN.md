@@ -305,3 +305,7 @@ Vercel Queues is a deployment-partitioned durable outbox transport; messages con
 Build L03 / S08 under [MISSION-03.md](MISSION-03.md), reusing landed map/draft/journal/family behavior instead of waiting for the broader S03H expansion. Repeat built-in function calls to inspect every checkpoint in a route; a final pose alone is insufficient. The [curriculum review](CURRICULUM.md#october-13-review-richer-hardware-without-a-syntax-pile-up) makes the arm's third gripper actuator explicit, adds calls to student-defined helpers inside loops in L05, and scopes a later roller intake/flywheel collection proposal behind feedback and model-readiness gates. Increase meaningful job requirements while keeping retries and help free. No new actuator ships implicitly with L03.
 
 Missions 1 and 2 and FAMILY-02 onboarding are released. This goal ends with a tested Lesson 3 draft PR and owner walkthrough; deployment and later lessons require separate authorization.
+
+### Teaching refinement across the progression
+
+The current manual scope includes shared L01–L03 teaching/recovery improvements and the authored course-wide progression in [TEACHING-PROGRESSION.md](TEACHING-PROGRESSION.md). Future mission contracts must retrieve earlier concepts, freeze one main new demand, and specify actual-code prediction, diagnostic evidence and changed-need transfer before implementation readiness. Classroom timing and independence remain unvalidated.

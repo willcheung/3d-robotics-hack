@@ -69,9 +69,10 @@ export function sourceInput(data){if(!data||!['java','python'].includes(data.lan
 export async function saveDraft(store,session,data){
  sourceInput(data);if(!Number.isSafeInteger(data.revision)||data.revision<0)throw new HttpError(400,'Invalid draft revision.');
  const lesson=data.lesson??'L01';if(typeof lesson!=='string'||!Object.hasOwn(lessonTargets,lesson))throw new HttpError(400,'Unknown lesson.');const key=draftKey(lesson,data.language);
+ if(data.target!==undefined && (typeof data.target!=='string'||!lessonTargets[lesson].includes(data.target)))throw new HttpError(400,'Challenge does not belong to this lesson.');
  return update(store,familyPath(session.familyId),f=>{const p=profileIn(f,session),old=p.drafts[key];
   if((old?.revision??0)!==data.revision)throw new HttpError(409,'A newer draft is saved in another tab. Your editor is safe. Refresh before replacing it.');
-  const draft={source:data.source,revision:data.revision+1};p.drafts[key]=draft;return {value:f,result:draft};});
+  const draft={source:data.source,revision:data.revision+1,...(data.target!==undefined?{target:data.target}:{})};p.drafts[key]=draft;return {value:f,result:draft};});
 }
 export const validAttempt=id=>typeof id==='string'&&/^[a-f0-9-]{36}$/.test(id);
 export async function reserveRun(store,session,id){

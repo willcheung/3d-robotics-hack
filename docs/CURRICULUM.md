@@ -22,6 +22,8 @@ Core learner order (see the lesson inventory below for individual sessions):
 
 The first six complete lessons are L01 values/searchlight (S01 refined by the lesson shell), L02 sensor choice (S03), L03 patrol loop (S08), L04 arm sequence (S04), L05 parameterized arm function (S09), and L06 changed-need transfer/debugging (S10). Mission 1's three target variations are practice within L01, not three lessons. Build order differs from teaching order: the lesson map must use concept prerequisites, not slice numbers. Java becomes available through S02, with the same objectives and separate drafts in every subsequent lesson; no student waits until a later week for Java.
 
+The course-wide [teaching progression](TEACHING-PROGRESSION.md) specifies retrieval, one new demand, prediction and transfer for all 16 core and four optional lessons. Use it when authoring each future mission; it does not make a draft slice ready.
+
 ## Common student-facing contract
 
 Each lesson begins with a 10–15 minute guided activity around one main new idea, a short runnable starter, a prediction, a useful before/after result, graduated hints and one changed-need transfer. Time and difficulty are pilot hypotheses. Reuse familiar controls and terms. Show the beneficiary, actuator and sensor together: **code → controller/driver → actuator → movement → sensor reading → next decision**. Students need to identify what moved and why before they optimize it.

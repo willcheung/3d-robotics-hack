@@ -295,3 +295,10 @@ Runnable setup; visible behavior; met/unmet criteria; tested commit and actual P
 - Scope: authenticated email binding, neutral lost-code request, explicit one-use recovery with safe retry, unchanged student login/progress, Resend sending, robolab.vibecodingdad.com alongside the existing app origin.
 - Acceptance: current GOAL.md contract, recovery/API/UI regressions, real Blob concurrent claims, provider delivery and protected/live origin evidence, exact-head CI and preserved rollback.
 - No new lessons, automated release policy, purchases or usage/reset work.
+
+## Teaching progression refinement — current review slice
+
+- Status: implementation/review candidate on the existing S08 branch; not landed.
+- Owner scope: improve the progressive experience across L01–L03 and strengthen future authored plans, without building later missions.
+- Acceptance: current-draft predictions and free hints in both languages; direct first edit and Run; truthful missing-checkpoint versus final-stop diagnosis, including retained short-hold evidence; code/challenge persistence and recoverable example restore; all 20 planned lessons mapped to retrieval, new demand and transfer.
+- Future readiness: apply TEACHING-PROGRESSION.md in each mission contract. Existing dependencies, ownership, model freeze and first-family pilot gates remain.

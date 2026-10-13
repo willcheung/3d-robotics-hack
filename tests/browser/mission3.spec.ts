@@ -13,7 +13,7 @@ for(const lang of ['python','java'] as const){
   await page.goto('/');await page.locator('#lesson').selectOption('L03');await page.locator('#language').selectOption(lang);
   await expect(page.locator('#mission-job')).toContainText('rangers');await expect(page.locator('.real-world')).toContainText('inspection camera');await expect(page.locator('#value-guide')).toContainText('25 consecutive ticks');
   await expect(page.locator('#code')).toHaveValue(/repeats = 1/);await expect(page.locator('#show-solution')).toBeDisabled();
-  await page.locator('#prediction').selectOption('all');await expect(page.locator('#prediction-feedback')).toContainText('not the route');await page.locator('#prediction').selectOption('one');await expect(page.locator('#prediction-feedback')).toContainText('starter repeats once');
+  await page.locator('#prediction').fill('One repeat stops at -30°; only the first checkpoint can log.');await expect(page.locator('#prediction-feedback')).toContainText('not an automatically graded answer');
   for(const name of ['Hint 1','Hint 2','Hint 3']){await page.getByText(name,{exact:true}).click();await expect(page.getByText(name,{exact:true}).locator('..').locator('p')).toBeVisible();}
   await run(page);await expect(page.locator('#feedback')).not.toHaveClass(/success/);await expect(page.locator('#patrol-progress')).toContainText('1 of 3');await expect(page.locator('#console')).toContainText('Repeat 1 stopped at -30');await expect(page.locator('#console')).not.toContainText('Repeat 2');
   await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toBeVisible();await expect(page.locator('#practice-progress')).toContainText('0 of 3');
@@ -30,7 +30,8 @@ for(const lang of ['python','java'] as const){
  test(`Mission 3 ${lang}: invalid input, too few/excess loops, Stop and reset preserve drafts`,async({page})=>{
   test.setTimeout(180000);
   await page.goto('/');await page.locator('#lesson').selectOption('L03');await page.locator('#language').selectOption(lang);
-  for(const n of [0,2,4]){await run(page,patrolReference[lang].replace('repeats = 3',`repeats = ${n}`));await expect(page.locator('#feedback')).not.toHaveClass(/success/);}
+  for(const n of [0,2,4]){await run(page,patrolReference[lang].replace('repeats = 3',`repeats = ${n}`));await expect(page.locator('#feedback')).not.toHaveClass(/success/);if(n===4){await expect(page.locator('#feedback-title')).toHaveText('All checkpoints logged. Check the final stop.');await expect(page.locator('#feedback')).toContainText('150.0°');}else await expect(page.locator('#feedback-title')).toHaveText('Some checkpoints still need light.');}
+  await run(page,patrolReference[lang].replace(lang==='python'?'await wait(25)':'Robot.waitTicks(25)',lang==='python'?'await wait(10)':'Robot.waitTicks(10)'));await expect(page.locator('#feedback')).toContainText('10/25 ticks');await expect(page.locator('#patrol-progress .logged')).toHaveCount(0);
   const broken=lang==='python'?'for checkpoint in range(3)\n    pass':'public class Main { broken syntax }';
   for(const source of [broken,patrolReference[lang].replace('power = 0.5','power = 2')]){await page.locator('#code').fill(source);await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('ERROR',{timeout:47000});await expect(page.locator('#code')).toHaveValue(source);await expect(page.locator('#practice-progress')).toContainText('0 of 3');}
   const forever=lang==='python'?'while True: pass':'public class Main {public static void main(String[] args){while(true){}}}';
