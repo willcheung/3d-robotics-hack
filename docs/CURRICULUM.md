@@ -171,7 +171,7 @@ This review refines S01’s await comments/help and its runtime acceptance fixtu
 
 ## Mission 2 implementation contract
 
-The next authorized lesson is L02 / S03, **Read, then choose**. [MISSION-02.md](MISSION-02.md) freezes the useful rescue job, real hardware connections, three sensor-choice/transfer cases, free hints and finite badges, both-language comments, a one-hour session hypothesis and mandatory tests. Future lessons must retain these same purpose, prediction, trace, transfer, draft, family and error-recovery requirements; engagement and independence still need observed teen feedback.
+L02 / S03, **Read, then choose**, is now released. L03 / S08 follows the reviewed contract below. [MISSION-02.md](MISSION-02.md) freezes the useful rescue job, real hardware connections, three sensor-choice/transfer cases, free hints and finite badges, both-language comments, a one-hour session hypothesis and mandatory tests. Future lessons must retain these same purpose, prediction, trace, transfer, draft, family and error-recovery requirements; engagement and independence still need observed teen feedback.
 
 
 ## October 13 review: richer hardware without a syntax pile-up

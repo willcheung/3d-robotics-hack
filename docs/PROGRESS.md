@@ -10,10 +10,12 @@ Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof rema
 
 ## S08 / L03 — Ranger patrol
 
-- Status: in_progress; owner-authorized curriculum review and complete Lesson 3 goal. Base `98289271e870a4a09d5d949e44a157079f334382`, branch `codex/mission-03-patrol`. Exclusive ownership claimed before source writes.
-- Contract: [MISSION-03.md](MISSION-03.md). Both languages, ordered checkpoint dwell, three patrols, prior-mission preservation and family draft/unlock regressions. Broader S03H work remains separate.
-- Curriculum decision: repeat familiar built-in calls now; explicit third gripper actuator in L04, editable functions called inside loops in L05, and later intake/flywheel proposal behind readiness gates. No new world or extra motor is implemented in this slice.
-- Next action: implement, exercise reference/wrong programs, inspect browser evidence and verify exact-head CI. No checks or learner pilot claimed yet; stop at draft review without merge/deployment.
+- Status: review candidate; owner-authorized complete Lesson 3 goal. Base `98289271e870a4a09d5d949e44a157079f334382`, branch `codex/mission-03-patrol`. Exclusive ownership claimed before source writes. The draft PR receipt records the final proposed/tested SHA and exact-head CI; no merge or deployment is included.
+- Contract: [MISSION-03.md](MISSION-03.md); [readiness report and owner checklist](MISSION-03-QA.md). Both languages, three ordered-checkpoint patrols, explicit consecutive stopped dwell, visible route state, prediction/hints/transfer, six drafts and checked family unlocks. Broader S03H work remains separate.
+- Curriculum decision: repeat familiar built-in calls now; explicit third gripper actuator in L04, editable functions called inside loops in L05, and later intake/flywheel proposal behind readiness gates. The course remains 16 core/four optional lessons. No new world or extra motor is implemented here.
+- Local acceptance: full suite passed 15 model/schema/preview checks, 40 account/recovery/onboarding checks, 12 family UI journeys, 16 isolated Java checks and 54 browser behaviors. Final focused checks add the lesson/prerequisite schema regression (16 model/schema/preview checks total) and exercise pending-check navigation in both L02/L03. Real Python and Java complete all three patrols; intentional misses, syntax/range errors, Stop/Reset and retry pass. Family fixtures prove all nine checked milestones, fresh-device restore and sibling isolation with real local Java.
+- Build/evidence: clean exports of runnable checkpoint `d0267d1` installed and produced verified app/runtime Vercel packages without deployment. Final presentation fixes improve checkpoint labels/contrast; inspected synthetic desktop/narrow/downhill images and exact-head checks accompany the review. L01/L02 physics and data keys remain compatible. No live student data was touched.
+- Remaining gates: protected staging with real Sandbox/Blob and both-language checked progress before a separately authorized release; owner/teen/device observation and one-hour pacing. Local memory fixtures are not provider proof or evidence of understanding. Next action: owner QA; preserve review until explicitly accepted. Automation remains unchanged.
 
 ## FAMILY-02 — Parent email and student onboarding
 

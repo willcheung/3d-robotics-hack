@@ -81,7 +81,7 @@
 .patrol-progress[hidden] {display:none;}
 .patrol-progress>strong {color:#d5f674; font-size:14px;}
 .patrol-progress ol {display:flex; gap:10px; list-style:none; margin:12px 0; padding:0;}
-.patrol-progress li {flex:1; min-width:0; padding:10px 6px; border:1px solid #547277; border-radius:8px; text-align:center;}
+.patrol-progress li {flex:1; min-width:0; padding:10px 6px; border:1px solid #547277; border-radius:8px; text-align:center; color:#edf4e8;}
 .patrol-progress li.current {border-color:#eec76b;}
 .patrol-progress li.logged {background:#2b5342; border-color:#c4e77c;}
 .patrol-progress li span,.patrol-progress li b,.patrol-progress li small {display:block;}

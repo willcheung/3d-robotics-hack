@@ -31,22 +31,23 @@ test('a student unlocks Missions 2 and 3 with real checked rescues; saved comple
   await device.locator('#curriculum-open').click();await expect(device.locator('[data-lesson="L02"]').locator('..')).toContainText('checked completion locked');await device.locator('[data-lesson="L02"]').click();await expect(device.locator('#code')).toHaveValue(sensorJava);await device.locator('#lesson').selectOption('L03');await expect(device.locator('#code')).toHaveValue(patrolJava);await device.locator('#verify-cloud').click();await expect(device.locator('#save-help')).toContainText('Check all three Mission 2 rescues');
  }finally{await other.close();}
 });
-test('a pending progress check keeps the visible mission, language and rescue consistent',async({page})=>{
+for(const id of ['L02','L03'])test(`a pending ${id} progress check keeps the visible mission, language and scenario consistent`,async({page})=>{
  await page.goto('/');await page.locator('#family-open').click();await page.locator('[data-mode=student]').click();await page.locator('#legacy-setup summary').click();await page.locator('#parent-name').fill('Navigation tester');await page.getByRole('button',{name:'Create family',exact:true}).click();await expect(page.locator('#setup-receipt input')).toBeVisible();await page.locator('#setup-saved').click();await page.getByRole('button',{name:'Close family progress'}).click();
- await page.locator('#lesson').selectOption('L02');
+ await page.locator('#lesson').selectOption(id);
+ const patrol=id==='L03';
  // Hold only the response to exercise navigation during an in-flight check.
  // This fixture makes no runtime or completion claim.
  let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve;});
  await page.route('**/api/family/verify',async route=>{await gate;await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({outcome:'missed'})});});
  try{
   await page.locator('#verify-cloud').click();await expect(page.locator('#stop-check')).toBeVisible();
-  await page.locator('#target').selectOption('sensor-transfer');await expect(page.locator('#target')).toHaveValue('sensor-left');
-  await expect(page.locator('#mission-job')).toContainText('starts at 30°');await expect(page.locator('#pointer-value')).toHaveText('30.0°');
+  await page.locator('#target').selectOption(patrol?'patrol-cove':'sensor-transfer');await expect(page.locator('#target')).toHaveValue(patrol?'patrol-ridge':'sensor-left');
+  await expect(page.locator('#mission-job')).toContainText(patrol?'rangers':'starts at 30°');await expect(page.locator('#pointer-value')).toHaveText(patrol?'-90.0°':'30.0°');
   await expect(page.locator('#feedback')).toContainText('Stop the check before changing rescues');
   await page.locator('#language').selectOption('java');await expect(page.locator('#language')).toHaveValue('python');
-  await page.locator('#lesson').selectOption('L01');await expect(page.locator('#lesson')).toHaveValue('L02');
+  await page.locator('#lesson').selectOption('L01');await expect(page.locator('#lesson')).toHaveValue(id);
  }finally{release();}
- await expect(page.locator('#stop-check')).toBeHidden();await page.locator('#target').selectOption('sensor-transfer');await expect(page.locator('#pointer-value')).toHaveText('-30.0°');
+ await expect(page.locator('#stop-check')).toBeHidden();await page.locator('#target').selectOption(patrol?'patrol-cove':'sensor-transfer');await expect(page.locator('#pointer-value')).toHaveText(patrol?'90.0°':'-30.0°');
 });
 test('mission/language drafts sync independently, past experiments restore safely, and a second device resumes',async({page,browser})=>{
  await page.goto('/');await page.locator('#family-open').click();await page.locator('[data-mode=student]').click();await page.locator('#legacy-setup summary').click();await page.locator('#parent-name').fill('Mission parent');await page.getByRole('button',{name:'Create family',exact:true}).click();await expect(page.locator('#setup-receipt input')).toBeVisible();const code=await page.locator('#setup-receipt input').inputValue();await page.locator('#setup-saved').click();await page.getByRole('button',{name:'Close family progress'}).click();

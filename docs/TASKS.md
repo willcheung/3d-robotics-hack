@@ -151,7 +151,7 @@ Before promoting one entry to ready: dependencies must be landed; choose one mai
 
 ## S08 — Ranger patrol loop
 
-- Status: in_progress; explicitly authorized Lesson 3 manual goal. Contract: [MISSION-03.md](MISSION-03.md).
+- Status: review candidate; local acceptance passed for the explicitly authorized Lesson 3 goal. Contract: [MISSION-03.md](MISSION-03.md); owner checklist: [MISSION-03-QA.md](MISSION-03-QA.md). Exact proposed commit and CI are recorded on the draft PR. No merge/deployment authorization.
 - Depends on: S03 landed and existing DEPLOY-01/S03 map, drafts, journal and checked progress. This goal includes only L03 integration/regressions from S03H; its broader understanding/local-history work remains separate.
 - Working outcome: use a loop to inspect a small set of ranger checkpoints with the existing light/camera mechanism; show each actual inspection.
 - Scope: one repetition lesson, bounded checkpoint observations and a counter; variables/conditions reused, lists deferred.
