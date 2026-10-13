@@ -10,7 +10,7 @@ await writeFile(`${root}/.vc-config.json`,JSON.stringify({runtime:'nodejs24.x',h
 const mailRoot='.vercel/output/functions/onboarding-mail.func';
 await mkdir(mailRoot,{recursive:true});
 await build({entryPoints:['server/onboarding-queue.mjs'],outfile:`${mailRoot}/handler.mjs`,bundle:true,platform:'node',target:'node24',format:'esm',banner:{js:"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);"}});
-await writeFile(`${mailRoot}/.vc-config.json`,JSON.stringify({runtime:'nodejs24.x',handler:'handler.mjs',launcherType:'Nodejs',maxDuration:60,memory:1024,shouldAddHelpers:false,regions:['iad1'],experimentalTriggers:[{type:'queue/v2beta',topic:'robolab-onboarding-v1'}]}));
+await writeFile(`${mailRoot}/.vc-config.json`,JSON.stringify({runtime:'nodejs24.x',handler:'handler.mjs',launcherType:'Nodejs',maxDuration:60,memory:1024,shouldAddHelpers:true,regions:['iad1'],experimentalTriggers:[{type:'queue/v2beta',topic:'robolab-onboarding-v1',consumer:'onboarding-mail'}]}));
 
 // Retain the notices for bundled server dependencies as well as the app license.
 for (const file of ['LICENSE','THIRD-PARTY.md']) {await copyFile(file,`${root}/${file}`);await copyFile(file,`${mailRoot}/${file}`);}
