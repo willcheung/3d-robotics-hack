@@ -112,7 +112,7 @@ If the environment cannot support those guarantees, report the specific missing 
 - Status: draft
 - Depends on: S03 landed
 - Working outcome: control an original arm/gripper to pick up and place one parcel, with Java/Python examples and explorable 3D.
-- Scope: bounded two-joint arm, labeled axes and gripper, explicit grasp/drop geometry, one sequence mission; functions are taught separately in S09. No general contact-physics promise or full arm curriculum.
+- Scope: bounded two-joint arm, labeled axes and an independently actuated third gripper control, explicit grasp/drop geometry, one sequence mission; functions are taught separately in S09. No general contact-physics promise or full arm curriculum.
 - Acceptance: grasp/carry/place follow documented rules; limits/collisions explain failure; wrong poses cannot succeed; camera, reset, existing motor lesson, and language drafts remain intact.
 - Validation: independent arm/grasp/target boundary fixtures, deterministic trace replay, reference/wrong programs, both-language/browser flows, screenshots. Incorporate available learner feedback.
 
@@ -151,8 +151,8 @@ Before promoting one entry to ready: dependencies must be landed; choose one mai
 
 ## S08 — Ranger patrol loop
 
-- Status: draft
-- Depends on: S03H landed
+- Status: in_progress; explicitly authorized Lesson 3 manual goal. Contract: [MISSION-03.md](MISSION-03.md).
+- Depends on: S03 landed and existing DEPLOY-01/S03 map, drafts, journal and checked progress. This goal includes only L03 integration/regressions from S03H; its broader understanding/local-history work remains separate.
 - Working outcome: use a loop to inspect a small set of ranger checkpoints with the existing light/camera mechanism; show each actual inspection.
 - Scope: one repetition lesson, bounded checkpoint observations and a counter; variables/conditions reused, lists deferred.
 - Acceptance and validation: the correct repeat count visits every required checkpoint; zero/one-too-few/excess repetitions, skipped dwell and a wrong tilt remain unfinished. Check real execution, reset of visited state, both-language observations, hints/transfer, history and browser visuals.
@@ -162,7 +162,7 @@ Before promoting one entry to ready: dependencies must be landed; choose one mai
 - Status: draft
 - Depends on: S04, S08 landed
 - Working outcome: package the arm handoff into a function/method with a destination parameter and use it twice.
-- Scope: one functions lesson on the existing arm; no new conveyor or physics engine.
+- Scope: one functions lesson on the existing arm; distinguish library calls from an editable parameterized helper and call that helper inside a bounded loop; no new conveyor or physics engine.
 - Acceptance and validation: separate calls deliver to their requested bays; hard-coded destinations, missing grasp/release and invalid poses fail. Test parameter boundaries, both-language behavior, draft/history/next flow and scene consequence.
 
 ## S10 — Foundation transfer and content pilot

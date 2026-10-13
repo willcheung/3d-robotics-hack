@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import type { State, Target } from './model.ts';
+import {patrols, type State, type Target} from './model.ts';
 export class StationScene {
   private renderer: THREE.WebGLRenderer;
   private camera = new THREE.PerspectiveCamera(37, 1, .1, 60);
@@ -16,6 +16,7 @@ export class StationScene {
   private waitingBadge: THREE.Mesh;
   private crewSupport: THREE.Mesh;
   private signal: THREE.Mesh;
+  private checkpoints: {group:THREE.Group; panel:THREE.MeshStandardMaterial; label:THREE.Mesh}[] = [];
   private motorAnchor = new THREE.Vector3(-.62, .495, 1.05);
   private servoAnchor = new THREE.Object3D();
   private projected = new THREE.Vector3();
@@ -119,6 +120,14 @@ export class StationScene {
     this.waitingBadge = this.text('CREW WAITING', '#ffda9d', .59); this.waitingBadge.position.set(0,.65,0); this.crew.add(this.waitingBadge);
     this.crewBadge = this.text('CREW LOCATED', '#d5f674', .59); this.crewBadge.position.set(0,.65,0); this.crew.add(this.crewBadge);
     this.world.add(this.crew);
+    // Numbered field panels are real patrol targets, driven only by model dwell.
+    for(let i=0;i<4;i++){
+      const group=new THREE.Group(), panel=mat('#746647');
+      cylinder(.055,.6,steel,0,-.15,0,group);
+      box(.52,.4,.14,panel,0,.18,0,group);
+      const label=this.text(String(i+1),'#ffffff',.7,110);label.position.set(0,.65,0);group.add(label);
+      group.visible=false;this.world.add(group);this.checkpoints.push({group,panel,label});
+    }
     this.crewSupport = new THREE.Mesh(new THREE.CylinderGeometry(.42, .66, 1, 5), mat('#3d5c5c'));
     this.crewSupport.castShadow = true; this.crewSupport.receiveShadow = true; this.world.add(this.crewSupport);
     box(.71, .04, .28, dark, 1.2, .383, 1.05);
@@ -148,6 +157,7 @@ export class StationScene {
       if (this.dirty) {
         this.dirty = false;
         this.waitingBadge.quaternion.copy(this.camera.quaternion); this.crewBadge.quaternion.copy(this.camera.quaternion);
+        for(const checkpoint of this.checkpoints)checkpoint.label.quaternion.copy(this.camera.quaternion);
         this.renderer.render(this.world, this.camera);
         this.updateLabels();
       }
@@ -178,9 +188,9 @@ export class StationScene {
       dot.setAttribute('cx', String(x)); dot.setAttribute('cy', String(y));
     }
   }
-  private text(value: string, color: string, size: number) {
+  private text(value: string, color: string, size: number, fontSize = 52) {
     const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
-    const ctx = canvas.getContext('2d')!; ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = 'bold 52px monospace'; ctx.fillText(value, 256, 64);
+    const ctx = canvas.getContext('2d')!; ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `bold ${fontSize}px monospace`; ctx.fillText(value, 256, 64);
     const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
     return new THREE.Mesh(new THREE.PlaneGeometry(size * 2.5, size * .625), new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
   }
@@ -193,6 +203,14 @@ export class StationScene {
     this.dirty = true;
     this.pointer.rotation.y = -THREE.MathUtils.degToRad(s.angle);
     this.scanner.rotation.x = THREE.MathUtils.degToRad(s.scanner - 90);
+    const route=goal.patrol?patrols[goal.patrol]:undefined;
+    this.crew.visible=!route;this.crewSupport.visible=!route;
+    this.checkpoints.forEach(({group,panel},i)=>{
+      group.visible=!!route&&i<route.angles.length;if(!group.visible)return;
+      const a=THREE.MathUtils.degToRad(route!.angles[i]);
+      group.position.set(-.62+Math.sin(a)*2.8,1.8+Math.tan(THREE.MathUtils.degToRad(route!.tilt-90))*2.8,-.03-Math.cos(a)*2.8);
+      const logged=i<(s.patrol?.visited??0);panel.color.set(logged?'#b5d775':'#ac8451');panel.emissive.set(logged?'#5b7829':'#000000');
+    });
     const a = THREE.MathUtils.degToRad(goal.angle); this.target.position.set(-.62+Math.sin(a)*1.01,.56,-.03-Math.cos(a)*1.01);
     this.crew.position.set(-.62 + Math.sin(a)*2.6, 1.8 + Math.tan(THREE.MathUtils.degToRad(goal.scanner - 90))*2.6, -.03 - Math.cos(a)*2.6);
     const supportHeight = Math.max(.04, this.crew.position.y - .24);

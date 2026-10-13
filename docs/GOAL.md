@@ -11,3 +11,8 @@ The owner subsequently explicitly authorized merging PR #3, making it live on ro
 Use docs/TASKS.md for dependencies, docs/FOUNDATION.md for teaching/runtime/account acceptance and docs/OWNERSHIP.md for exclusive ownership. Preserve existing work and exact resume evidence. Validate the proposed commit, keep a runnable checkpoint, and distinguish local/CI/provider/learner evidence. Stop when the authorized slice is complete or preserve its concrete blocker.
 
 A manual request may waive usage scheduling gates for that task. It does not change future autonomous eligibility, reserve, ownership, duplicate-run, merge or deployment rules.
+
+
+## Active goal: L03 / S08 Ranger patrol
+
+The owner now explicitly requests a curriculum review followed by Lesson 3. Review and record richer actuator/function/sensor progression, then implement and test the complete patrol-loop mission in Python and Java under MISSION-03.md. Preserve prior missions/accounts/data, use the existing map/journal/draft framework, and verify all three patrols, help, errors/Stop/Reset/navigation, saved work and checked prerequisites. Prepare one draft PR with inspected screenshots, exact-head CI, limits and an owner-QA checklist. This manual scope does not authorize merge, deployment, automation changes, S04 or other later lessons. The remaining broader S03H work is not required for the L03 integration already scoped here.

@@ -185,7 +185,7 @@ test('Mission 2 real Java: reversed condition fails; one reading selects both di
   assert.equal(reached((await execute(hardcoded,{target:'sensor-right'})).state,targets['sensor-right']),false);
 });
 
-test('Mission 2 authoritative HTTP check uses authored starts, rejects client pose/results and stores only real outcomes',async()=>{
+test('Missions 2 and 3 authoritative HTTP check uses authored starts, rejects client pose/results and stores only real outcomes',async()=>{
   const {createServer}=await import('node:http');const {randomUUID}=await import('node:crypto');
   const {hostedApi}=await import('../server/hosted-api.mjs');const {MemoryStore}=await import('./helpers/memory-store.mjs');
   const {provision,login,recordAttempt,current}=await import('../server/family-store.mjs');const {sensorReference,sensorJava,sensorTransfer}=await import('../src/lessons.ts');
@@ -204,6 +204,23 @@ test('Mission 2 authoritative HTTP check uses authored starts, rejects client po
       const response=await post('/verify',{id:randomUUID(),target,source,language:'java',state:{angle:60,power:0},outcome:'reached',score:999});assert.equal(response.status,200);const result=await response.json();assert.equal(result.outcome,wanted);assert.equal(result.seconds,1);
     }
     const p=(await current(store,session)).profile;assert.equal(p.completed.length,6);assert.equal(p.history[0].lesson,'L02');assert.equal(p.history[0].verified,true);
+    const {patrolJava,patrolReference,patrolExtra,patrolTransfer}=await import('../src/patrol-lesson.ts');
+    for(const [target,source,wanted] of [['patrol-ridge',patrolJava,'missed'],['patrol-extra',patrolReference.java,'missed'],['patrol-ridge',patrolReference.java,'reached'],['patrol-extra',patrolExtra.java,'reached'],['patrol-cove',patrolTransfer.java,'reached']]){
+      const response=await post('/verify',{id:randomUUID(),target,source,language:'java',state:{angle:90,power:0,patrol:{id:target,visited:4}},outcome:'reached',score:999,lesson:'L01',lessonVersion:999});assert.equal(response.status,200);assert.equal((await response.json()).outcome,wanted);
+    }
+    const patrolProfile=(await current(store,session)).profile;assert.equal(patrolProfile.completed.length,9);assert.equal(patrolProfile.history[0].lesson,'L03');assert.equal(patrolProfile.history[0].receipt.model,'signal-patrol-v1');
+
     assert.equal((await post('/verify',{id:randomUUID(),target:'__proto__',source:sensorReference.java,language:'java'})).status,400);
   }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
+
+
+test('Mission 3 real Java: loop calls actuators at every checkpoint, references and wrong programs',async()=>{
+ const {patrolJava,patrolReference,patrolExtra,patrolTransfer}=await import('../src/patrol-lesson.ts');
+ for(const [target,source,ticks,count] of [['patrol-ridge',patrolReference.java,375,3],['patrol-extra',patrolExtra.java,400,4],['patrol-cove',patrolTransfer.java,375,3]]){
+  const result=await execute(source,{target});assert.equal(result.messages.at(-1).type,'done');assert.equal(reached(result.state,targets[target]),true);assert.equal(result.state.ticks,ticks);assert.equal(result.state.patrol.visited,count);assert.equal((result.text.match(/Repeat /g)||[]).length,count);
+ }
+ for(const source of [patrolJava,patrolReference.java.replace('repeats = 3','repeats = 0'),patrolReference.java.replace('repeats = 3','repeats = 4'),patrolReference.java.replace('Robot.waitTicks(25);',''),patrolReference.java.replace('tilt = 90','tilt = 60')]){
+  const result=await execute(source,{target:'patrol-ridge'});assert.equal(result.messages.at(-1).type,'done');assert.equal(reached(result.state,targets['patrol-ridge']),false);
+ }
 });

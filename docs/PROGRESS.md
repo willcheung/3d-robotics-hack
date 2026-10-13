@@ -8,6 +8,13 @@ For each future slice record ID/status, base SHA, branch/PR, last runnable and e
 
 Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof remain pending. No automation is activated by publishing the source.
 
+## S08 / L03 — Ranger patrol
+
+- Status: in_progress; owner-authorized curriculum review and complete Lesson 3 goal. Base `98289271e870a4a09d5d949e44a157079f334382`, branch `codex/mission-03-patrol`. Exclusive ownership claimed before source writes.
+- Contract: [MISSION-03.md](MISSION-03.md). Both languages, ordered checkpoint dwell, three patrols, prior-mission preservation and family draft/unlock regressions. Broader S03H work remains separate.
+- Curriculum decision: repeat familiar built-in calls now; explicit third gripper actuator in L04, editable functions called inside loops in L05, and later intake/flywheel proposal behind readiness gates. No new world or extra motor is implemented in this slice.
+- Next action: implement, exercise reference/wrong programs, inspect browser evidence and verify exact-head CI. No checks or learner pilot claimed yet; stop at draft review without merge/deployment.
+
 ## FAMILY-02 — Parent email and student onboarding
 
 - Status: done; [PR #3](https://github.com/willcheung/3d-robotics-hack/pull/3) merged and released on October 12, 2026 (October 13 UTC) after explicit owner authorization. Branch `codex/family-onboarding-plan`, base `09aff269f5c419a1e1c24086c0bc5c3cc588ddb4`.
