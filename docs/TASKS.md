@@ -65,7 +65,7 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## FAMILY-02A — Parent email sign-in and signup
 
-- Status: review candidate in the combined FAMILY-02 manual goal on PR #3; final CI/staging receipt and owner checklist are linked in ONBOARDING-QA.md.
+- Status: done; accepted, landed in PR #3 and released after staging and public production acceptance. See ONBOARDING-QA.md and PROGRESS.md.
 - Depends on: FAMILY-01, RECOVERY-01 and RECOVERY-02 landed (satisfied); freeze the challenge/attempt/email-budget contract and inspect ownership before promotion to ready.
 - Outcome: a parent enters email and a short one-time code, then resumes the same family or explicitly creates one. Email proof is part of onboarding; no separate recovery-verification task or mandatory parent-code saving step.
 - Contract: [PLAN.md's FAMILY-02 design](PLAN.md#family-02-design-email-sign-in-and-quick-family-onboarding). Keep existing parent/student codes, verified email memberships, multiple-family chooser, drafts/progress, seven-day sessions and exact-origin boundaries. Legacy unverified families link email only after parent-code reauthentication. Ordinary email sign-in never rotates credentials or creates a duplicate family.
@@ -74,7 +74,7 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## FAMILY-02B — Student login cards and a single setup email
 
-- Status: review candidate in the combined FAMILY-02 manual goal; see ONBOARDING-QA.md and PR #3 for final checks.
+- Status: done; accepted, landed in PR #3 and released with real combined-email and both-language saved-work acceptance. See ONBOARDING-QA.md.
 - Depends on: FAMILY-02A behavior (combined goal permits building together); authorized reliable mail delivery and a frozen encryption/retention/notification-budget contract. Evaluate Vercel Queues integration/costs before making this slice ready.
 - Outcome: a verified parent creates up to six student nicknames in a batch, immediately gets usable Copy/Print login cards and receives one combined setup email. Returning students use one code or an explicit-confirmation student link. No student email or extra username/password.
 - Acceptance: idempotent batch creation and credential issuance, stable request/recipient binding, encrypted temporary credential outbox with expiry, same-event email deduplication, no bearer code in queries/logs, deliberate shared-device switching, usable cards if mail fails. Replacing a code is explicit and keeps saved work. Retries, duplicates, partial writes, email changes and revocations never disclose stale credentials or create orphan access.
@@ -82,7 +82,7 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## FAMILY-02C — First student sign-in confirmation
 
-- Status: review candidate in the combined FAMILY-02 manual goal; first sign-in only, no recurring login alerts. See ONBOARDING-QA.md.
+- Status: done; accepted, landed in PR #3 and released. Public QA received one first-sign-in notice per student; repeat sign-ins retained the same provider receipts. See ONBOARDING-QA.md.
 - Depends on: FAMILY-02B behavior and its durable delivery path proved within the combined goal.
 - Outcome: parent sees Waiting for first sign-in / Ready and gets one optional notice when each newly enrolled child signs in successfully. Later sessions, credential replacements and ordinary activity remain quiet. Existing students receive no invented retrospective first-sign-in emails.
 - Acceptance: one persisted event per family/profile, atomic first-sign-in state, notification preference respected at delivery, no events for failed login/GET/email previews/helper authentication/session refresh, no login delay or failure due to mail outage. Duplicate delivery/retry cannot repeat the message; unknown delivery is reconciled within the provider deduplication window. Current verified parent and active student are rechecked before sending.
