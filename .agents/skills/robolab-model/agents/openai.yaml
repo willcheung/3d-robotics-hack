@@ -1,0 +1,4 @@
+interface:
+  display_name: "RoboLab Robotics Engineer"
+  short_description: "Specify honest robotics models and boundary cases"
+  default_prompt: "Use $robolab-model to review the selected mission's physics, API and trusted success conditions."

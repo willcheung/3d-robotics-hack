@@ -8,6 +8,14 @@ For each future slice record ID/status, base SHA, branch/PR, last runnable and e
 
 Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof remain pending. No automation is activated by publishing the source.
 
+## Repository personas and next curriculum decision
+
+- Status: review candidate on `codex/mission-03-patrol`, continuing [PR #4](https://github.com/willcheung/3d-robotics-hack/pull/4); base and unchanged runnable app source `73c52e063d5894d68e52901ce4340538cb9c0303`. The owner authorized repository skills, automatic persona routing and next-step planning. A unique `ownership/repo-personas` lease was acquired before writes; private operational details stay outside the repo.
+- Saved all eight complete skill folders under `.agents/skills/`, including UI metadata. AGENTS.md routes work to the relevant lenses and makes this checkout's copies canonical over personal duplicates. Design and retrospective explicitly consider prior/following lessons and the difference between learner order, build readiness and release status.
+- Source-based review and a practical observation protocol are in [TEACHING-PROGRESSION.md](TEACHING-PROGRESSION.md#next-curriculum-decisions). Next priorities: review the revised L01–L03 candidate, observe explanation/transfer/recovery/resume, then author the L04 Parcel Port mission/model contract. S04 now requires landed S08 and remains draft. The arm sequence precedes L05 function definition.
+- Validation: eight manifests passed the skill-creator validator; all eight UI manifests, automatic-invocation defaults, AGENTS routes and portable file paths passed targeted checks. Publication/link checks and a clean source-export check are recorded with the exact tested follow-up commit on PR #4. No executable source, dependencies, UI or runtime behavior changed; existing app checks remain historical evidence until the new-head CI run completes.
+- Unmet criteria: actual learner/device/pacing observations, L03 provider acceptance and a frozen L04 model/mission contract. No fresh browser walkthrough, hosted check or learner pilot is claimed by this documentation pass. Next action: use the observation protocol and owner checklist on the current candidate; release qualification needs separate authorization. No later mission implementation, merge, deployment, personal-skill edits or automation changes.
+
 ## S08 / L03 — Ranger patrol
 
 - Status: review candidate; owner-authorized complete Lesson 3 goal. Base `98289271e870a4a09d5d949e44a157079f334382`, branch `codex/mission-03-patrol`. Exclusive ownership claimed before source writes. The draft PR receipt records the final proposed/tested SHA and exact-head CI; no merge or deployment is included.

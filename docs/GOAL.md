@@ -20,3 +20,7 @@ The owner now explicitly requests a curriculum review followed by Lesson 3. Revi
 ## Active refinement: the whole teaching progression
 
 The owner subsequently authorized using the teaching skills to strengthen all missions, including Missions 1 and 2 and future plans, then executing the recommendations. On the existing Mission 3 branch/PR, implement one shared teaching refinement for L01–L03: current-code prediction and explanation, reachable hints and first edit, truthful patrol diagnostics, recoverable drafts and selected challenge persistence. Author retrieval/new-concept/transfer requirements for all planned lessons under TEACHING-PROGRESSION.md. Validate both languages, model/runtime and save/profile boundaries. This extends the review candidate; it does not authorize implementing later lessons, merge, deployment or automation.
+
+## Current follow-up: repository personas and next curriculum work
+
+The owner authorized saving all eight RoboLab skills in this repository, updating AGENTS.md to select the right personas for future work, and identifying the next curriculum/mission priority. Keep this a documentation/skills refinement on the existing branch and draft PR. Validate portability, manifests, links and publication safety; record the source-based priority review and observation plan in TEACHING-PROGRESSION.md. Repository copies are canonical for this project; leave the personal installation intact. This request does not authorize a new mission implementation, merge, deployment, learner contact or automation.

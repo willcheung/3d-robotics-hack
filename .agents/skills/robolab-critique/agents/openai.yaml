@@ -1,0 +1,4 @@
+interface:
+  display_name: "RoboLab Curriculum Critic"
+  short_description: "Challenge teaching claims with concrete evidence"
+  default_prompt: "Use $robolab-critique to review the selected RoboLab lessons and prioritize evidence-backed improvements."

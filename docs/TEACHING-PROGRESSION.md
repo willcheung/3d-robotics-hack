@@ -2,7 +2,7 @@
 
 October 13, 2026. This design applies the curriculum designer, critic and teacher review lenses to the whole course. The owner authorized teaching improvements across Missions 1–3 and future plans. This is one refinement slice on `codex/mission-03-patrol`, based on `f5e0e5a90725fce2e7b4812d024e22b222b99b9e`. L01–L02 are released; L03 and these refinements remain review candidates until landed and released. Future rows are authored requirements, not implemented lessons or permission to start them.
 
-## What to improve first
+## Refinements implemented in the review candidate
 
 1. Make feedback truthful about the failed requirement. A completed patrol can still finish at the wrong angle. A printed loop counter does not prove a checkpoint was held. Diagnose these separately from errors.
 2. Preserve the experiment, including its selected challenge. A cove program reopened against the ridge silently changes the problem. Keep separate mission/language/profile drafts, a recoverable example restore, and explicit local-versus-profile save wording.
@@ -11,6 +11,43 @@ October 13, 2026. This design applies the curriculum designer, critic and teache
 5. Gate future content on progression and pilot evidence. Add a new mechanism or idea only after retrieving what the learner needs. A green run is completion evidence; transfer and explanation are separate.
 
 Evidence: the previous teaching review reproduced misleading patrol feedback, lost case context, original-starter prediction mismatch and destructive example restore in a disposable local browser. Source inspection confirmed M1's authored hints were not rendered in the shared coach. The implementation adds targeted regressions for those paths. Difficulty, motivation and teacher intervention remain learner hypotheses; no classroom pilot is claimed.
+
+## Next curriculum decisions
+
+October 13 review of `73c52e063d5894d68e52901ce4340538cb9c0303`, using curriculum designer, critic, teacher and retrospective lenses. This pass inspects source and existing evidence; it is not a new browser walkthrough or student pilot. The new repository skill instructions do not change the app. [PROGRESS.md](PROGRESS.md) remains the release ledger and [TASKS.md](TASKS.md) remains the build queue.
+
+The priority is to validate the revised foundation sequence before expanding the course. Preserve its real-language execution, useful jobs, free help, recoverable experiments and separation of completion from understanding. The remaining uncertainty is how learners use these supports, not whether more lesson outlines can be written.
+
+| Finding / priority | Evidence and consequence | Next action, owner and status | Success criterion and next check |
+| --- | --- | --- | --- |
+| NEXT-01 · Current candidate first | L03 and the shared L01–L03 improvements are in draft PR #4; L01/L02 are live. The recorded software checks do not establish hosted acceptance of the new code. See [Mission 3 QA](MISSION-03-QA.md). | Maintainer: walkthrough of the current candidate, then separately authorized protected staging/release qualification. Pending; no release is authorized by this plan. | Both languages and all three missions pass the existing owner checklist; staging checks establish saved code/challenge, checked prerequisites and sibling isolation on the exact release candidate. |
+| NEXT-02 · Observe cumulative understanding | `src/teaching.ts` asks about the current draft; `src/lessons.ts` separates the branch comparison from movement; `docs/MISSION-03.md` explicitly allows a physical success without proving loop understanding. No actual learner evidence is recorded. The intended L01 → L02 → L03 progression remains a hypothesis. | Teacher/maintainer: run the observation protocol below on the revised candidate in an appropriate local or authorized staging environment. Pending real observations. This can accompany owner QA; publication is not a prerequisite. | Record per learner whether they can predict, edit, recover, explain a changed case and resume. Use those observations to select a focused correction or retain the sequence; do not turn badges into a mastery claim. |
+| NEXT-03 · Prepare the arm transition | [L04/L05 progression](#progression-and-transfer-map) separates arm sequence from function definition, but [S04](TASKS.md#s04--one-arm-mission) has no frozen mission/model contract. Its old S03-only dependency did not reflect the chosen L03-before-L04 delivery order. | Curriculum/model authors: next mission-design task is L04 Parcel Port after the foundation review. S04 stays draft; its dependency now includes landed S08. | A reviewed MISSION-04 contract supplies the decisions below and feasible independent fixtures. Only then can S04 be selected for an authorized implementation; do not start L05, rover or optional packs alongside it. |
+
+### Observation protocol for Missions 1–3
+
+Use each learner's chosen language; inspect both language groups when available without making a beginner learn both at once. Follow the sequence across sessions as needed. Do not compress three proposed one-hour lessons into one test. Include a genuine returning-session check when feasible; a same-day pause tests resume behavior but not week-to-week retention.
+
+Before starting, record the tested source/version, environment, language, device/browser and whether this is a new or returning learner. Keep identifying observations and source snapshots in the maintainer's private location. Public summaries contain only anonymized findings. Record active learning time and runtime/inbox waiting separately. There is no measured pacing target yet.
+
+| Stage | Prompt or activity | Evidence to record |
+| --- | --- | --- |
+| L01: values and movement | Ask what the light does for the crew. Predict the current draft, make one first edit, then try the lower cove. Ask how changing power would affect the wait needed for the same turn. | Independent first edit, prediction with a reason, observed motion, distinction between turn and tilt, changed-case explanation. |
+| L02: measure and choose | Retrieve L01's power/time relationship. Trace the current condition from the 30° and 90° starts. Test the same corrected code from both sides, then explain the comparison value versus the crew's destination. | Which branch was predicted, how Read / Decision / Now were used, whether the stored reading was mistaken for a live sensor, and reasoning beyond copying the hint. |
+| L03: repeat a sequence | Retrieve stop/wait and fresh-read behavior. Trace one loop body, try Extra checkpoint, and explain why a printed repeat or a final angle alone is insufficient. | Which lines repeat, where stop/hold belong, actual versus predicted checkpoints, and explanation of a changed spacing or direction. |
+| Recovery and return | Let the learner recover from a natural miss/error; offer one reversible mistake if none occurs. Use ordinary hints. Save a changed case, switch/reopen, and ask them to identify the experiment and next edit. | Error versus miss, help level, adult intervention, source/challenge restored together, and ability to resume. Check profile saves separately from device-only notes. |
+
+For each observation record: lesson/case, prediction and reason, edit, result, highest help level, adult intervention, explanation, recovery/resume outcome and unresolved question. Use met / partial / not yet observed with a short reason; asking for help is not failure. Avoid invented quotes, averaged mastery scores or claims about the class from a single learner.
+
+Decision rule: a reproducible software/data-loss fault becomes a focused fix with a regression. If an essential explanation remains unsupported, revise the smallest teaching step and observe it again before relying on that concept in L04. A green run with a copied solution is completion only. If the learner can explain the changed case and resume, retain the scaffold and carry that evidence into the arm design. Small pilots guide revision; they do not establish a population-wide learning effect.
+
+### Next mission-design brief: L04 Parcel Port
+
+Keep the useful job: pick up a parcel, clear a marked obstruction, and place it in a worker's tray. Its main new demand is coordinating shoulder, elbow and an independently powered gripper using familiar sequential calls. Retrieve L01's setter-versus-arrival distinction and L03's order/stop/wait reasoning. Defer function definition and parameters to L05; do not introduce inverse kinematics or an opaque complete-the-job helper.
+
+Before implementation, freeze joint axes and degree limits, rates and simultaneous motion, gripper aperture and timing, payload-presence semantics, reachable pickup/tray poses, grasp/contact/collision/release rules, reset behavior and exact success tolerances. Prove reference and wrong-pose/empty-grasp/early-release/collision cases with independent expected observations within the existing runtime limits. Define a first editable decision, current-code prediction, three free hints and a changed reachable tray in both languages. Include one plan for observing the first new mechanism before expanding it. These are required design outputs, not numerical decisions or completed tests.
+
+Keep S03H as a separate potential improvement: durable explanation/history work should answer an observed need and preserve the current local/profile distinction. It is not a prerequisite for this observation pass. Official rankings, live AI, intake/flywheel proposals and optional flight/image packs do not advance the immediate foundation-to-arm decision.
 
 ## The routine that carries across lessons
 
@@ -59,7 +96,7 @@ Do not multiply rover, sensor, image or flight variants before observing the fir
 
 Test Missions 1–3 as a sequence with a returning-session break, in both language groups as available. The proposed one-hour pace is a hypothesis, not a pass requirement. A practical criterion for each learner is one independent edit, an explanation connecting an instruction to observed movement, recovery from one miss/error, and a changed-case explanation without copying the worked answer. Record unmet criteria individually; do not report aggregate learning claims from this software review.
 
-Use `$robolab-design` on this progression before adding a lesson, `$robolab-critique` on the actual lesson/feedback, `$robolab-student` on learner-visible content, and `$robolab-teacher` on start/recovery/resume. Use `$robolab-model` for a new mechanism, `$robolab-build` for an authorized ready slice, `$robolab-qa` for observed behavior, and `$robolab-retro` to reconcile findings with classroom evidence. A persona is a review lens, not evidence that a student or teacher actually tried the class.
+Use the repository personas through the routing in [AGENTS.md](../AGENTS.md#reusable-robolab-personas): `$robolab-design` on this progression before adding a lesson, `$robolab-critique` on the actual lesson/feedback, `$robolab-student` on learner-visible content, and `$robolab-teacher` on start/recovery/resume. Use `$robolab-model` for a new mechanism, `$robolab-build` for an authorized ready slice, `$robolab-qa` for observed behavior, and `$robolab-retro` to reconcile findings with classroom evidence. A persona is a review lens, not evidence that a student or teacher actually tried the class.
 
 ## Implemented interface evidence
 
