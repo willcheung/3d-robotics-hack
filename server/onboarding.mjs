@@ -152,7 +152,7 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
    return {session:chosen.session};
   },
   async students(session,{id,names}){
-   ready();if(!validAttempt(id)||!Array.isArray(names)||names.length<1||names.length>6||names.some(n=>typeof n!=='string'||!n.trim()||n.trim().length>32))throw new HttpError(400,'Enter one to six student nicknames, each up to 32 characters.');
+   ready();if(!validAttempt(id)||!Array.isArray(names)||names.length<1||names.length>6||names.some(n=>typeof n!=='string'||!n.trim()||n.trim().length>32||/[\u0000-\u001f\u007f]/.test(n)))throw new HttpError(400,'Enter one to six student nicknames, each on one line and up to 32 characters.');
    names=names.map(n=>n.trim());const {family,profile}=await current(store,session);
    if(profile.role!=='parent'||!profile.recovery)throw new HttpError(403,'Sign in with your verified parent email first.');
    const inputHash=hashCode(JSON.stringify(names)),batch=family.onboarding?.batches?.[id];
@@ -209,6 +209,11 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
    await update(store,familyPath(session.familyId),f=>{if(profileIn(f,session).role!=='parent')throw new HttpError(403,'Only parents manage notifications.');f.onboarding??={events:{},batches:{},notifyFirst:true};f.onboarding.notifyFirst=notifyFirst;return {value:f};});return {ok:true};
   },
   retry,
+  async cleanupExpired(session,family){
+   const expired=Object.values(family.onboarding?.events??{}).some(e=>e.payload&&e.until<=now())||Object.values(family.onboarding?.batches??{}).some(b=>b.cards&&b.until<=now());
+   if(!expired)return family;
+   return update(store,familyPath(session.familyId),f=>{profileIn(f,session);scrub(f);return {value:f,result:f};});
+  },
   async deliver({familyId,eventId,cleanup=false,authPath:cleanupPath}){
    if(cleanupPath){
     if(!/^parent-auth\/[a-f0-9]{64}\.json$/.test(cleanupPath))throw new Error('Invalid cleanup request');

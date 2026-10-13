@@ -17,6 +17,7 @@ test('email onboarding, batch retry, student links, first-only notices and both-
  const cards=page.locator('.student-login-card'),code=await cards.nth(0).locator('input').inputValue(),sibling=await cards.nth(1).locator('input').inputValue();await expect(cards.nth(0).locator('input')).toHaveAttribute('type','password');
  await page.setViewportSize({width:390,height:844});expect(await page.locator('#family-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
  await page.locator('#family-dialog').screenshot({path:'test-results-family-ui/onboarding-parent-narrow.png'});
+ await cards.nth(0).screenshot({path:'test-results-family-ui/onboarding-card-narrow.png'});
  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied');}}}));await cards.nth(0).locator('[data-copy-link]').click();await expect(cards.nth(0).locator('.copy-status')).toContainText('selected');await expect(cards.nth(0).locator('input')).toHaveValue(`http://127.0.0.1:4473/#student-login=${code}`);
  // Keep screenshots private; printing is checked structurally without saving credentials.
  await page.evaluate(()=>{window.print=()=>{(window as any).printCards=document.querySelectorAll('#login-card-print article').length;};});await page.locator('#print-student-cards').click();expect(await page.evaluate(()=>(window as any).printCards)).toBe(2);await expect(page.locator('#login-card-print')).toHaveCount(0);
@@ -38,6 +39,10 @@ test('email onboarding, batch retry, student links, first-only notices and both-
   page.once('dialog',d=>d.accept());await page.locator('.family-results article').filter({hasText:'Pilot A'}).locator('[data-code]').click();await expect(page.locator('.student-login-card')).toHaveCount(1);const replacement=await page.locator('.student-login-card input').inputValue();expect(replacement===code).toBe(false);
   await child.goto(`/#student-login=${replacement}`);await child.locator('#student-start').click();await child.locator('#language').selectOption('python');await expect(child.locator('#code')).toHaveValue('python personal draft');await request.post('/__test/drain');
   await page.locator('#family-logout').click();await request.post('/__test/advance');await begin(page,'onboarding-parent@example.test');await page.locator('#email-code').fill((await mail(request)).text.match(/\b\d{6}\b/)[0]);await page.locator('#parent-verify button').click();await expect(page.locator('.family-results article')).toHaveCount(2);await expect(page.locator('#email-create')).toHaveCount(0);
+  // A lost final batch must remain recoverable even when it fills all six spaces.
+  await page.locator('.student-onboarding details summary').click();await page.locator('[data-name="0"]').fill('Pilot C');
+  for(const [i,name] of ['Pilot D','Pilot E','Pilot F'].entries()){await page.locator('#another-student').click();await page.locator(`[data-name="${i+1}"]`).fill(name);}
+  batchLost=true;await page.locator('#create-student-logins').click();await expect(page.locator('#create-student-logins')).toBeEnabled();await page.reload();await page.locator('#family-open').click();await expect(page.locator('#create-student-logins')).toBeVisible();await page.locator('#create-student-logins').click();await expect(page.locator('.student-login-card')).toHaveCount(4);await expect(page.locator('.family-results article')).toHaveCount(6);
  }finally{await other.close();}
 });
 test('parent entry is keyboard usable at narrow width and preserves a failed request for retry',async({page,request})=>{

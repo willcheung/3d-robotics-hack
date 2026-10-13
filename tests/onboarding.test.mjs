@@ -52,6 +52,7 @@ test('sign-in send retry reuses mail identity and quota; mail outage is explicit
 });
 test('student batch retries return identical profiles/codes and one combined email',async()=>{
  const f=fixture(),{session}=await f.parent(),data={id:crypto.randomUUID(),names:['Pilot A','Pilot B']};
+ for(const name of ['  ','Pilot\nAnother line','Pilot\rSubject: surprise','Pilot\u0000'])await assert.rejects(f.service.students(session,{id:crypto.randomUUID(),names:[name]}),e=>e.status===400);
  const [a,b]=await Promise.all([f.service.students(session,data),f.service.students(session,data)]);assert.deepEqual(a,b);
  assert.equal((await current(f.store,session)).family.profiles.length,3);
  await assert.rejects(f.service.students(session,{...data,names:['Changed']}),e=>e.status===409);
@@ -156,4 +157,33 @@ test('a delivery lease prevents concurrent mail sends and recovers after a worke
  await update(f.store,familyPath(session.familyId),r=>{Object.assign(r.onboarding.events[batch.eventId],{status:'sending',lease:'crashed',leaseUntil:Date.now()+30000});return {value:r};});
  await assert.rejects(f.service.deliver({familyId:session.familyId,eventId:batch.eventId}),/already being delivered/);f.advance(31000);
  await Promise.allSettled([f.service.deliver({familyId:session.familyId,eventId:batch.eventId}),f.service.deliver({familyId:session.familyId,eventId:batch.eventId})]);assert.equal(f.messages.length,2);
+});
+test('HTTP email auth retries its own session and enforces origin, profile and parent-only onboarding boundaries',async()=>{
+ const {createServer}=await import('node:http'),{hostedApi}=await import('../server/hosted-api.mjs');
+ const f=fixture();let handler;const server=createServer((req,res)=>void handler(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
+ handler=hostedApi({store:f.store,password,appOrigin:base,mail:f.mail,enqueue:async()=>{}});
+ const post=(path,data,cookie='',extra={})=>fetch(base+'/api/family'+path,{method:'POST',headers:{Origin:base,'Content-Type':'application/json',Cookie:cookie,...extra},body:JSON.stringify(data)});
+ try{
+  const key=newCode(),data={key,email:'http-parent@example.test'};
+  assert.equal((await post('/authstart',data,'',{Origin:'https://untrusted.example'})).status,403);assert.equal(f.messages.length,0);
+  assert.equal((await post('/authstart',data)).status,200);assert.equal((await post('/authverify',{key,code:f.code()})).status,200);
+  const first=await post('/authfinish',{key,create:true});assert.equal(first.status,200);assert.match(first.headers.get('set-cookie'),/HttpOnly/);assert.match(first.headers.get('set-cookie'),/SameSite=Strict/i);
+  const cookie=first.headers.get('set-cookie').split(';')[0];assert.equal((await post('/authfinish',{key,create:true},cookie)).status,200,'lost finish response remains retryable');
+  const parent=await (await fetch(base+'/api/family',{headers:{Cookie:cookie}})).json(),profile={'X-RoboLab-Profile':parent.profile.id};assert.equal(parent.emailLogin,true);
+  const batch={id:crypto.randomUUID(),names:['Pilot']};assert.equal((await post('/studentbatch',batch,cookie)).status,409);
+  const created=await post('/studentbatch',batch,cookie,profile);assert.equal(created.status,200);const cards=(await created.json()).cards,student=await login(f.store,cards[0].code);
+  assert.equal((await current(f.store,student)).profile.firstSignedInAt,null);
+  assert.equal((await fetch(base+'/api/family/login?code='+cards[0].code)).status,401);assert.equal((await current(f.store,student)).profile.firstSignedInAt,null);
+  const signed=await post('/login',{code:cards[0].code});assert.equal(signed.status,200);assert.ok((await current(f.store,student)).profile.firstSignedInAt);
+  const childCookie=signed.headers.get('set-cookie').split(';')[0],childHeaders={'X-RoboLab-Profile':student.profileId};
+  for(const [path,body] of [['/studentbatch',batch],['/notifications',{notifyFirst:false}],['/mailretry',{id:batch.id}]])assert.equal((await post(path,body,childCookie,childHeaders)).status,403,path);
+  const childView=await (await fetch(base+'/api/family',{headers:{Cookie:childCookie}})).json();assert.equal('onboardingMail' in childView,false);assert.equal('recoveryEmail' in childView,false);
+  assert.equal((await post('/authfinish',{key,create:true},childCookie)).status,409,'email proof cannot silently replace an active student session');
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
+
+test('a family read cleans expired payloads even if the original queue publication failed',async()=>{
+ const f=fixture(),{session}=await f.parent();f.queueDown(true);const batch=await f.service.students(session,{id:crypto.randomUUID(),names:['Pilot']});f.advance(MAIL_TTL);
+ const clean=await f.service.cleanupExpired(session,(await current(f.store,session)).family);assert.equal(clean.onboarding.events[batch.eventId].status,'expired');assert.equal(clean.onboarding.events[batch.eventId].payload,undefined);assert.equal(clean.onboarding.batches[batch.eventId].cards,undefined);
+ await login(f.store,batch.cards[0].code);assert.equal(clean.profiles.length,2,'only temporary payloads expire; student access remains valid');
 });

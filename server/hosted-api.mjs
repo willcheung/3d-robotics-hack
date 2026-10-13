@@ -4,7 +4,7 @@ import {recoveryService,resendMailer} from './recovery.mjs';
 import {onboardingService,onboardingView} from './onboarding.mjs';
 import {enqueueOnboarding} from './onboarding-queue.mjs';
 import {randomUUID} from 'node:crypto';
-import {BlobStore,HttpError,current,view,login,addStudent,studentAccess,saveDraft,reserveRun,releaseRun,recordAttempt,sourceInput,bindRun,cancelRun,createFamily,setupIdentity,reserveServiceRun,releaseServiceRun} from './family-store.mjs';
+import {BlobStore,HttpError,current,view,profileIn,login,addStudent,studentAccess,saveDraft,reserveRun,releaseRun,recordAttempt,sourceInput,bindRun,cancelRun,createFamily,setupIdentity,reserveServiceRun,releaseServiceRun} from './family-store.mjs';
 import {SandboxRun,relayReply,stopSandbox} from './sandbox-run.mjs';
 import {initialState,command,tick,reached,targets,lessonTargets,targetLesson} from '../src/model.ts';
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
@@ -46,7 +46,7 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
    const {family,profile}=await current(store,session);
    const expected=req.headers['x-robolab-profile'];
    if(expected&&expected!==profile.id||req.method==='POST'&&expected!==profile.id)throw new HttpError(409,'The signed-in profile changed in another tab. Sign in again before saving or running.');
-   if(path==='/api/family'&&req.method==='GET'){json(res,200,{...view(family,profile),...onboardingView(family,profile),recoveryEnabled:recovery.enabled});return true;}
+   if(path==='/api/family'&&req.method==='GET'){const clean=await onboarding.cleanupExpired(session,family),active=profileIn(clean,session);json(res,200,{...view(clean,active),...onboardingView(clean,active),recoveryEnabled:recovery.enabled});return true;}
    if(req.method!=='POST')throw new HttpError(405,'POST required.');
    const data=await body(req);
    if(path==='/api/family/studentreplace'){json(res,200,await onboarding.replace(session,data));return true;}

@@ -179,9 +179,9 @@ Verification UI must visibly confirm the server-confirmed address, persist after
 Run tests/recovery.test.mjs and the local recovery-ui.spec.ts in ordinary CI. Include current-code reauthentication, parent/student/other-family boundaries, verification replay/expiry, neutral missing/unverified/delivery-failure receipts, private token/index/limit storage, bounded sends, concurrent reset winner, orphan invite rejection, same-browser interrupted-response retry, old parent session invalidation, unchanged student drafts/history/completion, same-tab hash links and new-tab confirmation, and readable narrow screens. Real private Blob and actual email delivery remain separate release checks; a local inbox fixture is never provider proof. Exact two-origin frame/postMessage/CSP acceptance must retain rejection of foreign parents.
 
 
-## FAMILY-02 onboarding acceptance (planned)
+## FAMILY-02 onboarding acceptance
 
-The workflow and delivery slices are defined in PLAN.md and TASKS.md. None of these new gates is evidence of an implemented feature. Add each test file to ordinary CI when its slice is built; retain current recovery/family/UI and both-language mission tests. Record exact source, local/CI/provider evidence and remaining learner observations separately.
+The workflow and delivery slices are defined in PLAN.md and TASKS.md. [ONBOARDING-QA.md](ONBOARDING-QA.md) records implemented tests, real staging evidence and remaining human observations. Retain these gates in future builds; local fault injection and mocked mail never replace actual staging delivery. Record exact source and CI/provider evidence separately.
 
 | Area | Required positive and negative evidence |
 | --- | --- |
@@ -198,7 +198,7 @@ The workflow and delivery slices are defined in PLAN.md and TASKS.md. None of th
 | Hosted acceptance | Real private Blob concurrency, authenticated durable consumer, Resend acceptance and actual inbox receipt on protected staging before release. Use the designated test parent and disposable students; clean only fixture records. Verify HTTPS, exact app origins, cookies and message escaping. No mocked inbox, screenshot or green dashboard can establish delivery. |
 | Human onboarding | Observe a parent reaching usable student cards and a teen resuming a lesson; record timing, errors and help needed. The roughly two-minute setup target excludes inbox delay; capture delay separately. Automated completion is not proof of intuitive onboarding. |
 
-Before FAMILY-02A becomes ready, freeze normalized-email rules, challenge storage/TTL/attempt budgets, retry binding, signup atomicity and migration fixtures. Before FAMILY-02B, freeze the encryption key/retention policy, email category caps and authorized background-delivery path. FAMILY-02C must reuse that delivery path and prove lifetime deduplication for the profile. Enabling provider resources or releasing authentication changes requires the ordinary scoped operational authorization; this planning pass changes none.
+The combined manual goal froze normalized-email rules, challenge storage/TTL/attempt budgets, retry binding, signup atomicity, encryption/retention and category budgets in PLAN.md. FAMILY-02C reuses the same delivery path and lifetime profile event identity. Future account changes must preserve interrupted-response retries even at the six-student limit, reject control characters in mail-bound names, and retain expired-payload cleanup when a queue outage occurs. Enabling provider resources or releasing authentication changes still requires the ordinary scoped operational authorization.
 
 ## S03 / Mission 2 regression gates
 
