@@ -8,6 +8,17 @@ For each future slice record ID/status, base SHA, branch/PR, last runnable and e
 
 Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof remain pending. No automation is activated by publishing the source.
 
+## FAMILY-02 — Parent email and student onboarding
+
+- Status: review candidate on [PR #3](https://github.com/willcheung/3d-robotics-hack/pull/3), branch `codex/family-onboarding-plan`, base `09aff269f5c419a1e1c24086c0bc5c3cc588ddb4`. Final exact-head CI and protected-staging receipts are recorded on the PR. No merge or production promotion is included in this goal.
+- Implemented: parent email/code entry, explicit family creation and returning-family choice; batch student cards and one combined email; replacement codes that retain progress; first interactive sign-in notices with opt-out. Existing code/recovery flows remain available and production records were preserved.
+- Reliability: bounded browser-bound email challenges; encrypted temporary payloads; conditional private-store updates; durable queue delivery/cleanup; stable provider idempotency; explicit retry/expiry states. Parent/student profile switches protect the current draft. Lost batch responses remain recoverable at the six-student limit.
+- Passed locally: 39 account/recovery/onboarding regressions, 12 family browser journeys including real Java unlocks, 11 workshop/model checks, 15 isolated Java tests and 49 real-language browser behaviors; TypeScript/build and app packaging. Four additional real Blob concurrency checks passed and removed only their fixtures. See [readiness report and owner checklist](ONBOARDING-QA.md).
+- Hosted evidence at `35d1b1e9de92514c6e0cdd900402e9d26032fcd8`: actual parent signup and return emails; received combined setup email; automatic first-sign-in notices; real Python/Java all rescues in both missions, errors/Stop/Reset and fresh-device saved progress. Queue registration/helpers were repaired after a staging failure. The final candidate adds tested retry/cleanup/input guardrails; its deployment and focused final checks are recorded on the PR.
+- Inspected synthetic narrow screenshots cover parent code entry, the verified banner and masked student cards. No actual email addresses or usable credentials are published in these artifacts.
+- Remaining limits: human parent/teen timing/device pilots, the beta Queue dependency, and a full-day cleanup soak; short authentication cleanup is checked live and long expiry/crash cases use controlled regression fixtures. New email parents have no email-change management screen. No later curriculum or usage-automation work.
+- Next action: owner QA, then separately authorized release. Resume on this PR if QA finds a material gap; do not start another slice automatically.
+
 ## RECOVERY-02 — Visible email verification confirmation
 
 - Status: done; [PR #1](https://github.com/willcheung/3d-robotics-hack/pull/1) merged and the tested app was promoted to [RoboLab](https://robolab.vibecodingdad.com) on October 12, 2026 after explicit release approval.

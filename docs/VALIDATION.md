@@ -1,6 +1,6 @@
 # Validation boundaries
 
-The implemented Mission 1 foundation has 87 local/CI checks: 6 model, 20 account/recovery, 6 account UI, 13 real Docker Java and 42 workshop browser tests. `npm run check` runs these after dependency, browser and Java-image setup. CI also builds both Vercel targets.
+The two-mission onboarding candidate has 126 local/CI checks: 11 model/lesson/preview, 39 account/recovery/onboarding, 12 account UI, 15 real Docker Java and 49 workshop browser tests. `npm run check` runs these after dependency, browser and Java-image setup. CI also builds both Vercel targets. [Onboarding QA](ONBOARDING-QA.md) distinguishes local, real-provider and remaining human evidence; the PR records the exact tested head.
 
 Previous hosted acceptance exercised real Sandbox Java/Python, private Blob concurrent writes, family creation, cross-device drafts, checked progress, account isolation, Stop/recovery and actual verification/recovery emails using disposable families. Private provider credentials and operational receipts are not distributed with the source. A fork must repeat live provider acceptance against its own staging setup; passing local CI does not establish its deployment works.
 

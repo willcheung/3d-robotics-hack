@@ -16,15 +16,16 @@
     "build:vercel": "node scripts/vercel-build.mjs",
     "setup:java": "docker build --network=default -t robolab-java:s02 java",
     "test:java": "node --test tests/java.test.mjs",
-    "test:family": "node --test tests/family.test.mjs tests/recovery.test.mjs",
+    "test:family": "node --test tests/family.test.mjs tests/recovery.test.mjs tests/onboarding.test.mjs",
     "test:provider": "node --test tests/provider.test.mjs",
-    "test:storage-provider": "node --test tests/storage-provider.test.mjs tests/recovery-storage.test.mjs",
+    "test:storage-provider": "node --test tests/storage-provider.test.mjs tests/recovery-storage.test.mjs tests/onboarding-storage.test.mjs",
     "test:hosted": "playwright test --config playwright.hosted.config.ts",
     "test:family-ui": "playwright test --config playwright.family-ui.config.ts",
     "check:publication": "node scripts/check-publication.mjs"
   },
   "dependencies": {
     "@vercel/blob": "2.8.1",
+    "@vercel/queue": "0.8.0",
     "@vercel/sandbox": "3.6.1",
     "highlight.js": "11.12.0",
     "iron-session": "9.0.1",

@@ -10,6 +10,7 @@ RoboLab's original source, lesson documentation and procedural artwork are MIT-l
 | CPython in Pyodide | 3.14.2 | PSF and included historical/third-party terms; https://github.com/python/cpython/tree/v3.14.2 |
 | @vercel/sandbox | 3.6.1 | Apache-2.0; installed npm package and its source metadata |
 | @vercel/blob | 2.8.1 | Apache-2.0; installed npm package and its source metadata |
+| @vercel/queue | 0.8.0 | Apache-2.0; installed npm package and its source metadata |
 | iron-session | 9.0.1 | MIT; installed npm package and its source metadata |
 | Vite / esbuild | 8.3.4 / 0.28.2 | MIT |
 | TypeScript / Playwright | 5.9.3 / 1.64.0 | Apache-2.0 |

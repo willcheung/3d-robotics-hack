@@ -7,8 +7,13 @@ for(const file of ['sandbox-relay.mjs','hosted-run.sh','python-run.py'])await co
 await copyFile('java/Robot.java',`${root}/java/Robot.java`);
 await writeFile(`${root}/.vc-config.json`,JSON.stringify({runtime:'nodejs24.x',handler:'server/handler.mjs',launcherType:'Nodejs',maxDuration:90,memory:1024,shouldAddHelpers:false,supportsResponseStreaming:true,regions:['iad1']}));
 
+const mailRoot='.vercel/output/functions/onboarding-mail.func';
+await mkdir(mailRoot,{recursive:true});
+await build({entryPoints:['server/onboarding-queue.mjs'],outfile:`${mailRoot}/handler.mjs`,bundle:true,platform:'node',target:'node24',format:'esm',banner:{js:"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);"}});
+await writeFile(`${mailRoot}/.vc-config.json`,JSON.stringify({runtime:'nodejs24.x',handler:'handler.mjs',launcherType:'Nodejs',maxDuration:60,memory:1024,shouldAddHelpers:true,regions:['iad1'],experimentalTriggers:[{type:'queue/v2beta',topic:'robolab-onboarding-v1',consumer:'onboarding-mail'}]}));
+
 // Retain the notices for bundled server dependencies as well as the app license.
-for (const file of ['LICENSE','THIRD-PARTY.md']) await copyFile(file,`${root}/${file}`);
+for (const file of ['LICENSE','THIRD-PARTY.md']) {await copyFile(file,`${root}/${file}`);await copyFile(file,`${mailRoot}/${file}`);}
 const packages=JSON.parse(await readFile('package-lock.json','utf8')).packages;
 for (const [path,pkg] of Object.entries(packages)) {
   if (!path || pkg.dev) continue;
@@ -17,4 +22,6 @@ for (const [path,pkg] of Object.entries(packages)) {
   if (!notices.length) continue; // Some package metadata points to its upstream notice.
   const destination=`${root}/licenses/${path}`; await mkdir(destination,{recursive:true});
   for (const file of notices) await copyFile(`${path}/${file}`,`${destination}/${file}`);
+  const mailDestination=`${mailRoot}/licenses/${path}`;await mkdir(mailDestination,{recursive:true});
+  for(const file of notices)await copyFile(`${path}/${file}`,`${mailDestination}/${file}`);
 }

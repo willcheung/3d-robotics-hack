@@ -14,6 +14,7 @@ Updated from early play-test feedback. Missions 1 and 2 run online in Python and
 | Lessons / experiment history | Released S03 adds L02 sensor choice, a versioned teaching contract, two-mission navigation, separate mission/language drafts and existing journal integration. Checked L02 milestones require checked L01 completion. S03H retains durable understanding records and the remaining history/migration work; see MISSION-02.md and the release receipt in PROGRESS.md. |
 | Expanded curriculum | 16 core outlines: six foundations, five rover lessons including measured heading (S11H), two light/color lessons (S16/S17) and three combined jobs (S15/S18/S19). Four optional outlines: X01/X02 Rocket Lab and X03/X04 image sensing/docking. CURRICULUM.md specifies prerequisites, hardware connections, numeric/contact contracts and readiness. L01 and L02 use the same implemented searchlight and direction sensor; no arm, rover, optical or flight model is implemented. |
 | Accounts / family multiplayer | Live DEPLOY-01 and S03: private student access codes, separate cross-device drafts/history, parent provision/rotate/revoke, and shared server-checked L01/L02 milestones. FAMILY-01 adds in-app parent setup and code delivery. Official S06 rankings and live co-control are not implemented. |
+| Faster parent onboarding | FAMILY-02 is implemented on PR #3 for protected-staging owner QA: emailed one-time parent codes, student login cards/one setup receipt, and first-sign-in-only notifications. Existing code login/recovery remains the current live behavior until release. See ONBOARDING-QA.md for the evidence, final-commit gate and human walkthrough. |
 | Unattended development | OPS-01 remains unverified. Manual remote-ref ownership has evidence; scheduled usage/repository/toolchain access and atomic cycle ownership do not yet. |
 
 ## Boundaries to keep as the framework grows
@@ -61,6 +62,8 @@ S05 syncs history and progress to the correct child/family with ownership checks
 For live multiplayer, first specify cooperative vs competitive control, session ownership, server authority, command ordering, disconnect/reconnect, stale state, latency/fairness and what happens when one child leaves. Test those before calling a local two-tab demo multiplayer.
 
 ## Required regression gates
+
+Account onboarding changes must retain the FAMILY-02 contract in PLAN.md: preserve existing family/student identity and work, require current verified ownership before email access or credential delivery, deduplicate retryable creation and first-sign-in events, and separate successful account creation from email-delivery status. Routine sign-ins produce no activity email. Anonymous practice and students with valid codes keep working during a mail outage. No implementation is ready for release on mocked email or in-memory storage evidence alone; ENGINEERING-CHECKS.md specifies the race/migration/provider gates.
 
 | Area | Evidence required on the proposed commit |
 | --- | --- |
