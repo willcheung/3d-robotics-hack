@@ -234,7 +234,7 @@ RECOVERY-01 adds optional verified parent recovery email; students continue with
 
 ## FAMILY-02 design: email sign-in and quick family onboarding
 
-Design requested October 12, 2026; implementation and deployment are not included in this planning pass. The owner selected **one notification for each student's first successful sign-in**, not recurring activity email. Prioritize reaching the first lesson over settings, tutorials or credential paperwork. Design target: a new parent can reach student login cards in about two minutes, excluding inbox delivery; a returning student can resume from one code or link. Validate these targets with people and actual inboxes rather than claiming them from automated tests.
+Design requested October 12, 2026. The subsequent manual goal authorizes combined FAMILY-02A/B/C implementation and protected staging QA on PR #3; production promotion remains separate. The owner selected **one notification for each student's first successful sign-in**, not recurring activity email. Prioritize reaching the first lesson over settings, tutorials or credential paperwork. Design target: a new parent can reach student login cards in about two minutes, excluding inbox delivery; a returning student can resume from one code or link. Validate these targets with people and actual inboxes rather than claiming them from automated tests.
 
 ### Parent and student journey
 
@@ -288,3 +288,13 @@ FAMILY-02A delivers real parent email signup/sign-in, the existing-family migrat
 ## Released slice: Mission 2
 
 S03 / L02 is released in both languages; PROGRESS.md records the authorized merge and hosted checks. [MISSION-02.md](MISSION-02.md) remains its design and acceptance contract. It reuses the editor, model, accounts and teaching controls, including mission-aware drafts/navigation/checked progress. Keep the remaining S03H journal/understanding work separately scoped; TASKS.md controls future readiness, and this release starts no later slice. Every later mission must pair a real job with observable consequences, other hardware applications, a commented starter, graduated hints, prediction/transfer and penalty-free challenges. Learner/device/pacing observation remains pending.
+
+### FAMILY-02 implementation contract
+
+The combined manual goal supersedes the internal A/B/C merge ordering for PR #3. Additive account fields preserve old families; the owner permits starting fresh but no production wipe is required. Parent login uses fresh email proof and preserves the existing family. Legacy code setup remains an advanced alternative.
+
+Email budgets share the existing 60/day service cap: up to five authentication requests, five credential batches/replacements and six first-sign-in messages per verified address per UTC day. Optional notices stop at 48 service sends to reserve authentication capacity. Authentication has a 60-second resend cooldown, five wrong guesses per challenge, and cross-challenge address/IP limits. Retries reuse quota reservations and provider identities.
+
+Temporary authentication code envelopes expire after 10 minutes; credential envelopes/cards expire after 23 hours, within Resend's 24-hour deduplication window. AES-256-GCM uses a versioned envelope and a domain-separated HKDF key from the existing server-only session secret. Queue cleanup is scheduled before sensitive writes/delivery; cleanup may run after its deadline during a provider outage, but expired payloads cannot be used or delivered. Sent mail payloads are deleted immediately. Request IDs, hashes and status receipts remain for replay protection. Session-key rotation needs an explicit migration plan; ordinary releases never rotate it.
+
+Vercel Queues is a deployment-partitioned durable outbox transport; messages contain only private record identifiers. It uses project OIDC and a private consumer, with retries and leases. Publishing failures show a parent retry action; valid student login does not wait for the email provider. The staging goal must prove the actual custom Build Output trigger and provider delivery before review readiness.

@@ -8,14 +8,14 @@ For each future slice record ID/status, base SHA, branch/PR, last runnable and e
 
 Actual student/device pilots and OPS-01 scheduled-access/atomic-cycle proof remain pending. No automation is activated by publishing the source.
 
-## FAMILY-02 — Parent email and student onboarding design
+## FAMILY-02 — Parent email and student onboarding
 
-- Status: design review; no application implementation or release. Branch: `codex/family-onboarding-plan`; base: `684db70b4c0c1aaa2f19f745aa52238483a2a14c`. The design PR records its exact documentation commit and publication checks.
-- Owner request: familiar, fast parent email access; student login details when adding children; limited setup notifications. Confirmed preference: first successful student sign-in only.
-- Design: one Parent email → one-time code flow; preserve and resume existing families; batch student login cards plus one combined setup email; one first-sign-in notice per newly enrolled child, with a parent preference. Current parent/student codes and saved work remain valid. See [PLAN.md](PLAN.md#family-02-design-email-sign-in-and-quick-family-onboarding).
-- Delivery: FAMILY-02A parent email authentication, FAMILY-02B student cards/credential email and FAMILY-02C first-sign-in notification are separately runnable draft slices. The complete request is not implemented until all three are accepted. Retryable creation, encrypted temporary mail payloads, atomic sign-in events and durable delivery are explicit gates; tests are specified in ENGINEERING-CHECKS.md.
-- Evidence: inspected current family setup/recovery UI and API/store behavior; checked primary Resend, Vercel Queues and OWASP documentation. Repository publication/link checks validate the plan only. No email was sent, provider resource configured, credential changed, student record read or application code altered.
-- Next action: finalize FAMILY-02A's challenge/abuse/migration contract before an implementation kickoff. FAMILY-02B separately needs an authorized, tested background-delivery path and frozen mail budgets/key retention. Existing released missions and usage automation are unaffected.
+- Status: in_progress, combined manual implementation/QA goal on [PR #3](https://github.com/willcheung/3d-robotics-hack/pull/3), branch `codex/family-onboarding-plan`, base `09aff269f5c419a1e1c24086c0bc5c3cc588ddb4`. No merge or production promotion is authorized by this goal.
+- Implemented: parent email/code entry, explicit family creation and returning-family choice; batch student cards and one combined email; replacement codes that retain progress; first interactive sign-in notices with opt-out. Existing code/recovery flows remain available.
+- Reliability: bounded browser-bound email challenges; encrypted temporary payloads; conditional private-store updates; durable queue delivery/cleanup; stable provider idempotency; explicit retry/expiry states. Parent/student profile switches protect the current draft.
+- Local evidence so far: 15 onboarding service regressions, 12 family browser journeys including real local Java unlocks, TypeScript/build and app packaging. Existing family/recovery and workshop unit tests passed. Browser QA reproduced and fixed hidden-panel CSS and a stale profile header during student switching.
+- Remaining gates: protected staging queue/private-consumer proof, actual parent inbox messages and no-repeat notices, real Python/Java saved progress, inspected final screenshots, exact-head CI and final readiness receipt. Mock mail and local tests are not live delivery evidence.
+- Resume: finish the authorized combined goal, record exact tested commit/deployment evidence, then release exclusive ownership. No usage automation or later curriculum work is included.
 
 ## RECOVERY-02 — Visible email verification confirmation
 

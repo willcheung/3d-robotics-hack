@@ -65,28 +65,28 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## FAMILY-02A — Parent email sign-in and signup
 
-- Status: draft design; implementation has not started. This is the first proposed account slice after the owner's October 12 onboarding request.
+- Status: in_progress in the explicitly authorized combined FAMILY-02 manual goal on PR #3.
 - Depends on: FAMILY-01, RECOVERY-01 and RECOVERY-02 landed (satisfied); freeze the challenge/attempt/email-budget contract and inspect ownership before promotion to ready.
 - Outcome: a parent enters email and a short one-time code, then resumes the same family or explicitly creates one. Email proof is part of onboarding; no separate recovery-verification task or mandatory parent-code saving step.
 - Contract: [PLAN.md's FAMILY-02 design](PLAN.md#family-02-design-email-sign-in-and-quick-family-onboarding). Keep existing parent/student codes, verified email memberships, multiple-family chooser, drafts/progress, seven-day sessions and exact-origin boundaries. Legacy unverified families link email only after parent-code reauthentication. Ordinary email sign-in never rotates credentials or creates a duplicate family.
 - Acceptance: ten-minute, single-use, bounded-attempt codes; neutral pre-proof responses; browser-bound interrupted-response retry; one family on concurrent signup; explicit profile switching; wrong/expired/replayed codes and rate limits preserve work. Reauthentication and email-change/revoke races cannot use stale membership.
-- Validation: `tests/parent-auth.test.mjs` and `tests/hosted/parent-auth-ui.spec.ts` (to be implemented), existing family/recovery tests, real Blob concurrency, real inbox/code sign-in on protected staging, both-mission Python/Java saved-progress regressions and exact-commit CI. Mock mail is not delivery evidence.
+- Validation: `tests/onboarding.test.mjs` and `tests/hosted/onboarding-ui.spec.ts`, existing family/recovery tests, real Blob concurrency, real inbox/code sign-in on protected staging, both-mission Python/Java saved-progress regressions and exact-commit CI. Mock mail is not delivery evidence.
 
 ## FAMILY-02B — Student login cards and a single setup email
 
-- Status: draft design; no credential-delivery implementation exists yet.
-- Depends on: FAMILY-02A landed; authorized reliable mail delivery and a frozen encryption/retention/notification-budget contract. Evaluate Vercel Queues integration/costs before making this slice ready.
+- Status: in_progress in the combined FAMILY-02 manual goal.
+- Depends on: FAMILY-02A behavior (combined goal permits building together); authorized reliable mail delivery and a frozen encryption/retention/notification-budget contract. Evaluate Vercel Queues integration/costs before making this slice ready.
 - Outcome: a verified parent creates up to six student nicknames in a batch, immediately gets usable Copy/Print login cards and receives one combined setup email. Returning students use one code or an explicit-confirmation student link. No student email or extra username/password.
 - Acceptance: idempotent batch creation and credential issuance, stable request/recipient binding, encrypted temporary credential outbox with expiry, same-event email deduplication, no bearer code in queries/logs, deliberate shared-device switching, usable cards if mail fails. Replacing a code is explicit and keeps saved work. Retries, duplicates, partial writes, email changes and revocations never disclose stale credentials or create orphan access.
-- Validation: `tests/student-onboarding.test.mjs` and `tests/hosted/student-onboarding-ui.spec.ts` (to be implemented), clipboard-denied/print/narrow/keyboard checks, crash and dropped-response fixtures, real private-store/provider retry acceptance, actual combined email received by the designated parent and both-language saved-work checks. No setup email is sent to an unverified address. Do not claim complete onboarding until FAMILY-02C is accepted too.
+- Validation: `tests/onboarding.test.mjs` and `tests/hosted/onboarding-ui.spec.ts`, clipboard-denied/print/narrow/keyboard checks, crash and dropped-response fixtures, real private-store/provider retry acceptance, actual combined email received by the designated parent and both-language saved-work checks. No setup email is sent to an unverified address. Do not claim complete onboarding until FAMILY-02C is accepted too.
 
 ## FAMILY-02C — First student sign-in confirmation
 
-- Status: draft design; owner explicitly selected first sign-in only. No recurring login alerts.
-- Depends on: FAMILY-02B landed and its durable delivery path proved.
+- Status: in_progress in the combined FAMILY-02 manual goal; first sign-in only, no recurring login alerts.
+- Depends on: FAMILY-02B behavior and its durable delivery path proved within the combined goal.
 - Outcome: parent sees Waiting for first sign-in / Ready and gets one optional notice when each newly enrolled child signs in successfully. Later sessions, credential replacements and ordinary activity remain quiet. Existing students receive no invented retrospective first-sign-in emails.
 - Acceptance: one persisted event per family/profile, atomic first-sign-in state, notification preference respected at delivery, no events for failed login/GET/email previews/helper authentication/session refresh, no login delay or failure due to mail outage. Duplicate delivery/retry cannot repeat the message; unknown delivery is reconciled within the provider deduplication window. Current verified parent and active student are rechecked before sending.
-- Validation: `tests/onboarding-notifications.test.mjs` and `tests/hosted/onboarding-notifications-ui.spec.ts` (to be implemented), two simultaneous real sign-ins, webhook/queue replay, crashes before/after provider acceptance, mail outage, old/new profile migration, email change/revocation and notification opt-out. Protected staging must show the one received notice and no second send after subsequent sign-ins; timestamps/UI flags alone are not proof. Retain complete Python/Java family regressions.
+- Validation: `tests/onboarding.test.mjs` and `tests/hosted/onboarding-ui.spec.ts`, two simultaneous real sign-ins, webhook/queue replay, crashes before/after provider acceptance, mail outage, old/new profile migration, email change/revocation and notification opt-out. Protected staging must show the one received notice and no second send after subsequent sign-ins; timestamps/UI flags alone are not proof. Retain complete Python/Java family regressions.
 
 ## S03 — Sensor feedback and one complete lesson
 

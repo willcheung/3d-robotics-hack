@@ -10,7 +10,7 @@ const test=baseTest.extend<{protection:void}>({protection:[async({context},use)=
 const paths=new Set<string>();
 async function remember(code:string,parent=false){if(process.env.FAMILY_UI_MEMORY==='1')return;paths.add(`invites/${hashCode(code)}.json`);if(parent)paths.add(familyPath((await login(new BlobStore(),code)).familyId));}
 async function open(page:Page){await page.goto('/');await page.locator('#family-open').click();}
-async function create(page:Page,name='Parent comet'){await open(page);await page.locator('#parent-name').fill(name);await page.getByRole('button',{name:'Create family',exact:true}).click();await expect(page.locator('#profile-label')).toContainText(name);const code=await page.locator('#setup-receipt input').inputValue();await remember(code,true);return code;}
+async function create(page:Page,name='Parent comet'){await open(page);await page.locator('[data-mode=student]').click();await page.locator('#legacy-setup summary').click();await page.locator('#parent-name').fill(name);await page.getByRole('button',{name:'Create family',exact:true}).click();await expect(page.locator('#profile-label')).toContainText(name);const code=await page.locator('#setup-receipt input').inputValue();await remember(code,true);return code;}
 async function signIn(context:BrowserContext,code:string){await protect(context);const r=await context.request.post(base+'/api/family/login',{headers:{Origin:base,...protectedHeaders},data:{code}});expect(r.status()).toBe(200);}
 test.afterAll(async()=>{if(paths.size)await del([...paths]);});
 test('parent creates a family, saves the code, adds a student and signs in on another device',async({page,browser})=>{
@@ -35,11 +35,11 @@ test('lost response retries setup without duplicating a family',async({page})=>{
   requests++;const response=await route.fetch({headers:{...route.request().headers(),...protectedHeaders}});
   if(requests===1){const body=await response.json();firstCode=body.code;await remember(firstCode,true);const session=await page.request.get(base+'/api/family',{headers:protectedHeaders});firstProfile=(await session.json()).profile.id;await route.abort('failed');}else await route.fulfill({response});
  });
- await open(page);await page.locator('#parent-name').fill('Parent reconnect');await page.getByRole('button',{name:'Create family',exact:true}).dblclick();
+ await open(page);await page.locator('[data-mode=student]').click();await page.locator('#legacy-setup summary').click();await page.locator('#parent-name').fill('Parent reconnect');await page.getByRole('button',{name:'Create family',exact:true}).dblclick();
  await expect(page.locator('#setup-resume')).toBeEnabled();expect(requests).toBe(1);await page.locator('#setup-resume').click();await expect(page.locator('#profile-label')).toContainText('Parent reconnect');await expect.poll(async()=>(await page.locator('#setup-receipt input').inputValue())===firstCode).toBe(true);expect(await page.locator('html').getAttribute('data-profile')).toBe(firstProfile);
 });
 test('narrow signup, clipboard success and manual-copy fallback are usable',async({page})=>{
- await page.setViewportSize({width:390,height:850});await open(page);await expect(page.getByRole('button',{name:'Create family',exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.setViewportSize({width:390,height:850});await open(page);await page.locator('[data-mode=student]').click();await page.locator('#legacy-setup summary').click();await expect(page.getByRole('button',{name:'Create family',exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.locator('#family-dialog').screenshot({path:'test-results-family-ui/create-family-narrow.png'});
  await page.locator('#parent-name').fill('Parent copy');await page.getByRole('button',{name:'Create family',exact:true}).click();await expect(page.locator('#setup-receipt input')).toBeVisible();const code=await page.locator('#setup-receipt input').inputValue();await remember(code,true);
  // Clipboard permission varies by device; test both successful and refused APIs.

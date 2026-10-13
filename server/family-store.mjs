@@ -60,7 +60,7 @@ export async function studentAccess(store,session,id,revoke){
  await update(store,familyPath(session.familyId),f=>{
   if(profileIn(f,session).role!=='parent')throw new HttpError(403,'Only the parent can manage access.');
   const p=f.profiles.find(p=>p.id===id&&p.role==='student'&&p.active);if(!p)throw new HttpError(404,'Student not found.');
-  p.epoch++;epoch=p.epoch;if(revoke)p.active=false;return {value:f};
+  p.epoch++;epoch=p.epoch;if(revoke)p.active=false;else p.accessHash=hashCode(code);return {value:f};
  });
  if(!revoke)await store.write(`invites/${hashCode(code)}.json`,{familyId:session.familyId,profileId:id,epoch});
  return revoke?{ok:true}:{code};

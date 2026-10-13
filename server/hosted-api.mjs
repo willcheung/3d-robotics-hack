@@ -1,16 +1,19 @@
 import {getIronSession,sealData,unsealData} from 'iron-session';
 import {appOrigins} from './app-origins.mjs';
 import {recoveryService,resendMailer} from './recovery.mjs';
+import {onboardingService,onboardingView} from './onboarding.mjs';
+import {enqueueOnboarding} from './onboarding-queue.mjs';
 import {randomUUID} from 'node:crypto';
 import {BlobStore,HttpError,current,view,login,addStudent,studentAccess,saveDraft,reserveRun,releaseRun,recordAttempt,sourceInput,bindRun,cancelRun,createFamily,setupIdentity,reserveServiceRun,releaseServiceRun} from './family-store.mjs';
 import {SandboxRun,relayReply,stopSandbox} from './sandbox-run.mjs';
 import {initialState,command,tick,reached,targets,lessonTargets,targetLesson} from '../src/model.ts';
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
 async function body(req){let size=0;const parts=[];for await(const part of req){size+=part.length;if(size>70000)throw new HttpError(413,'Request too large.');parts.push(part);}try{const data=JSON.parse(Buffer.concat(parts).toString('utf8'));if(!data||typeof data!=='object'||Array.isArray(data))throw Error();return data;}catch{throw new HttpError(400,'Invalid request.');}}
-export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=process.env.APP_ORIGIN,password=process.env.SESSION_PASSWORD,mail=resendMailer(),alternateOrigin=process.env.APP_ALTERNATE_ORIGIN,recoveryOrigin=process.env.RECOVERY_ORIGIN,recoveryNow}={}){
+export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=process.env.APP_ORIGIN,password=process.env.SESSION_PASSWORD,mail=resendMailer(),alternateOrigin=process.env.APP_ALTERNATE_ORIGIN,recoveryOrigin=process.env.RECOVERY_ORIGIN,recoveryNow,enqueue=enqueueOnboarding}={}){
  const allowed=appOrigin?appOrigins(appOrigin,alternateOrigin):[];
  if(recoveryOrigin&&!allowed.includes(recoveryOrigin))throw Error('Recovery links must use a configured workshop origin.');
  const recovery=recoveryService({store,password,appOrigin:recoveryOrigin??appOrigin,mail,now:recoveryNow});
+ const onboarding=onboardingService({store,password,appOrigin:recoveryOrigin??appOrigin,mail,now:recoveryNow,enqueue});
  return async function handle(req,res){
   const url=new URL(req.url,'http://local');
   const endpoint=url.searchParams.get('endpoint');
@@ -20,23 +23,36 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
    if(!appOrigin||!password||password.length<32)throw new HttpError(503,'Family services are not configured. Python practice remains available.');
    if(req.method!=='GET'&&(req.method!=='POST'||!allowed.includes(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json')))throw new HttpError(403,'Use this workshop to make changes.');
    const session=await getIronSession(req,res,{password,cookieName:appOrigin.startsWith('https:')?'__Host-robolab':'robolab-local',ttl:7*24*3600,cookieOptions:{secure:appOrigin.startsWith('https:'),httpOnly:true,sameSite:'strict',path:'/'}});
+   const ip=req.headers['x-vercel-forwarded-for']?.split(',')[0]??req.socket?.remoteAddress??'unknown';
+   if(['/api/family/authstart','/api/family/authverify','/api/family/authfinish'].includes(path)&&req.method==='POST'){
+    let active;
+    if(session.familyId){try{active=await current(store,session);if(!path.endsWith('authfinish'))throw new HttpError(409,'Sign out before using another parent email. Your saved work will be kept.');}catch(e){if(e.status!==401)throw e;}}
+    const data=await body(req);
+    if(path.endsWith('authstart'))json(res,200,await onboarding.start(data,ip));
+    else if(path.endsWith('authverify'))json(res,200,await onboarding.verify(data,ip));
+    else {const result=await onboarding.finish(data,active?session:undefined);if(active&&(result.session.profileId!==session.profileId||result.session.familyId!==session.familyId))throw new HttpError(409,'Sign out before switching families.');Object.assign(session,result.session);await session.save();json(res,200,{ok:true});}
+    return true;
+   }
    if(path==='/api/family/create'&&req.method==='POST'){
     const data=await body(req),identity=setupIdentity(data.key,password);
     if(session.familyId){let active;try{active=await current(store,session);}catch(e){if(e.status!==401)throw e;}
      if(active&&(session.familyId!==identity.familyId||active.profile.role!=='parent'))throw new HttpError(409,'Sign out before creating a different family. Your existing family will be kept.');}
     const created=await createFamily(store,data,password);Object.assign(session,created.session);await session.save();json(res,200,{code:created.code});return true;
    }
-   if(path==='/api/family/login'&&req.method==='POST'){const data=await body(req);Object.assign(session,await login(store,data.code));await session.save();json(res,200,{ok:true});return true;}
+   if(path==='/api/family/login'&&req.method==='POST'){const data=await body(req);Object.assign(session,await login(store,data.code));await session.save();try{await onboarding.studentSignedIn(session);}catch{/* A durable login is usable even while notification storage/delivery is down. */}json(res,200,{ok:true});return true;}
    if(path==='/api/family/logout'&&req.method==='POST'){session.destroy();json(res,200,{ok:true});return true;}
-   const ip=req.headers['x-vercel-forwarded-for']?.split(',')[0]??req.socket?.remoteAddress??'unknown';
    if(path==='/api/family/forgot'&&req.method==='POST'){json(res,200,await recovery.forgot(await body(req),ip));return true;}
    if(path==='/api/family/recover'&&req.method==='POST'){const result=await recovery.recover(await body(req));Object.assign(session,result.session);await session.save();json(res,200,{code:result.code});return true;}
    const {family,profile}=await current(store,session);
    const expected=req.headers['x-robolab-profile'];
    if(expected&&expected!==profile.id||req.method==='POST'&&expected!==profile.id)throw new HttpError(409,'The signed-in profile changed in another tab. Sign in again before saving or running.');
-   if(path==='/api/family'&&req.method==='GET'){json(res,200,{...view(family,profile),recoveryEnabled:recovery.enabled});return true;}
+   if(path==='/api/family'&&req.method==='GET'){json(res,200,{...view(family,profile),...onboardingView(family,profile),recoveryEnabled:recovery.enabled});return true;}
    if(req.method!=='POST')throw new HttpError(405,'POST required.');
    const data=await body(req);
+   if(path==='/api/family/studentreplace'){json(res,200,await onboarding.replace(session,data));return true;}
+   if(path==='/api/family/studentbatch'){json(res,200,await onboarding.students(session,data));return true;}
+   if(path==='/api/family/mailretry'){json(res,200,await onboarding.retry(session,data.id));return true;}
+   if(path==='/api/family/notifications'){json(res,200,await onboarding.preferences(session,data));return true;}
    if(path==='/api/family/email'){json(res,200,await recovery.begin(session,data,ip));return true;}
    if(path==='/api/family/emailverify'){json(res,200,await recovery.verify(session,data.token));return true;}
    if(path==='/api/family/students'){json(res,200,await addStudent(store,session,data.name));return true;}
