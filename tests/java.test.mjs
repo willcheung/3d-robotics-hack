@@ -188,8 +188,8 @@ test('Mission 2 real Java: reversed condition fails; one reading selects both di
 test('Missions 2 and 3 authoritative HTTP check uses authored starts, rejects client pose/results and stores only real outcomes',async()=>{
   const {createServer}=await import('node:http');const {randomUUID}=await import('node:crypto');
   const {hostedApi}=await import('../server/hosted-api.mjs');const {MemoryStore}=await import('./helpers/memory-store.mjs');
-  const {provision,login,recordAttempt,current}=await import('../server/family-store.mjs');const {sensorReference,sensorJava,sensorTransfer}=await import('../src/lessons.ts');
-  const store=new MemoryStore(),seed=await provision(store),session=await login(store,seed.code);
+  const {provision,login,addStudent,recordAttempt,current}=await import('../server/family-store.mjs');const {sensorReference,sensorJava,sensorTransfer}=await import('../src/lessons.ts');
+  const store=new MemoryStore(),parent=await provision(store),seed=await addStudent(store,await login(store,parent.code),'HTTP pilot'),session=await login(store,seed.code);
   // Prerequisite fixture only: Mission 1 runtime behavior has separate real tests.
   for(const target of ['beacon','farther','reverse'])await recordAttempt(store,session,{id:randomUUID(),source:'fixture',language:'java',target,outcome:'reached',seconds:2},true);
   let api;const server=createServer((req,res)=>void api(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
@@ -199,7 +199,7 @@ test('Missions 2 and 3 authoritative HTTP check uses authored starts, rejects cl
   api=hostedApi({store,Run:LocalJava,appOrigin:origin,password:'test-only-mission-two-session-password-32-characters'});
   let cookie='';const post=(path,data)=>fetch(origin+'/api/family'+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Cookie:cookie,'X-RoboLab-Profile':session.profileId},body:JSON.stringify(data)});
   try{
-    const entered=await post('/login',{code:seed.code});cookie=entered.headers.get('set-cookie').split(';')[0];
+    const entered=await post('/login',{code:seed.code});assert.equal(entered.status,200);cookie=entered.headers.get('set-cookie').split(';')[0];
     for(const [target,source,wanted] of [['sensor-left',sensorJava,'missed'],['sensor-right',sensorJava,'missed'],['sensor-left',sensorReference.java,'reached'],['sensor-right',sensorReference.java,'reached'],['sensor-transfer',sensorReference.java,'missed'],['sensor-transfer',sensorTransfer.java,'reached']]){
       const response=await post('/verify',{id:randomUUID(),target,source,language:'java',state:{angle:60,power:0},outcome:'reached',score:999});assert.equal(response.status,200);const result=await response.json();assert.equal(result.outcome,wanted);assert.equal(result.seconds,1);
     }
