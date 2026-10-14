@@ -110,11 +110,12 @@ If the environment cannot support those guarantees, report the specific missing 
 ## S04 — One arm mission
 
 - Status: draft
-- Depends on: S03 landed
+- Depends on: S03 and S08 landed; review the foundation observation findings before choosing the L04 teaching contract. S08 is still a review candidate, so this slice is not ready.
 - Working outcome: control an original arm/gripper to pick up and place one parcel, with Java/Python examples and explorable 3D.
-- Scope: bounded two-joint arm, labeled axes and gripper, explicit grasp/drop geometry, one sequence mission; functions are taught separately in S09. No general contact-physics promise or full arm curriculum.
+- Scope: bounded two-joint arm, labeled axes and an independently actuated third gripper control, explicit grasp/drop geometry, one sequence mission; functions are taught separately in S09. No general contact-physics promise or full arm curriculum.
 - Acceptance: grasp/carry/place follow documented rules; limits/collisions explain failure; wrong poses cannot succeed; camera, reset, existing motor lesson, and language drafts remain intact.
 - Validation: independent arm/grasp/target boundary fixtures, deterministic trace replay, reference/wrong programs, both-language/browser flows, screenshots. Incorporate available learner feedback.
+- Next design action: use the [Parcel Port brief](TEACHING-PROGRESSION.md#next-mission-design-brief-l04-parcel-port) to author MISSION-04 with frozen mechanism/contact/API semantics and feasible fixtures. This is the next new mission after the revised L01–L03 foundation is reviewed; do not introduce L05 function syntax here.
 
 ## S05 — Separate family progress
 
@@ -151,8 +152,8 @@ Before promoting one entry to ready: dependencies must be landed; choose one mai
 
 ## S08 — Ranger patrol loop
 
-- Status: draft
-- Depends on: S03H landed
+- Status: review candidate; local acceptance passed for the explicitly authorized Lesson 3 goal. Contract: [MISSION-03.md](MISSION-03.md); owner checklist: [MISSION-03-QA.md](MISSION-03-QA.md). Exact proposed commit and CI are recorded on the draft PR. No merge/deployment authorization.
+- Depends on: S03 landed and existing DEPLOY-01/S03 map, drafts, journal and checked progress. This goal includes only L03 integration/regressions from S03H; its broader understanding/local-history work remains separate.
 - Working outcome: use a loop to inspect a small set of ranger checkpoints with the existing light/camera mechanism; show each actual inspection.
 - Scope: one repetition lesson, bounded checkpoint observations and a counter; variables/conditions reused, lists deferred.
 - Acceptance and validation: the correct repeat count visits every required checkpoint; zero/one-too-few/excess repetitions, skipped dwell and a wrong tilt remain unfinished. Check real execution, reset of visited state, both-language observations, hints/transfer, history and browser visuals.
@@ -162,7 +163,7 @@ Before promoting one entry to ready: dependencies must be landed; choose one mai
 - Status: draft
 - Depends on: S04, S08 landed
 - Working outcome: package the arm handoff into a function/method with a destination parameter and use it twice.
-- Scope: one functions lesson on the existing arm; no new conveyor or physics engine.
+- Scope: one functions lesson on the existing arm; distinguish library calls from an editable parameterized helper and call that helper inside a bounded loop; no new conveyor or physics engine.
 - Acceptance and validation: separate calls deliver to their requested bays; hard-coded destinations, missing grasp/release and invalid poses fail. Test parameter boundaries, both-language behavior, draft/history/next flow and scene consequence.
 
 ## S10 — Foundation transfer and content pilot
@@ -295,3 +296,17 @@ Runnable setup; visible behavior; met/unmet criteria; tested commit and actual P
 - Scope: authenticated email binding, neutral lost-code request, explicit one-use recovery with safe retry, unchanged student login/progress, Resend sending, robolab.vibecodingdad.com alongside the existing app origin.
 - Acceptance: current GOAL.md contract, recovery/API/UI regressions, real Blob concurrent claims, provider delivery and protected/live origin evidence, exact-head CI and preserved rollback.
 - No new lessons, automated release policy, purchases or usage/reset work.
+
+## Teaching progression refinement — current review slice
+
+- Status: implementation/review candidate on the existing S08 branch; not landed.
+- Owner scope: improve the progressive experience across L01–L03 and strengthen future authored plans, without building later missions.
+- Acceptance: current-draft predictions and free hints in both languages; direct first edit and Run; truthful missing-checkpoint versus final-stop diagnosis, including retained short-hold evidence; code/challenge persistence and recoverable example restore; all 20 planned lessons mapped to retrieval, new demand and transfer.
+- Future readiness: apply TEACHING-PROGRESSION.md in each mission contract. Existing dependencies, ownership, model freeze and first-family pilot gates remain.
+
+## Repository personas and next curriculum decision
+
+- Status: review candidate on the existing S08 branch; documentation and skills only. The owner authorized saving all eight personas in the repo, routing them through AGENTS.md, and identifying the next curriculum work.
+- Scope: versioned `.agents/skills/robolab-*` instructions and UI metadata; automatic task-appropriate routing; course-wide design/retrospective guidance; source-based next-step review and a ready-to-use observation protocol in [TEACHING-PROGRESSION.md](TEACHING-PROGRESSION.md#next-curriculum-decisions).
+- Acceptance: eight discoverable skill manifests validate; AGENTS links resolve; references work in a clean checkout without personal skill paths; no private data or new executable dependencies. Preserve existing skills' evidence and authorization boundaries. This does not change the app or count as fresh browser/provider/learner evidence.
+- Next action: owner walkthrough of the L01–L03 candidate and observed learner progression; qualify staging/release only under separate authorization. Then author the L04/S04 contract. Later implementation, merge, deployment and class contact are not authorized by this planning task.

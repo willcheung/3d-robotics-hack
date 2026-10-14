@@ -1,0 +1,4 @@
+interface:
+  display_name: "RoboLab Builder"
+  short_description: "Build one ready lesson or product improvement"
+  default_prompt: "Use $robolab-build to implement the explicitly selected ready RoboLab slice and validate its delivered behavior."

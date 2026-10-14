@@ -1,10 +1,10 @@
-/** Teaching order differs from implementation slice numbers. L01 and L02 are playable in this build. */
+/** Teaching order differs from implementation slice numbers. L01–L03 are playable in this build. */
 export const curriculum = [
  ['L01','Signal Station','Aim a rescue searchlight with numbers, motor power and servo angles.','Start here'],
  ['L02','Read, then choose','Use a direction sensor and one condition to correct the light.','L01'],
  ['L03','Ranger patrol','Repeat a sequence to inspect several checkpoints.','L02'],
- ['L04','Parcel Port','Move an arm and gripper to hand a parcel to a worker.','L03'],
- ['L05','A reusable handoff','Write an arm function with a destination parameter.','L04'],
+ ['L04','Parcel Port','Control two arm joints and a third gripper actuator to hand a parcel to a worker.','L03'],
+ ['L05','A reusable handoff','Write a handoff function with a destination parameter; call it inside a loop.','L04'],
  ['L06','Adapt and debug','Explain and repair a program when the job changes.','L05'],
  ['R01','Deliver to the dock','Coordinate two wheel motors to deliver a battery.','L06'],
  ['R01b','Turn by measurement','Use heading feedback to point the rover into a bay.','R01'],

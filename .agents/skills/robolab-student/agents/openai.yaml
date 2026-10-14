@@ -1,0 +1,4 @@
+interface:
+  display_name: "RoboLab Skeptical Student"
+  short_description: "Find confusion through a synthetic learner walkthrough"
+  default_prompt: "Use $robolab-student to walk through the selected RoboLab lesson as a motivated beginner, marking hypotheses clearly."

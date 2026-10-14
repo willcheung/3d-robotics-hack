@@ -26,7 +26,7 @@ test('both languages show readable tokens, preserve exact source and treat paste
       expect((luminance(color.match(/\d+/g)!.map(Number)) + .05) / (luminance([16, 33, 39]) + .05)).toBeGreaterThanOrEqual(4.5);
     }
     await expect(page.locator('.code-highlight')).toHaveAttribute('aria-hidden', 'true');
-    await expect(page.getByRole('textbox')).toHaveCount(1);
+    await expect(page.locator('#code-panel').getByRole('textbox')).toHaveCount(1);
     // Selecting/copying still reads the original plain source, not the token markup.
     await editor.selectText();
     expect(await editor.evaluate((node: HTMLTextAreaElement) => node.value.slice(node.selectionStart, node.selectionEnd))).toBe(item.source);

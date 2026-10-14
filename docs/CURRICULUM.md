@@ -1,6 +1,6 @@
 # Curriculum design: commands, arms, mobile robots and sensors
 
-Planning revision, October 11, 2026. The curriculum requires useful real-life jobs, commented code, direction control, arms, light/color/image sensing and increasingly combined challenges, with optional flight where it supports the course. This is an authored design, not implemented content or evidence of learning. L01 is the playable foundation in Python and Java; DEPLOY-01 adds the curriculum map and private family progress, while later lessons remain authored outlines; TASKS.md owns build readiness and FOUNDATION.md owns acceptance. No later slice starts through this planning revision.
+Planning revision, October 11, 2026. The curriculum requires useful real-life jobs, commented code, direction control, arms, light/color/image sensing and increasingly combined challenges, with optional flight where it supports the course. This is an authored design, not implemented content or evidence of learning. L01 and L02 are released in Python and Java; the current authorized L03 goal adds the patrol loop. DEPLOY-01 provides the curriculum map and private family progress, while other lessons remain authored outlines; TASKS.md owns build readiness and FOUNDATION.md owns acceptance. No later slice starts through this planning revision.
 
 ## Decision and learning sequence
 
@@ -21,6 +21,8 @@ Core learner order (see the lesson inventory below for individual sessions):
 9. **Optional extensions:** camera images followed by image-guided docking, or one-axis landing followed by launch/measurement/return. Neither extension blocks core completion.
 
 The first six complete lessons are L01 values/searchlight (S01 refined by the lesson shell), L02 sensor choice (S03), L03 patrol loop (S08), L04 arm sequence (S04), L05 parameterized arm function (S09), and L06 changed-need transfer/debugging (S10). Mission 1's three target variations are practice within L01, not three lessons. Build order differs from teaching order: the lesson map must use concept prerequisites, not slice numbers. Java becomes available through S02, with the same objectives and separate drafts in every subsequent lesson; no student waits until a later week for Java.
+
+The course-wide [teaching progression](TEACHING-PROGRESSION.md) specifies retrieval, one new demand, prediction and transfer for all 16 core and four optional lessons. Use it when authoring each future mission; it does not make a draft slice ready.
 
 ## Common student-facing contract
 
@@ -54,7 +56,7 @@ Success requires all stated deliveries, stopped motion and no disqualifying coll
 
 ## Lesson inventory and weekly pace
 
-The revised design contains **16 core lesson outlines and 4 optional outlines**. Only L01 is currently implemented, as a Python preview with three practice targets. Slice IDs also include platform work, so counting TASKS.md headings is not counting student missions.
+The revised design contains **16 core lesson outlines and 4 optional outlines**. L01 and L02 are released in both languages; L03 is the current implementation goal. Each has three practice variations. Slice IDs also include platform work, so counting TASKS.md headings is not counting student missions.
 
 | Core lessons | Number | Build slices |
 | --- | --- | --- |
@@ -162,7 +164,7 @@ Keep experiments and help penalty-free. Save source/outcome history through S03H
 | S08+ was too vague for unattended selection | Define S08–S19, S11H and optional X01–X04 as bounded draft outcomes with landed dependencies. They still require readiness review; no new coding is authorized now. |
 | New syntax and richer sensing could overwhelm self-learners | Teach await and every new construct inline; separate heading, brightness, color and images; add progressively combined jobs only after their component lessons. |
 | An arm was easy to miss in the roadmap | Make the two-joint pick/place lesson and later parameterized arm function explicit; reuse them in two relief-station challenges. |
-| One mission per week risked conflating a quick activity with a complete lesson | Plan 16 core one-hour sessions and four optional outlines, with save/resume and pilot-based pacing; only L01 is built. |
+| One mission per week risked conflating a quick activity with a complete lesson | Plan 16 core one-hour sessions and four optional outlines, with save/resume and pilot-based pacing; L01 and L02 are released; L03 is the current goal. |
 | Curriculum weeks implied missing machines and simultaneous new concepts | Reuse the light/arm for six foundations, introduce rover drive before route lists, and debug the existing rover. Greenhouse/conveyor/drone worlds remain separate future proposals. |
 | Six lessons and a family-ready release were conflated | Six authored foundation lessons can be evaluated without live AI/accounts/scores. Family deployment and official challenges retain their separate gates. |
 | Editor and automation proposals were stale | Preserve the tested lightweight editor; a replacement needs a demonstrated learner need. Preserve existing trigger eligibility/duplicate protection, OPS-01 proof, one writer/one slice, current BUDGET.md exception and review-before-dependent-work. |
@@ -171,4 +173,18 @@ This review refines S01’s await comments/help and its runtime acceptance fixtu
 
 ## Mission 2 implementation contract
 
-The next authorized lesson is L02 / S03, **Read, then choose**. [MISSION-02.md](MISSION-02.md) freezes the useful rescue job, real hardware connections, three sensor-choice/transfer cases, free hints and finite badges, both-language comments, a one-hour session hypothesis and mandatory tests. Future lessons must retain these same purpose, prediction, trace, transfer, draft, family and error-recovery requirements; engagement and independence still need observed teen feedback.
+L02 / S03, **Read, then choose**, is now released. L03 / S08 follows the reviewed contract below. [MISSION-02.md](MISSION-02.md) freezes the useful rescue job, real hardware connections, three sensor-choice/transfer cases, free hints and finite badges, both-language comments, a one-hour session hypothesis and mandatory tests. Future lessons must retain these same purpose, prediction, trace, transfer, draft, family and error-recovery requirements; engagement and independence still need observed teen feedback.
+
+
+## October 13 review: richer hardware without a syntax pile-up
+
+The owner suggested a third motor that spins, launches or grabs, plus functions inside loops. Keep the 16 core / four optional lesson inventory; the additional actuator ideas below are scoped proposals, not extra released missions or permission to build them now.
+
+- **L03, Ranger patrol:** repeat existing built-in motor/servo/wait/sensor function calls in a counted loop. Three complete routes require more than one final pose: every ordered checkpoint must receive a steady dwell. This teaches repetition before new mechanics. [MISSION-03.md](MISSION-03.md) freezes the current goal.
+- **L04, Parcel Port:** make the third independently controlled actuator explicit: shoulder servo, elbow servo and powered gripper. Gripping is a separate physical action, not a synonym for pointing the arm. Teach joint sequence, aperture and confirmed grasp/release before introducing reusable helpers. Freeze contact/holding/release limits and a trusted payload-presence reading with the model; a closed empty gripper cannot carry a parcel.
+- **L05, reusable handoff:** first distinguish a library function from a student-defined helper. Show an editable `handoff(destination)` built from taught calls, then call it inside a bounded loop. Parameters select a bay; returns can describe an observed result. Python helpers with awaits use `async def`/`await`; Java uses a visible static method with the same behavior. Helpers cannot teleport payloads or return trusted completion.
+- **Later mechanism proposal, after L05 and feedback/debugging:** a continuously spinning roller intake can collect foam parcels into a tray; later, a separate flywheel/feed-gate exercise can deliver foam balls to a collection basket. Choose one mechanism per slice after a learner review. Grippers set aperture; rollers set power; flywheels need speed feedback and spin-up time. These different effects must be taught, not hidden behind one generic third-motor button. The [REV intake designs](https://docs.revrobotics.com/ftc-kickoff-concepts/powerplay-2022-2023/intake) and [flywheel-control example](https://docs.revrobotics.com/ftc-kickoff-concepts/decode-2025-26/programming-teleop/programming-flywheel-control) provide concrete hardware comparisons. This is a simulated sports/collection mechanism, with no physical launcher build instructions.
+- **Freeze before readiness:** actuator ranges/units, speed response, object count, sensor validity, single feed/release, capture/miss/jam/reset rules, achievable reference and wrong programs in both languages. A speed threshold and object-present check must control the feed; a spinning animation alone cannot claim a delivered object. Avoid adding contact physics or ballistics to L03.
+- **Increasing stakes:** make more of the team's job depend on correct software—several checkpoints, an intact parcel, the correct bay, then a coordinated delivery with sensing. Expose partial completion and what remains. Keep mistakes reversible, hints free and retries penalty-free; avoid arbitrary countdowns or a larger pile of unexplained commands.
+
+The existing multi-lesson map and saved journal now support L03's integration. For this explicitly requested manual goal, S08 depends on landed S03 and includes its own draft/map/history/unlock regressions; full S03H understanding/local-history work remains a separate draft. This changes no scheduled ownership, eligibility, merge or deployment rule. Actual teen comprehension/engagement remains unobserved and is part of the owner checklist.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "RoboLab Learning Researcher"
+  short_description: "Turn review and class evidence into focused improvements"
+  default_prompt: "Use $robolab-retro to reconcile RoboLab findings and recommend the next evidence-backed improvement."

@@ -17,20 +17,20 @@ test.beforeAll(async()=>{const f=await provision(store);parentCode=f.code;const 
 test.afterAll(async()=>{if(paths.size)await del([...paths]);});
 test('family sign-in, curriculum availability, real hosted Java and saved cross-device drafts',async({browser,page})=>{
  await page.goto('/');await page.getByRole('button',{name:'Family & progress',exact:true}).click();
- await page.locator('#access-code').fill(codeA);await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.locator('#profile-label')).toContainText('Nova');
+ await page.locator('[data-mode=student]').click();await page.locator('#access-code').fill(codeA);await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.locator('#profile-label')).toContainText('Nova');
  await page.getByRole('button',{name:'Close family progress'}).click();
  await page.locator('#language').selectOption('java');await page.locator('#code').fill(main());
  await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});await expect(page.locator('#feedback-title')).toContainText('Crew located');
- await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved to your profile');
+ await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved with its challenge');
  const device=await browser.newContext();await signIn(device,codeA);const other=await device.newPage();await other.goto('/');await expect(other.locator('#profile-label')).toContainText('Nova');await other.locator('#language').selectOption('java');await expect(other.locator('#code')).toHaveValue(main());await device.close();
- await page.locator('#curriculum-open').click();await expect(page.locator('.curriculum-card')).toHaveCount(20);await expect(page.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(19);await expect(page.locator('#revisit-mission')).toBeVisible();
+ await page.locator('#curriculum-open').click();await expect(page.locator('.curriculum-card')).toHaveCount(20);await expect(page.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(17);await expect(page.locator('#revisit-mission')).toBeVisible();
  await page.locator('#curriculum-dialog').screenshot({path:'test-results-hosted/curriculum-desktop.png'});
 });
 test('server-checked Python progress is shared; practice claims cannot unlock; second child stays separate',async({browser,page})=>{
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');await page.locator('#code').fill(python);
  await page.locator('#verify-cloud').click();await expect(page.locator('#save-help')).toContainText('Rescue checked and saved',{timeout:60000});
  const b=await browser.newContext();await signIn(b,codeB);const other=await b.newPage();await other.goto('/');await expect(other.locator('#profile-label')).toContainText('Orion');await other.locator('#family-open').click();
- await expect(other.locator('.family-results')).toContainText('Nova');await expect(other.locator('.family-results')).toContainText('1/3 checked rescues');await expect(other.locator('.rescue-checklist')).toContainText('○ North ridge');await expect(other.locator('#family-content')).not.toContainText('from robot import');
+ await expect(other.locator('.family-results')).toContainText('Nova');await expect(other.locator('.family-results')).toContainText('1/3 checked rescues');await expect(other.locator('.rescue-checklist').first()).toContainText('○ North ridge');await expect(other.locator('#family-content')).not.toContainText('from robot import');
  await other.locator('#family-dialog').screenshot({path:'test-results-hosted/family-results.png'});await b.close();
 });
 test('Java compiler error, infinite-loop Stop and recovery preserve editable source',async({page})=>{
@@ -64,9 +64,9 @@ test('conflicting devices compare versions and keep the chosen source',async({br
 test('all three checked rescues complete Mission 1 without unlocking unbuilt missions',async({page})=>{
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');
  for(const [target,source,language] of [['beacon',python,'python'],['farther',main(150),'java'],['reverse','from robot import motor, servo, wait\nawait servo(60)\nawait motor(-.5)\nawait wait(100)\nawait motor(0)','python']]){
-  await page.locator('#target').selectOption(target);await page.locator('#language').selectOption(language);await page.locator('#code').fill(source);await page.locator('#verify-cloud').click();await expect(page.locator('#save-help')).toContainText('Rescue checked and saved',{timeout:60000});
+  await page.locator('#language').selectOption(language);await page.locator('#target').selectOption(target);await page.locator('#code').fill(source);await page.locator('#verify-cloud').click();await expect(page.locator('#save-help')).toContainText('Rescue checked and saved',{timeout:60000});
  }
- await page.locator('#curriculum-open').click();await expect(page.locator('.curriculum-state').first()).toHaveText('✓ Mission 1 complete');await expect(page.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(19);
+ await page.locator('#curriculum-open').click();await expect(page.locator('.curriculum-state').first()).toHaveText('✓ Mission 1 complete');await expect(page.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(17);
 });
 test('Stop check cancels real server execution without recording a completed experiment',async({page})=>{
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');

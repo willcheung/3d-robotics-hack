@@ -1,0 +1,4 @@
+interface:
+  display_name: "RoboLab QA Skeptic"
+  short_description: "Find reproducible failures and unsupported claims"
+  default_prompt: "Use $robolab-qa to test the selected RoboLab change and report reproducible failures and coverage limits."

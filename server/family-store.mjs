@@ -1,6 +1,6 @@
 import {get,put,BlobPreconditionFailedError} from '@vercel/blob';
 import {randomBytes,randomUUID,createHash,createHmac} from 'node:crypto';
-import {targets,lessonTargets,targetLesson,draftKey} from '../src/model.ts';
+import {targets,lessonTargets,missingPrerequisite,modelVersion,targetLesson,draftKey} from '../src/model.ts';
 export const hashCode=code=>createHash('sha256').update(code).digest('hex');
 export const newCode=()=>randomBytes(24).toString('base64url');
 export class HttpError extends Error {constructor(status,message){super(message);this.status=status;}}
@@ -69,9 +69,10 @@ export function sourceInput(data){if(!data||!['java','python'].includes(data.lan
 export async function saveDraft(store,session,data){
  sourceInput(data);if(!Number.isSafeInteger(data.revision)||data.revision<0)throw new HttpError(400,'Invalid draft revision.');
  const lesson=data.lesson??'L01';if(typeof lesson!=='string'||!Object.hasOwn(lessonTargets,lesson))throw new HttpError(400,'Unknown lesson.');const key=draftKey(lesson,data.language);
+ if(data.target!==undefined && (typeof data.target!=='string'||!lessonTargets[lesson].includes(data.target)))throw new HttpError(400,'Challenge does not belong to this lesson.');
  return update(store,familyPath(session.familyId),f=>{const p=profileIn(f,session),old=p.drafts[key];
   if((old?.revision??0)!==data.revision)throw new HttpError(409,'A newer draft is saved in another tab. Your editor is safe. Refresh before replacing it.');
-  const draft={source:data.source,revision:data.revision+1};p.drafts[key]=draft;return {value:f,result:draft};});
+  const draft={source:data.source,revision:data.revision+1,...(data.target!==undefined?{target:data.target}:{})};p.drafts[key]=draft;return {value:f,result:draft};});
 }
 export const validAttempt=id=>typeof id==='string'&&/^[a-f0-9-]{36}$/.test(id);
 export async function reserveRun(store,session,id){
@@ -94,11 +95,12 @@ export async function recordAttempt(store,session,data,verified=false){
  if(!validAttempt(data.id)||typeof data.target!=='string'||!Object.hasOwn(targets,data.target)||!['reached','missed','error','stopped','unavailable'].includes(data.outcome))throw new HttpError(400,'Invalid experiment.');
  return update(store,familyPath(session.familyId),f=>{
   const p=profileIn(f,session),old=p.history.find(a=>a.id===data.id);
-  if(verified&&targetLesson(data.target)==='L02'&&!lessonTargets.L01.every(t=>p.completed.includes(t)))throw new HttpError(403,'Complete checked Mission 1 before checked Mission 2.');
+  const missing=verified&&missingPrerequisite(targetLesson(data.target),p.completed);
+  if(missing)throw new HttpError(403,`Complete checked Mission ${Number(missing.slice(1))} before checked Mission ${Number(targetLesson(data.target).slice(1))}.`);
   if(verified&&f.cancelled?.some(r=>r.id===data.id&&r.profileId===p.id))throw new HttpError(409,'Check stopped. No completion was awarded.');
   if(old&&(old.source!==data.source||old.language!==data.language||old.target!==data.target))throw new HttpError(409,'That experiment already has a different source.');
   if(old?.verified||old&&!verified)return {value:f,result:{ok:true}};
-  const attempt={id:data.id,source:data.source,language:data.language,target:data.target,lesson:targetLesson(data.target),lessonVersion:1,outcome:data.outcome,seconds:Number.isFinite(data.seconds)?Math.max(0,Math.min(30,data.seconds)):null,error:typeof data.error==='string'?data.error.slice(0,300):'',verified,at:new Date().toISOString(),version:'signal-station-v1',sourceHash:hashCode(data.source),...(verified?{receipt:{model:'signal-station-v1',runner:'sandbox-v1',snapshot:process.env.SANDBOX_SNAPSHOT_ID??'test-fixture'}}:{})};
+  const attempt={id:data.id,source:data.source,language:data.language,target:data.target,lesson:targetLesson(data.target),lessonVersion:1,outcome:data.outcome,seconds:Number.isFinite(data.seconds)?Math.max(0,Math.min(30,data.seconds)):null,error:typeof data.error==='string'?data.error.slice(0,300):'',verified,at:new Date().toISOString(),version:modelVersion(data.target),sourceHash:hashCode(data.source),...(verified?{receipt:{model:modelVersion(data.target),runner:'sandbox-v1',snapshot:process.env.SANDBOX_SNAPSHOT_ID??'test-fixture'}}:{})};
   if(old)p.history=p.history.filter(a=>a.id!==data.id);else p.experiments++;
   p.history=[attempt,...p.history].slice(0,12);
   if(verified&&data.outcome==='reached'&&!p.completed.includes(data.target))p.completed.push(data.target);

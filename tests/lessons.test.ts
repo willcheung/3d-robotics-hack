@@ -4,12 +4,12 @@ import {lessons,validateLessons,type Lesson} from '../src/lessons.ts';
 import {initialState,command,tick,reached,targets,targetLesson} from '../src/model.ts';
 test('lesson schema rejects incomplete teaching, missing both-language fixtures and invalid navigation',()=>{
   assert.doesNotThrow(()=>validateLessons(lessons));
-  for(const key of ['job','beneficiary','consequence','application','source','otherApplications','conceptId','concept','recap','units','comments','transfer','prerequisites','hints','scenarios','next','version','transferTarget'] as const){const copy=structuredClone(lessons);delete (copy[1] as unknown as Record<string,unknown>)[key];assert.throws(()=>validateLessons(copy),key);}
-  for(const kind of ['starters','reference','wrong','transferReference'] as const)for(const lang of ['python','java'] as const){const copy=structuredClone(lessons);copy[1][kind][lang]='';assert.throws(()=>validateLessons(copy));}
+  for(const index of [0,1,2])for(const key of ['job','beneficiary','consequence','application','source','otherApplications','conceptId','concept','recap','units','comments','transfer','prerequisites','hints','scenarios','next','version','transferTarget'] as const){const copy=structuredClone(lessons);delete (copy[index] as unknown as Record<string,unknown>)[key];assert.throws(()=>validateLessons(copy),key);}
+  for(const index of [0,1,2])for(const kind of ['starters','reference','wrong','transferReference'] as const)for(const lang of ['python','java'] as const){const copy=structuredClone(lessons);copy[index][kind][lang]='';assert.throws(()=>validateLessons(copy));}
   assert.throws(()=>validateLessons([...lessons,lessons[0]]),/Duplicate/);
   const unknown=structuredClone(lessons);unknown[1].prerequisites=['missing' as Lesson['id']];assert.throws(()=>validateLessons(unknown),/Unknown/);
-  const cycle=structuredClone(lessons);cycle[0].prerequisites=['L02'];assert.throws(()=>validateLessons(cycle),/Cyclic/);
-  const unreleased=structuredClone(lessons);unreleased[1].next='L03' as Lesson['id'];assert.throws(()=>validateLessons(unreleased),/Unreleased/);
+  const cycle=structuredClone(lessons);cycle[0].prerequisites=['L02'];assert.throws(()=>validateLessons(cycle),/[Cc]yclic/);
+  const unreleased=structuredClone(lessons);unreleased[1].next='L04' as Lesson['id'];assert.throws(()=>validateLessons(unreleased),/Unreleased/);
 });
 test('authored starts, direction readings and independent one-second corrections',()=>{
   for(const [id,start,power,goal,tilt] of [['sensor-left',30,.5,60,120],['sensor-right',90,-.5,60,120],['sensor-transfer',-30,-.5,-60,60]] as const){
@@ -24,4 +24,20 @@ test('authored starts, direction readings and independent one-second corrections
     assert.deepEqual(initialState(id),{angle:start,power:0,scanner:90,servoTarget:90,ticks:0});
   }
   assert.throws(()=>initialState(['sensor-left'] as unknown as string));assert.throws(()=>initialState('forged'));assert.throws(()=>initialState('__proto__'));
+});
+
+test('lesson scenario ownership matches authoritative family prerequisites',()=>{
+ const wrong=structuredClone(lessons);wrong[2].scenarios=['sensor-left'];assert.throws(()=>validateLessons(wrong),/another lesson/);
+});
+
+// Partial storage writes must never pair a draft with another experiment's target.
+import {readExperiment} from '../src/experiment.ts';
+test('experiment context accepts only matching source and lesson; legacy and damaged saves recover safely',()=>{
+ const saved={source:'draft',target:'patrol-cove',prediction:'go left',reflection:'lower tilt',previous:{source:'x'.repeat(17000),target:'patrol-ridge'}};
+ assert.equal(readExperiment(JSON.stringify(saved),'draft','L03').target,'patrol-cove');
+ assert.equal(readExperiment(JSON.stringify(saved),'draft','L03').previous?.source.length,17000,'an oversized draft still needs recovery');
+ assert.equal(readExperiment(JSON.stringify(saved),'other draft','L03').target,'patrol-ridge');
+ assert.equal(readExperiment(JSON.stringify(saved),'draft','L01').target,'beacon');
+ assert.equal(readExperiment('{broken','draft','L03','patrol-cove').target,'patrol-cove');
+ assert.equal(readExperiment(null,'legacy','L02').target,'sensor-left');
 });

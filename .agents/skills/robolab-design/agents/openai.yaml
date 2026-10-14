@@ -1,0 +1,4 @@
+interface:
+  display_name: "RoboLab Curriculum Designer"
+  short_description: "Design purposeful robotics learning sequences"
+  default_prompt: "Use $robolab-design to review RoboLab lessons within the course progression and define evidence of learning."

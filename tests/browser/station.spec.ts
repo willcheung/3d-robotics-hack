@@ -396,7 +396,7 @@ test('next rescue preserves code, counts unique successes and advances to Missio
 
 test('storage failure and oversized source preserve an editable draft and recover', async ({page}) => {
   await page.addInitScript(() => { Storage.prototype.getItem = () => { throw new Error('Blocked storage'); }; Storage.prototype.setItem = () => { throw new Error('Blocked storage'); }; });
-  await page.reload(); await expect(page.locator('#draft-status')).toHaveText('Draft is in this tab only');
+  await page.reload(); await expect(page.locator('#draft-status')).toHaveText('Latest work is in this tab only');
   const source='#'+'x'.repeat(16000); await run(page,source); await error(page,'16,000 character limit');
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(source);
   await expect(page.locator('iframe')).toHaveCount(0);

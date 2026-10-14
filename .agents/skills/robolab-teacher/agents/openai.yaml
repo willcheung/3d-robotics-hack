@@ -1,0 +1,4 @@
+interface:
+  display_name: "RoboLab Classroom Teacher"
+  short_description: "Review classroom pacing and independent recovery"
+  default_prompt: "Use $robolab-teacher to review the selected RoboLab lessons and prepare a practical observation plan."

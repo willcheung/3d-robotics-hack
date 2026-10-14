@@ -173,7 +173,7 @@ test('lesson drafts isolate languages/lessons, retain legacy keys and enforce pe
  assert.equal(drafts.python.source,'legacy mission one');assert.equal(drafts['L02.python'].source,'sensor python');assert.equal(drafts['L02.java'].source,'sensor java');
  assert.deepEqual((await current(store,b)).profile.drafts,{});
  await assert.rejects(saveDraft(store,a,{language:'python',lesson:'L02',source:'stale',revision:0}),e=>e.status===409);
- for(const lesson of ['L03',['L02'],{}])await assert.rejects(saveDraft(store,a,{language:'python',lesson,source:'future',revision:0}),e=>e.status===400);
+ for(const lesson of ['L04',['L02'],{}])await assert.rejects(saveDraft(store,a,{language:'python',lesson,source:'future',revision:0}),e=>e.status===400);
 });
 test('Mission 2 checked unlocks require Mission 1; practice, errors and another student cannot earn badges',async()=>{
  const {store,a,b}=await fixtures(),sensor=attempt({target:'sensor-left'});
@@ -185,4 +185,29 @@ test('Mission 2 checked unlocks require Mission 1; practice, errors and another 
  assert.equal((await current(store,a)).profile.completed.includes('sensor-right'),false);
  await assert.rejects(recordAttempt(store,b,attempt({target:'sensor-right'}),true),e=>e.status===403);
  assert.deepEqual((await current(store,b)).profile.completed,[]);
+});
+
+
+test('Mission 3 keeps prior work, requires checked Mission 2 and ignores claimed version/completion',async()=>{
+ const {store,a,b}=await fixtures();
+ for(const [lesson,language] of [['L01','python'],['L02','java'],['L03','python'],['L03','java']])await saveDraft(store,a,{lesson,language,source:lesson+' '+language,revision:0});
+ await assert.rejects(recordAttempt(store,a,attempt({target:'patrol-ridge'}),true),e=>e.status===403);
+ await recordAttempt(store,a,attempt({target:'patrol-ridge',lesson:'L01',version:'forged',verified:true}));assert.equal((await current(store,a)).profile.completed.length,0);
+ for(const target of ['beacon','farther','reverse','sensor-left','sensor-right','sensor-transfer'])await recordAttempt(store,a,attempt({target}),true);
+ const reached=attempt({target:'patrol-ridge',lesson:'L02',lessonVersion:999,version:'forged'});await recordAttempt(store,a,reached,true);await recordAttempt(store,a,reached,true);
+ const p=(await current(store,a)).profile;assert.equal(p.completed.length,7);assert.equal(p.history[0].lesson,'L03');assert.equal(p.history[0].lessonVersion,1);assert.equal(p.history[0].receipt.model,'signal-patrol-v1');assert.equal(p.drafts.python.source,'L01 python');assert.equal(p.drafts['L02.java'].source,'L02 java');assert.equal(p.drafts['L03.python'].source,'L03 python');assert.equal(p.drafts['L03.java'].source,'L03 java');
+ for(const outcome of ['missed','error','stopped','unavailable'])await recordAttempt(store,a,attempt({target:'patrol-extra',outcome}),true);
+ assert.equal((await current(store,a)).profile.completed.includes('patrol-extra'),false);await assert.rejects(recordAttempt(store,b,attempt({target:'patrol-extra'}),true),e=>e.status===403);
+});
+
+test('draft saves pair valid challenge context with code, keep old clients compatible and isolate profiles',async()=>{
+ const {store,a,b}=await fixtures();
+ const saved=await saveDraft(store,a,{lesson:'L03',language:'java',source:'cove code',target:'patrol-cove',revision:0});
+ assert.equal(saved.target,'patrol-cove');
+ await assert.rejects(saveDraft(store,a,{lesson:'L03',language:'java',source:'bad pair',target:'beacon',revision:1}),e=>e.status===400);
+ await assert.rejects(saveDraft(store,a,{lesson:'L03',language:'java',source:'stale',target:'patrol-ridge',revision:0}),e=>e.status===409);
+ assert.deepEqual((await current(store,a)).profile.drafts['L03.java'],saved);
+ assert.equal((await current(store,b)).profile.drafts['L03.java'],undefined);
+ const legacy=await saveDraft(store,a,{lesson:'L03',language:'java',source:'older client',revision:1});
+ assert.equal(legacy.target,undefined,'do not silently attach old scenario to changed source from legacy client');
 });
