@@ -1,3 +1,4 @@
+import {sealData} from 'iron-session';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
@@ -44,14 +45,14 @@ test('atomic per-student/family gates and daily budgets survive competing reserv
  await assert.rejects(reserveRun(store,a,randomUUID()),e=>e.status===429);
 });
 test('HTTP boundary: sessions, CSRF, stale profile, forged results and other-family capabilities',async()=>{
- const {store,seed}=await fixtures();let api;
+ const {store,seed,parent}=await fixtures();const child=await addStudent(store,parent,'HTTP student');let api;
  const server=createServer((req,res)=>void api(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const origin=`http://127.0.0.1:${server.address().port}`;api=hostedApi({store,appOrigin:origin,password:'a-test-only-password-that-is-at-least-32-characters'});
  const post=(path,data,cookie='',headers={})=>fetch(origin+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Cookie:cookie,...headers},body:JSON.stringify(data)});
  try{
   assert.equal((await fetch(origin+'/api/family')).status,401);
   assert.equal((await post('/api/family/login',{code:seed.code},'',{Origin:'https://foreign.test'})).status,403);
-  const entered=await post('/api/family/login',{code:seed.code});assert.equal(entered.status,200);const cookie=entered.headers.get('set-cookie').split(';')[0];
+  const entered=await post('/api/family/login',{code:child.code});assert.equal(entered.status,200);const cookie=entered.headers.get('set-cookie').split(';')[0];
   const data=await (await fetch(origin+'/api/family',{headers:{Cookie:cookie}})).json();const profile={'X-RoboLab-Profile':data.profile.id};
   assert.equal((await post('/api/family/draft',{language:'python',source:'private',revision:0},cookie,{'X-RoboLab-Profile':randomUUID()})).status,409);
   assert.equal((await post('/api/family/attempt',attempt({verified:true}),cookie,profile)).status,200);
@@ -119,7 +120,7 @@ test('global hosted run cap spans families with idempotent, expiring and daily r
  await assert.rejects(reserveServiceRun(store,a,randomUUID(),{now:now+120002}),e=>e.status===429);
  await reserveServiceRun(store,a,randomUUID(),{now:now+86400000});assert.equal((await store.read(SERVICE_LIMIT_PATH)).value.count,1);
 });
-test('public setup HTTP boundary auto-signs in parents, protects existing sessions and cleans denied run leases',async()=>{
+test('retired code signup cannot create families; existing parent sessions retain role boundaries and denied-run cleanup',async()=>{
  const store=new MemoryStore();let api,started=0;
  class NeverRun{constructor(){started++;throw Error('unexpected compute');}}
  const server=createServer((req,res)=>void api(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));
@@ -129,27 +130,18 @@ test('public setup HTTP boundary auto-signs in parents, protects existing sessio
  try{
   const data={name:'Parent',key:setupKey()};
   assert.equal((await post('/api/family/create',data,'',{Origin:'https://foreign.test'})).status,403);assert.equal(store.rows.size,0);
-  assert.equal((await post('/api/family/create',{name:'Parent',key:'bad'})).status,400);
-  const created=await post('/api/family/create',data);assert.equal(created.status,200);const parentCode=(await created.json()).code,cookie=created.headers.get('set-cookie').split(';')[0];
-  const parent=await read(cookie);assert.equal(parent.profile.role,'parent');assert.equal(parent.profile.name,'Parent');
-  assert.equal((await post('/api/family/create',data,cookie)).status,200);
-  assert.equal((await post('/api/family/create',{name:'Other',key:setupKey()},cookie)).status,409);assert.equal((await read(cookie)).profile.id,parent.profile.id);
-  const headers={'X-RoboLab-Profile':parent.profile.id};
+  assert.equal((await post('/api/family/create',data)).status,410);assert.equal(store.rows.size,0);
+  // Existing session fixture: this does not authenticate through the retired code route.
+  const created=await createFamily(store,data,setupPassword),cookie='robolab-local='+await sealData(created.session,{password:setupPassword,ttl:3600});
+  const parent=await read(cookie),headers={'X-RoboLab-Profile':parent.profile.id};assert.equal(parent.profile.role,'parent');
   const child=await post('/api/family/students',{name:'Nova'},cookie,headers);assert.equal(child.status,200);const childCode=(await child.json()).code;
-  const childLogin=await post('/api/family/login',{code:childCode});const childCookie=childLogin.headers.get('set-cookie').split(';')[0];
-  assert.equal((await post('/api/family/create',data,childCookie)).status,409);
-  const childProfile=(await read(childCookie)).profile;
-  assert.equal((await post('/api/family/students',{name:'Forbidden'},childCookie,{'X-RoboLab-Profile':childProfile.id})).status,403);
-  assert.equal((await post('/api/family/login',{code:parentCode})).status,200);
+  const childLogin=await post('/api/family/login',{code:childCode}),childCookie=childLogin.headers.get('set-cookie').split(';')[0];
+  assert.equal((await post('/api/family/create',data,childCookie)).status,410);
+  const childProfile=(await read(childCookie)).profile;assert.equal((await post('/api/family/students',{name:'Forbidden'},childCookie,{'X-RoboLab-Profile':childProfile.id})).status,403);
+  assert.equal((await post('/api/family/login',{code:created.code})).status,403);
   await store.write(SERVICE_LIMIT_PATH,{day:new Date().toISOString().slice(0,10),count:120,runs:[]});
-  for(const path of ['/api/java/run','/api/family/verify']){
-   const denied=await post(path,attempt(),cookie,headers);assert.equal(denied.status,429);assert.match((await denied.json()).error,/allowance/);
-   assert.deepEqual((await current(store,await login(store,parentCode))).family.runs,[]);
-  }
-  assert.equal(started,0);
-  // A revoked cookie may start a new family, but cannot resurrect its old one.
-  const session=await login(store,childCode);store.rows.get(familyPath(session.familyId)).value.profiles.find(p=>p.id===session.profileId).active=false;
-  assert.equal((await post('/api/family/create',{name:'New parent',key:setupKey()},childCookie)).status,200);
+  for(const path of ['/api/java/run','/api/family/verify']){const denied=await post(path,attempt(),cookie,headers);assert.equal(denied.status,429);assert.match((await denied.json()).error,/allowance/);assert.deepEqual((await current(store,created.session)).family.runs,[]);}
+  assert.equal(started,0);assert.equal((await read(cookie)).profile.id,parent.profile.id);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
 

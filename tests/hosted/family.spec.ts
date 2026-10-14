@@ -1,3 +1,4 @@
+import {fixtureParent} from '../helpers/fixture-parent.ts';
 import {test as baseTest,expect,type BrowserContext} from '@playwright/test';
 import {BlobStore,provision,login,addStudent,hashCode} from '../../server/family-store.mjs';
 import {del} from '@vercel/blob';
@@ -12,7 +13,7 @@ const python='from robot import motor, servo, wait\nawait servo(120)\nawait moto
 const paths=new Set<string>();
 const store=new BlobStore();const write=store.write.bind(store);store.write=async(path:string,...args:unknown[])=>{paths.add(path);return write(path,...args);};
 let parentCode:string,codeA:string,codeB:string;
-async function signIn(context:BrowserContext,code:string){await protect(context);const r=await context.request.post(base+'/api/family/login',{headers:{Origin:base,...protectedHeaders},data:{code}});expect(r.status()).toBe(200);}
+async function signIn(context:BrowserContext,code:string){await protect(context);if(code===parentCode){await fixtureParent(context,store,code,base);return;}const r=await context.request.post(base+'/api/family/login',{headers:{Origin:base,...protectedHeaders},data:{code}});expect(r.status()).toBe(200);}
 test.beforeAll(async()=>{const f=await provision(store);parentCode=f.code;const p=await login(store,parentCode);codeA=(await addStudent(store,p,'Nova')).code;codeB=(await addStudent(store,p,'Orion')).code;});
 test.afterAll(async()=>{if(paths.size)await del([...paths]);});
 test('family sign-in, curriculum availability, real hosted Java and saved cross-device drafts',async({browser,page})=>{
@@ -47,8 +48,9 @@ test('Python works without sign-in; syntax colors, Stop and narrow curriculum re
  await page.locator('#code').fill('while True:\n    pass');await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('RUNNING');await page.locator('#stop').click();await expect(page.locator('#status-pill')).toHaveText('STOPPED');
  await page.locator('#curriculum-open').click();await expect(page.locator('#curriculum-dialog')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.locator('#curriculum-dialog').screenshot({path:'test-results-hosted/curriculum-narrow.png'});
 });
-test('parent provisions student aliases and revokes a signed-in child',async({browser,page})=>{
- await signIn(page.context(),parentCode);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Parent');await page.locator('#family-open').click();await page.locator('#student-name').fill('Comet');await page.getByRole('button',{name:'Add student',exact:true}).click();await expect(page.locator('.family-results')).toContainText('Comet');const generated=await page.locator('#new-code input').inputValue();expect(generated).toMatch(/^[A-Za-z0-9_-]{32}$/);paths.add(`invites/${hashCode(generated)}.json`);
+test('parent sees provisioned student aliases and revokes a signed-in child',async({browser,page})=>{
+ const generated=(await addStudent(store,await login(store,parentCode),'Comet')).code;paths.add(`invites/${hashCode(generated)}.json`);
+ await signIn(page.context(),parentCode);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Parent');await page.locator('#family-open').click();await expect(page.locator('.family-results')).toContainText('Comet');
  const child=await browser.newContext();await signIn(child,codeB);const other=await child.newPage();await other.goto('/');await expect(other.locator('#profile-label')).toContainText('Orion');
  page.once('dialog',d=>d.accept());await page.locator('.family-results article').filter({hasText:'Orion'}).getByRole('button',{name:'Revoke access'}).click();await expect(page.locator('#family-message')).toContainText('revoked');
  await other.locator('#save-cloud').click();await expect(other.locator('#save-help')).toContainText('sign in again');await child.close();
@@ -90,7 +92,7 @@ test('restoring Java history preserves unsaved drafts in both languages',async({
  await expect(page.locator('#status-pill')).toHaveText('READY');
 });
 test('separate families cannot see or modify each other through the hosted API',async({browser,page})=>{
- const separate=await provision(store);await signIn(page.context(),separate.code);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Parent');
+ const separate=await provision(store);await fixtureParent(page.context(),store,separate.code,base);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Parent');
  const a=await browser.newContext();await signIn(a,codeA);const own=await (await a.request.get(base+'/api/family',{headers:protectedHeaders})).json();
  const foreign=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();expect(foreign.students).toEqual([]);expect(foreign.history).toEqual([]);expect(foreign.drafts).toEqual({});
  const denied=await page.request.post(base+'/api/family/access',{headers:{Origin:base,...protectedHeaders,'X-RoboLab-Profile':foreign.profile.id},data:{id:own.profile.id,revoke:true}});expect(denied.status()).toBe(404);

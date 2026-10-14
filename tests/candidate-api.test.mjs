@@ -5,7 +5,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import {ran
 import {initialState,command,tick,reached,targets,lessonTargets} from '../src/model.ts';
 import {getLesson,sensorReference,sensorTransfer} from '../src/lessons.ts';
 import {patrolReference,patrolExtra,patrolTransfer} from '../src/patrol-lesson.ts';
-import {hashCode,familyPath} from '../server/family-store.mjs';
+import {SERVICE_LIMIT_PATH} from '../server/family-store.mjs';
 test('protected candidate streams a real Java patrol, checks all nine Python challenges and rejects a forged patrol',async()=>{
  const candidate=process.env.HOSTED_CANDIDATE_URL,origin=process.env.HOSTED_APP_ORIGIN;
  assert.ok(candidate?.startsWith('https:')&&origin?.startsWith('https:'),'Set explicit candidate and app origins');
@@ -15,12 +15,11 @@ test('protected candidate streams a real Java patrol, checks all nine Python cha
  const post=(path,data)=>fetch(candidate+path,{method:'POST',headers:headers(),body:JSON.stringify(data),signal:AbortSignal.timeout(80000)});
  const get=()=>fetch(candidate+'/api/family',{headers:headers()}).then(r=>r.json());
  try{
-  // Provision only a disposable test family; browser acceptance covers signup.
-  const {provision,BlobStore:FixtureStore}=await import('../server/family-store.mjs');const fixtureStore=new FixtureStore(),fixtureWrite=fixtureStore.write.bind(fixtureStore);fixtureStore.write=async(path,...args)=>{paths.push(path);return fixtureWrite(path,...args);};const fixture=await provision(fixtureStore,{parentName:'Candidate fixture'});const created=await post('/api/family/login',{code:fixture.code});assert.equal(created.status,200);const code=fixture.code;
-  cookie=created.headers.get('set-cookie').split(';')[0];let state=await get();profile=state.profile.id;
-  // Discover only this fixture using its code, without enumerating other families.
-  const {BlobStore,login,SERVICE_LIMIT_PATH}=await import('../server/family-store.mjs');const privateStore=new BlobStore(),session=await login(privateStore,code);paths.push(familyPath(session.familyId),`invites/${hashCode(code)}.json`);
-  const student=await post('/api/family/students',{name:'Candidate student'});assert.equal(student.status,200);const childCode=(await student.json()).code;paths.push(`invites/${hashCode(childCode)}.json`);
+  // Pre-provision only this disposable family/student. Parent email delivery
+  // is a separate authorized real-inbox gate, not established by this fixture.
+  const {provision,BlobStore,login,addStudent}=await import('../server/family-store.mjs');const privateStore=new BlobStore(),fixtureWrite=privateStore.write.bind(privateStore);privateStore.write=async(path,...args)=>{paths.push(path);return fixtureWrite(path,...args);};
+  const fixture=await provision(privateStore,{parentName:'Candidate fixture'}),session=await login(privateStore,fixture.code),student=await addStudent(privateStore,session,'Candidate student'),childCode=student.code;
+  let state;
   const entered=await post('/api/family/login',{code:childCode});assert.equal(entered.status,200);cookie=entered.headers.get('set-cookie').split(';')[0];profile='';state=await get();profile=state.profile.id;assert.equal(state.profile.role,'student');
   const source=patrolTransfer.java;
   const run=await post('/api/java/run',{source});assert.equal(run.status,200);assert.match(run.headers.get('content-type'),/ndjson/);
