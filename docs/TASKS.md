@@ -110,7 +110,7 @@ If the environment cannot support those guarantees, report the specific missing 
 ## S04 — One arm mission
 
 - Status: draft
-- Depends on: S03 and S08 landed; review the foundation observation findings before choosing the L04 teaching contract. S08 is still a review candidate, so this slice is not ready.
+- Depends on: S03 and S08 landed; review the foundation observation findings before choosing the L04 teaching contract. S03 and S08 are now landed; S04 remains draft until its arm/gripper contract and independent fixtures are reviewed.
 - Working outcome: control an original arm/gripper to pick up and place one parcel, with Java/Python examples and explorable 3D.
 - Scope: bounded two-joint arm, labeled axes and an independently actuated third gripper control, explicit grasp/drop geometry, one sequence mission; functions are taught separately in S09. No general contact-physics promise or full arm curriculum.
 - Acceptance: grasp/carry/place follow documented rules; limits/collisions explain failure; wrong poses cannot succeed; camera, reset, existing motor lesson, and language drafts remain intact.
@@ -152,7 +152,7 @@ Before promoting one entry to ready: dependencies must be landed; choose one mai
 
 ## S08 — Ranger patrol loop
 
-- Status: review candidate; local acceptance passed for the explicitly authorized Lesson 3 goal. Contract: [MISSION-03.md](MISSION-03.md); owner checklist: [MISSION-03-QA.md](MISSION-03-QA.md). Exact proposed commit and CI are recorded on the draft PR. No merge/deployment authorization.
+- Status: done; PR #4 merged and Mission 3 released after explicit owner authorization, exact-head CI and protected staging/candidate qualification. Contract: [MISSION-03.md](MISSION-03.md); evidence: [PROGRESS.md](PROGRESS.md) and [MISSION-03-QA.md](MISSION-03-QA.md). Real learner/device/pacing observation remains pending; the owner chose persona review now and a classroom pilot later.
 - Depends on: S03 landed and existing DEPLOY-01/S03 map, drafts, journal and checked progress. This goal includes only L03 integration/regressions from S03H; its broader understanding/local-history work remains separate.
 - Working outcome: use a loop to inspect a small set of ranger checkpoints with the existing light/camera mechanism; show each actual inspection.
 - Scope: one repetition lesson, bounded checkpoint observations and a counter; variables/conditions reused, lists deferred.

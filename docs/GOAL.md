@@ -13,18 +13,20 @@ Use docs/TASKS.md for dependencies, docs/FOUNDATION.md for teaching/runtime/acco
 A manual request may waive usage scheduling gates for that task. It does not change future autonomous eligibility, reserve, ownership, duplicate-run, merge or deployment rules.
 
 
-## Active goal: L03 / S08 Ranger patrol
+## Completed implementation goal: L03 / S08 Ranger patrol
 
 The owner now explicitly requests a curriculum review followed by Lesson 3. Review and record richer actuator/function/sensor progression, then implement and test the complete patrol-loop mission in Python and Java under MISSION-03.md. Preserve prior missions/accounts/data, use the existing map/journal/draft framework, and verify all three patrols, help, errors/Stop/Reset/navigation, saved work and checked prerequisites. Prepare one draft PR with inspected screenshots, exact-head CI, limits and an owner-QA checklist. This manual scope does not authorize merge, deployment, automation changes, S04 or other later lessons. The remaining broader S03H work is not required for the L03 integration already scoped here.
 
-## Active refinement: the whole teaching progression
+## Completed refinement: the whole teaching progression
 
 The owner subsequently authorized using the teaching skills to strengthen all missions, including Missions 1 and 2 and future plans, then executing the recommendations. On the existing Mission 3 branch/PR, implement one shared teaching refinement for L01–L03: current-code prediction and explanation, reachable hints and first edit, truthful patrol diagnostics, recoverable drafts and selected challenge persistence. Author retrieval/new-concept/transfer requirements for all planned lessons under TEACHING-PROGRESSION.md. Validate both languages, model/runtime and save/profile boundaries. This extends the review candidate; it does not authorize implementing later lessons, merge, deployment or automation.
 
-## Current follow-up: repository personas and next curriculum work
+## Completed follow-up: repository personas and next curriculum work
 
 The owner authorized saving all eight RoboLab skills in this repository, updating AGENTS.md to select the right personas for future work, and identifying the next curriculum/mission priority. Keep this a documentation/skills refinement on the existing branch and draft PR. Validate portability, manifests, links and publication safety; record the source-based priority review and observation plan in TEACHING-PROGRESSION.md. Repository copies are canonical for this project; leave the personal installation intact. This request does not authorize a new mission implementation, merge, deployment, learner contact or automation.
 
 ## Current release authorization: Missions 1–3
 
 The owner subsequently authorized the two recommended review steps, including saved progress, then merging PR #4 and making the missions live if checks pass. The owner selected an informed persona walkthrough now and a real classroom pilot later. Complete protected staging, production-candidate and public acceptance with disposable fixtures; retain the existing sessions, private stores and runtime. Record exact source, CI, hosted results and the next action. This supersedes the earlier no-release scope for PR #4. Mission 4 follows this completed release as a separate design/build slice; it must first have its mission/model contract and ready acceptance criteria.
+
+This release is complete: PR #4 merged as `9e10f3a89ecd2c9177e528f2bc1f0a5e9fda03c3`, and the tested candidate is live on robolab.vibecodingdad.com. Exact-head CI, staging/provider checks, production-candidate checks and public both-language saved-progress acceptance are recorded in PROGRESS.md, including one public login transport timeout that passed unchanged on rerun. All eight skills and automatic persona routing are landed. Stop this release slice; the next separate task is the Mission 4 Parcel Port arm/gripper contract, followed by implementation only when ready. The real classroom pilot remains deferred.
