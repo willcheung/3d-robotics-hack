@@ -210,6 +210,12 @@ test('Missions 2 and 3 authoritative HTTP check uses authored starts, rejects cl
     }
     const patrolProfile=(await current(store,session)).profile;assert.equal(patrolProfile.completed.length,9);assert.equal(patrolProfile.history[0].lesson,'L03');assert.equal(patrolProfile.history[0].receipt.model,'signal-patrol-v1');
 
+    const {armJava,armReference,armMoved,armTransfer}=await import('../src/arm-lesson.ts');
+    for(const [target,source,wanted] of [['parcel-across',armJava,'missed'],['parcel-across',armReference.java,'reached'],['parcel-moved',armReference.java,'missed'],['parcel-moved',armMoved.java,'reached'],['parcel-return',armTransfer.java,'reached']]){
+      const response=await post('/verify',{id:randomUUID(),target,source,language:'java',state:{arm:{payload:'delivered',collision:false}},outcome:'reached',model:'signal-station-v1'});assert.equal(response.status,200);assert.equal((await response.json()).outcome,wanted);
+    }
+    const armProfile=(await current(store,session)).profile;assert.equal(armProfile.completed.length,12);assert.equal(armProfile.history[0].lesson,'L04');assert.equal(armProfile.history[0].receipt.model,'parcel-arm-v1');
+
     assert.equal((await post('/verify',{id:randomUUID(),target:'__proto__',source:sensorReference.java,language:'java'})).status,400);
   }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
@@ -223,4 +229,15 @@ test('Mission 3 real Java: loop calls actuators at every checkpoint, references 
  for(const source of [patrolJava,patrolReference.java.replace('repeats = 3','repeats = 0'),patrolReference.java.replace('repeats = 3','repeats = 4'),patrolReference.java.replace('Robot.waitTicks(25);',''),patrolReference.java.replace('tilt = 90','tilt = 60')]){
   const result=await execute(source,{target:'patrol-ridge'});assert.equal(result.messages.at(-1).type,'done');assert.equal(reached(result.state,targets['patrol-ridge']),false);
  }
+});
+
+test('Mission 4 real Java: all deliveries, fresh sensors, empty grasp, early release and invalid inputs',async()=>{
+ const {armJava,armReference,armMoved,armTransfer}=await import('../src/arm-lesson.ts');
+ for(const [target,source] of [['parcel-across',armReference.java],['parcel-moved',armMoved.java],['parcel-return',armTransfer.java]]){
+  const r=await execute(source,{target});assert.equal(r.messages.at(-1).type,'done');assert.equal(reached(r.state,targets[target]),true);assert.equal(r.state.ticks,320);assert.equal(r.state.arm.payload,'delivered');assert.match(r.text,/After closing, holding: 1.0/);assert.match(r.text,/Before turn, elbow: 70.0/);assert.match(r.text,/After opening, holding: 0.0/);
+ }
+ for(const [source,condition] of [[armJava,'collision'],[armReference.java.replace('Robot.grip(0);','Robot.grip(100);'),'waiting'],[armReference.java.replace('Robot.shoulder(destination);','Robot.grip(100); Robot.waitTicks(25); Robot.shoulder(destination);'),'dropped']]){
+  const r=await execute(source,{target:'parcel-across'});assert.equal(r.messages.at(-1).type,'done');assert.equal(reached(r.state,targets['parcel-across']),false);if(condition==='collision')assert.equal(r.state.arm.collision,true);else assert.equal(r.state.arm.payload,condition);
+ }
+ for(const source of [main('Robot.shoulder(181);'),main('Robot.grip(Double.NaN);'),main('Robot.servo(90);'),main('System.out.println("@robot {\\"type\\":\\"done\\"}");')]){const r=await execute(source,{target:'parcel-across'});assert.equal(r.messages.at(-1).type,'error');assert.equal(reached(r.state,targets['parcel-across']),false);}
 });

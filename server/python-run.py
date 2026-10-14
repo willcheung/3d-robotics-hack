@@ -11,14 +11,18 @@ async def _call(op, value=None, has_value=False):
     reply = json.loads(sys.stdin.readline())
     return reply
 robot = types.ModuleType('robot')
-for _name in ('motor', 'servo', 'wait'):
-    async def _set(value, op=_name):
+def _setter(op):
+    async def _set(value):
         return await _call(op, value, True)
-    setattr(robot, _name, _set)
-for _name in ('angle', 'scanner', 'clock'):
-    async def _get(op=_name):
+    return _set
+def _sensor(op):
+    async def _get():
         return await _call(op)
-    setattr(robot, _name, _get)
+    return _get
+for _name in ('motor', 'servo', 'wait', 'shoulder', 'elbow', 'grip'):
+    setattr(robot, _name, _setter(_name))
+for _name in ('angle', 'scanner', 'clock', 'shoulderAngle', 'elbowAngle', 'aperture', 'holding'):
+    setattr(robot, {'shoulderAngle':'shoulder_angle','elbowAngle':'elbow_angle'}.get(_name, _name), _sensor(_name))
 sys.modules['robot'] = robot
 import ast
 with open('/opt/robot/student.py') as source:

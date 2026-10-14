@@ -94,3 +94,17 @@
 .experiment-tools p{margin:0 0 8px}.experiment-tools button{border:1px solid #809880;border-radius:5px;background:#203a3c;color:#e4f2d8;padding:6px 10px;margin-right:12px;font-size:12px}.experiment-tools a{color:#d5f674}.experiment-tools #predict-reminder{font-size:11px;color:#b8cdc1;margin:9px 0 0}
 .lesson-coach textarea{display:block;width:100%;max-width:100%;box-sizing:border-box;margin:8px 0 12px;padding:10px;border:1px solid #829775;border-radius:6px;background:#fffef6;color:#253b2c;font:inherit;font-size:14px;resize:vertical}.lesson-coach #prediction-feedback,.lesson-coach #note-status{font-size:12px;font-weight:400;overflow-wrap:anywhere}
 #code-panel,#lesson-coach{scroll-margin-top:20px}.editor-footer{height:auto;min-height:38px;flex-wrap:wrap;gap:4px}.editor-footer button[hidden]{display:none}
+
+/* Parcel Port retains the shared editor and changes only its mechanism panel. */
+.gripper-label{right:55px;bottom:54px;color:#c5e88a;max-width:190px}
+.component-lines g[data-part="gripper"]{color:#c5e88a}
+.scene[data-world="arm"] .servo-label{top:92px;right:14px}
+.scene[data-world="arm"] .motor-label{top:auto;bottom:62px;left:14px}
+.arm-progress{background:#e9efdf;color:#183a3a;padding:16px 20px;border-top:1px solid #aac1a6}
+.pose-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pose-cards p{margin:0;padding:10px;border:1px solid #9bad91;border-radius:6px;font-size:12px}
+.pose-cards strong,.pose-cards span,.parcel-state span{display:block}
+.pose-cards strong{font-size:10px;letter-spacing:.1em;margin-bottom:6px}
+.parcel-state{display:grid;gap:6px;margin-top:12px;font-size:12px;line-height:1.5}
+.parcel-state>strong{color:#315c30;font-size:13px}
+@media(max-width:650px){.scene[data-world="arm"] .component-label{max-width:132px;padding:8px;font-size:10px}.scene[data-world="arm"] .gripper-label{bottom:48px;right:48px}.scene[data-world="arm"] .motor-label{bottom:48px;left:8px}.scene[data-world="arm"] .servo-label{right:8px;top:80px}.pose-cards{gap:6px}.arm-progress{padding:12px}.pose-cards p{padding:8px;font-size:11px}}

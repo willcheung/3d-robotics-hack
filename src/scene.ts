@@ -1,7 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import {ArmView} from './arm-scene.ts';
+import {armPose} from './arm-model.ts';
 import {patrols, type State, type Target} from './model.ts';
 export class StationScene {
+  private station=new THREE.Group();
+  private armView:ArmView;
+  private armMode=false;
+  private armState?:State['arm'];
   private renderer: THREE.WebGLRenderer;
   private camera = new THREE.PerspectiveCamera(37, 1, .1, 60);
   private controls: OrbitControls;
@@ -136,6 +142,9 @@ export class StationScene {
     // Cable on the board connects the motor housing and servo module.
     const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(.3,.38,.7),new THREE.Vector3(.6,.40,.85),new THREE.Vector3(.85,.43,.6),new THREE.Vector3(1,.48,.4)]);
     this.world.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 30, .028, 8, false), mat('#eabf66')));
+    // Keep original world objects intact while switching to the independent arm scene.
+    for(const child of [...this.world.children])if(!(child instanceof THREE.Light))this.station.add(child);
+    this.world.add(this.station);this.armView=new ArmView();this.world.add(this.armView.root);
     new ResizeObserver(() => this.resize()).observe(container);
     this.renderer.domElement.addEventListener('keydown', e => {
       if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Home'].includes(e.key)) {
@@ -167,12 +176,14 @@ export class StationScene {
     const width = this.container.clientWidth, height = this.container.clientHeight;
     const overlay = this.container.querySelector<SVGSVGElement>('.component-lines')!;
     overlay.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    for (const part of ['motor', 'servo'] as const) {
-      if (part === 'motor') this.projected.copy(this.motorAnchor);
+    for (const part of ['motor', 'servo', 'gripper'] as const) {
+      const group = overlay.querySelector<SVGGElement>(`[data-part="${part}"]`)!;
+      if(part==='gripper'&&!this.armMode){group.style.display='none';continue;}
+      if(this.armState){const pose=armPose(this.armState.shoulder,this.armState.elbow),p=part==='motor'?{x:0,y:.3,z:0}:part==='servo'?pose.joint:pose.hand;this.projected.set(p.x,p.y,p.z);}
+      else if (part === 'motor') this.projected.copy(this.motorAnchor);
       else this.servoAnchor.getWorldPosition(this.projected);
       this.projected.project(this.camera);
       const x = (this.projected.x + 1) * width / 2, y = (1 - this.projected.y) * height / 2;
-      const group = overlay.querySelector<SVGGElement>(`[data-part="${part}"]`)!;
       // Keep the written key readable when the learner pans a part off-screen.
       // Never point to a clamped screen edge and imply the part is there.
       const visible = this.projected.z >= -1 && this.projected.z <= 1 && x >= 0 && x <= width && y >= 0 && y <= height;
@@ -196,11 +207,16 @@ export class StationScene {
   }
   private resize() { const w = this.container.clientWidth, h = this.container.clientHeight; if (!w || !h) return; this.renderer.setSize(w, h); this.camera.aspect = w/h; this.camera.updateProjectionMatrix(); this.dirty = true; }
 
-  reset() { this.camera.position.set(2.5, 5.6, 8.8); this.controls.target.set(0,1.05,0); this.controls.update(); }
+  reset() { if(this.armMode){this.camera.position.set(2.7,3.3,5.2);this.controls.target.set(0,.55,.5);}else{this.camera.position.set(2.5, 5.6, 8.8); this.controls.target.set(0,1.05,0);} this.controls.update(); }
   top() { this.camera.position.set(.01,10,.01); this.controls.target.set(0,1.05,0); this.controls.update(); }
   zoom(factor: number) { const offset = this.camera.position.clone().sub(this.controls.target); offset.multiplyScalar(factor).clampLength(4,13); this.camera.position.copy(this.controls.target).add(offset); this.controls.update(); }
   update(s: State, goal: Target, success: boolean) {
     this.dirty = true;
+    const arm=!!s.arm;this.armState=s.arm;
+    if(arm!==this.armMode){this.armMode=arm;this.reset();}
+    this.station.visible=!arm;this.armView.root.visible=arm;
+    if(s.arm){this.armView.update(s.arm);this.renderer.domElement.setAttribute('aria-label','3D Parcel Port: shoulder turns, elbow lifts, powered gripper carries the parcel over the marked guard to the receiving tray. Actual joint and parcel state drive the scene. Drag or use arrow keys to orbit; plus/minus zoom; Home resets.');return;}
+    this.renderer.domElement.setAttribute('aria-label','3D rescue searchlight: motor(power) turns the base, direction pointer and whole tower left or right; servo(degrees) tilts the lamp up or down at its side joint. wait(ticks) advances both movements. Drag to orbit, right-drag to pan, scroll to zoom. Arrow keys orbit; plus and minus zoom; Home resets the view.');
     this.pointer.rotation.y = -THREE.MathUtils.degToRad(s.angle);
     this.scanner.rotation.x = THREE.MathUtils.degToRad(s.scanner - 90);
     const route=goal.patrol?patrols[goal.patrol]:undefined;
