@@ -19,4 +19,4 @@ The owner requested retirement of reusable parent access codes. Parents sign in 
 
 Hosted runtime/authorization fixtures now pre-provision their disposable parent session rather than logging in with a retired parent code. They are not evidence of email delivery or parent authentication. Local inbox fixtures test application behavior only. A production release still needs an authorized real-inbox transition on protected staging, private-store acceptance, exact-head CI and public saved-progress checks. No existing production family is migrated by the build or by a bulk script.
 
-Status, exact source, checks and remaining release gates are recorded in PROGRESS.md and the PR. No classroom pilot or new live provider result is claimed by this implementation.
+FAMILY-03 is released through PR #5. [PROGRESS.md](PROGRESS.md) records exact-head CI, actual protected-staging inbox transitions, real Blob/Sandbox checks, production-candidate acceptance and public both-language saved-progress checks. No classroom pilot is claimed; that observation remains deferred.

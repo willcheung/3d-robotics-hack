@@ -30,7 +30,7 @@ npm run preview
 
 Open **http://127.0.0.1:4173**. The same process serves the isolated Python runtime on port **4174**. Keep both ports free and use `127.0.0.1` consistently. Ctrl+C stops the preview. `npm run dev` provides live source updates. See [Java setup](docs/JAVA.md) for Docker/Colima details.
 
-Local practice keeps drafts in this browser. Cross-device accounts, hosted Java and email recovery require your own configured services; [self-hosting](docs/DEPLOYMENT.md) explains them. Copy `.env.example` only when configuring a hosted instance. Never commit credentials or student data.
+Local practice keeps drafts in this browser. Cross-device accounts, hosted Java and parent email sign-in require your own configured services; [self-hosting](docs/DEPLOYMENT.md) explains them. Copy `.env.example` only when configuring a hosted instance. Never commit credentials or student data.
 
 ## Check a change
 

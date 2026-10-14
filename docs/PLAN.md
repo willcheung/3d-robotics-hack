@@ -313,3 +313,5 @@ The current manual scope includes shared L01–L03 teaching/recovery improvement
 ## Email-only parent entry follow-up
 
 The owner subsequently chose one standard parent sign-in flow: email. FAMILY-03 supersedes FAMILY-02's retained public parent-code signup/login/recovery paths; [PARENT-EMAIL.md](PARENT-EMAIL.md) freezes the transition and failure rules. Existing code-only families prove their old credential and email once, keeping their original records. Existing verified recovery emails already qualify for email sign-in. Student codes, active sessions, guest Python and the saved-progress model remain. New runtime mechanisms and Mission 4 stay separate.
+
+FAMILY-03 landed in PR #5 and is live after authorized staging, candidate and public acceptance. [PROGRESS.md](PROGRESS.md) records exact source and evidence. The next curriculum task is the separate Parcel Port arm/gripper contract; later mission implementation requires ready model and teaching acceptance criteria.
