@@ -1,3 +1,6 @@
+import {sealData} from 'iron-session';
+import {provision,login,addStudent,saveDraft,recordAttempt,newCode,createFamily,familyPath,update} from '../../server/family-store.mjs';
+import {recoveryIndex} from '../../server/recovery.mjs';
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -21,6 +24,17 @@ const jobs=[],mail={enabled:true,send:async message=>{if(!messages.some(m=>m.id=
 const onboarding=onboardingService({store,password,appOrigin:origin,mail,enqueue,now:()=>time});
 const api=hostedApi({store,enqueue,Run:LocalCheck,mail,recoveryNow:()=>time,appOrigin:origin,password:'test-only-family-ui-session-password-32-characters'});
 const server=http.createServer(async(req,res)=>{
+ if(req.url==='/__test/legacy'&&req.method==='POST'){
+  const parts=[];for await(const part of req)parts.push(part);const data=JSON.parse(Buffer.concat(parts).toString()||'{}');
+  const setupKey=newCode(),created=data.unfinished?await createFamily(store,{name:'Legacy parent',key:setupKey},password):await provision(store,{parentName:'Legacy parent'});
+  const parent=await login(store,created.code),child=await addStudent(store,parent,'Returning pilot'),student=await login(store,child.code);
+  for(const lesson of ['L01','L02','L03'])for(const language of ['python','java'])await saveDraft(store,student,{lesson,language,source:`${lesson} ${language} returning draft`,target:{L01:'reverse',L02:'sensor-transfer',L03:'patrol-cove'}[lesson],revision:0});
+  await recordAttempt(store,student,{id:crypto.randomUUID(),source:'earlier work',language:'python',target:'beacon',outcome:'reached'},true);
+  if(data.verified){const email=data.email??'verified-parent@example.test',index=recoveryIndex(email,password);await update(store,familyPath(parent.familyId),f=>{f.profiles[0].recovery={email,index,verifiedAt:new Date().toISOString()};return {value:f};});await store.write(index,{families:[parent.familyId]});}
+  res.writeHead(200,{'Content-Type':'application/json',...(data.session?{'Set-Cookie':`robolab-local=${await sealData(parent,{password,ttl:3600})}; Path=/; HttpOnly; SameSite=Strict`}:{})});
+  res.end(JSON.stringify({code:created.code,studentCode:child.code,profileId:parent.profileId,...(data.unfinished?{setupKey}:{})}));return;
+ }
+
  if(req.url==='/__test/drain'&&req.method==='POST'){for(const job of jobs.splice(0)){if(!job.options?.delaySeconds)await onboarding.deliver(job.message);}res.end('ok');return;}
  if(req.url==='/__test/messages'){res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(messages));return;}
  if(req.url==='/__test/mail'){res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(messages.at(-1)??null));return;}

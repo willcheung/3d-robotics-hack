@@ -76,22 +76,15 @@ test('Resend adapter sends only bounded transactional text, uses idempotency and
  assert.equal((await mail.send({to:'p@example.com',subject:'Verify',text:'test',id:'test-id'})).id,'sent');assert.equal(request.url,'https://api.resend.com/emails');assert.equal(request.options.headers['Idempotency-Key'],'robolab-recovery/test-id');assert.deepEqual(JSON.parse(request.options.body).to,['p@example.com']);
  const broken=resendMailer({key:'test-key',from:'test',fetcher:async()=>new Response('SECRET provider details',{status:401})});await assert.rejects(broken.send({id:'x'}),e=>e.status===503&&!e.message.includes('SECRET'));
 });
-test('HTTP recovery enforces origin/session/profile and sets a new HttpOnly parent session only on confirmation',async()=>{
+test('retired HTTP recovery keeps origin checks and cannot issue a parent cookie',async()=>{
  const f=await fixture();let api;const server=createServer((req,res)=>void api(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;api=hostedApi({store:f.store,password,appOrigin:base,alternateOrigin:'https://robolab.example',recoveryOrigin:'https://robolab.example',mail:f.mail});
- const post=(path,data,cookie='',headers={})=>fetch(base+'/api/family'+path,{method:'POST',headers:{origin:base,'content-type':'application/json',cookie,...headers},body:JSON.stringify(data)});
+ const post=(path,data,extra={})=>fetch(base+'/api/family'+path,{method:'POST',headers:{origin:base,'content-type':'application/json',...extra},body:JSON.stringify(data)});
  try{
-  assert.equal((await post('/forgot',{email:'a@example.com'},'',{origin:'https://evil.test'})).status,403);
-  assert.equal((await post('/email',{email:'p@example.com',code:f.seed.code})).status,401);
-  assert.equal((await post('/login',{code:f.seed.code},'',{origin:'https://robolab.example'})).status,200,'explicit alternate origin is accepted while the old origin still works');
-  const signed=await post('/login',{code:f.seed.code}),cookie=signed.headers.get('set-cookie').split(';')[0];
-  assert.equal((await post('/email',{email:'p@example.com',code:f.seed.code},cookie)).status,409);
-  assert.equal((await post('/email',{email:'p@example.com',code:f.seed.code},cookie,{'x-robolab-profile':f.parent.profileId})).status,200);
-  assert.equal((await fetch(base+'/api/family/emailverify?token='+f.token(),{headers:{cookie}})).status,405);
-  assert.equal((await post('/emailverify',{token:f.token()},cookie,{'x-robolab-profile':f.parent.profileId})).status,200);
-  // Use the service clock for a new request after its cooldown, then exercise HTTP confirmation.
-  f.advance();await f.service.forgot({email:'p@example.com'});
-  const recovered=await post('/recover',{token:f.token(),key:newCode()});assert.equal(recovered.status,200);assert.match(recovered.headers.get('set-cookie'),/HttpOnly/);
-  assert.equal((await fetch(base+'/api/family',{headers:{cookie}})).status,401);
+  assert.equal((await post('/forgot',{email:'a@example.com'},{origin:'https://evil.test'})).status,403);
+  for(const path of ['/forgot','/email','/emailverify','/recover']){const r=await post(path,{code:f.seed.code,token:'old',key:newCode()});assert.equal(r.status,410);assert.equal(r.headers.get('set-cookie'),null);}
+  assert.equal(f.messages.length,0);
+  assert.equal((await post('/login',{code:f.student.code},{origin:'https://robolab.example'})).status,200,'configured alternate origin still accepts students');
+  assert.equal((await post('/login',{code:f.seed.code})).status,403);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
 test('migration frame allows each explicit workshop and rejects all other parents without a wildcard',async()=>{

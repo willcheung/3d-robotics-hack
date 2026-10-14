@@ -1,5 +1,14 @@
 # Public progress
 
+## FAMILY-03 — Email-only parent entry (review candidate)
+
+- Base: `be4d8251f37b23f4b623a2fd9921b2bae5a382bc`; branch: `codex/parent-email-only`. Exact tested commit and CI are recorded in the PR; this checkpoint is not a release.
+- Parents use email sign-in. Reusable parent-code login, code-only signup and old recovery routes are retired. Existing code-only families connect their email once, preserving the original family, student access and all saved work; interrupted old setup can also resume. Students keep their codes and guest Python remains available. Contract: [PARENT-EMAIL.md](PARENT-EMAIL.md).
+- Passed locally: 48 account/API tests and 13 browser account journeys, including real isolated Java across Missions 1–3, six saved code/challenge pairs on a fresh browser, wrong-role/tenant rejection, competing connections, partial-write recovery and lost-response retry. TypeScript/build passed. Synthetic narrow entry, connection and verified-email screenshots were inspected.
+- The first browser run exposed a connection retry bug after the server set a session but the response was lost. The UI now retries the verified finish step directly; the regression passes. A separate test now waits for the requested email before testing reload persistence, without relaxing any deadline or result assertion.
+- Hosted runtime fixtures now create disposable parent sessions directly; those tests do not prove parent authentication. Real Blob connection races have an opt-in provider test. Protected staging, actual inbox delivery, provider execution and public promotion have not run for this change. Classroom observation remains pending.
+- Next action: complete source review and exact-head CI, then obtain release authorization for protected staging and promotion. Existing live Missions 1–3 remain the prior release; Mission 4 is separate.
+
 Implemented and validated: S01 rescue searchlight in Python, S02 real Java and syntax colors, DEPLOY-01 hosted runtimes and private family progress, FAMILY-01 in-app family/student setup, RECOVERY-01 verified parent email recovery, S03 sensor choice, FAMILY-02 parent email login/student onboarding, and S08 Ranger patrol. Missions 1–3 are live in both languages, with shared teaching supports and saved code/challenge pairs. Each mission has three challenges. Later curriculum entries remain plans.
 
 OPEN-01 prepares the public source distribution: privacy review, MIT license, dependency notices, generic setup/contribution/security documentation and publication guardrails. The publication receipt records its exact source and checks after validation. Private historical operations receipts are not part of the public source distribution.

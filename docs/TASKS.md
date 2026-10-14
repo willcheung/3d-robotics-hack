@@ -88,6 +88,14 @@ If the environment cannot support those guarantees, report the specific missing 
 - Acceptance: one persisted event per family/profile, atomic first-sign-in state, notification preference respected at delivery, no events for failed login/GET/email previews/helper authentication/session refresh, no login delay or failure due to mail outage. Duplicate delivery/retry cannot repeat the message; unknown delivery is reconciled within the provider deduplication window. Current verified parent and active student are rechecked before sending.
 - Validation: `tests/onboarding.test.mjs` and `tests/hosted/onboarding-ui.spec.ts`, two simultaneous real sign-ins, webhook/queue replay, crashes before/after provider acceptance, mail outage, old/new profile migration, email change/revocation and notification opt-out. Protected staging must show the one received notice and no second send after subsequent sign-ins; timestamps/UI flags alone are not proof. Retain complete Python/Java family regressions.
 
+## FAMILY-03 — Email-only parent entry
+
+- Status: in progress on `codex/parent-email-only`; manually authorized implementation. Contract: [PARENT-EMAIL.md](PARENT-EMAIL.md).
+- Depends on: FAMILY-02 landed (satisfied).
+- Outcome: parents use email; existing code-only families connect once without losing profiles, student codes or progress. Students keep their code-based entry and guest Python stays available.
+- Acceptance: old parent codes and retired signup/recovery endpoints cannot authenticate or mint a new code; migration requires legacy ownership and fresh email proof, is retry-safe, prevents email/family reassignment, and preserves six draft/challenge contexts plus checked results. Interrupted old setup remains recoverable.
+- Validation: account/API races and boundaries, browser migration/retry/return, existing student-card and mission-progress regressions, inspected narrow screenshots, exact-head CI. Actual provider acceptance and release require separate authorization.
+
 ## S03 — Sensor feedback and one complete lesson
 
 - Status: done; [PR #2](https://github.com/willcheung/3d-robotics-hack/pull/2) merged and released after explicit authorization. Exact-source CI, protected staging, production-candidate and public acceptance evidence are recorded in PROGRESS.md. Learner/device/pacing observation remains pending; no later slice is authorized by this release.

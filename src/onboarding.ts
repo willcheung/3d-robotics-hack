@@ -7,8 +7,12 @@ const key=()=>btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(
 const read=(name:string)=>{try{return JSON.parse(sessionStorage.getItem(name)||'null');}catch{return null;}};
 const keep=(name:string,value:unknown)=>{try{value?sessionStorage.setItem(name,JSON.stringify(value)):sessionStorage.removeItem(name);}catch{}};
 export function attachOnboarding(o:Options){
- type Challenge={key:string;email:string;expiresAt?:number;resendAt?:number};
+ type Challenge={key:string;email:string;expiresAt?:number;resendAt?:number;connect?:boolean};
  let challenge:Challenge|null=read('robolab-email-challenge'),families:{id:string;name:string;students:string[]}[]|null=null;
+ const unfinished=read('robolab-pending-family-setup');
+ let pendingKey=typeof unfinished?.key==='string'&&/^[A-Za-z0-9_-]{32}$/.test(unfinished.key)?unfinished.key:undefined;
+ let connecting=!!challenge?.connect||!!pendingKey,legacyCode='';
+ const legacyProof=()=>legacyCode?{parentCode:legacyCode}:pendingKey?{parentSetupKey:pendingKey}:{parentCode:legacyCode};
  let mode:'parent'|'student'='parent',busy=false,names=[''],cards:Card[]=[],eventId='',timer:ReturnType<typeof setInterval>|undefined;
  let cardOwner='',batch:{id:string;names:string[];owner:string}|null=read('robolab-student-batch');
  let replacement:{id:string;studentId:string;owner:string}|null=read('robolab-student-replacement');
@@ -17,32 +21,49 @@ export function attachOnboarding(o:Options){
  readLink();
  const field=<T extends HTMLElement=HTMLElement>(host:HTMLElement,selector:string)=>host.querySelector<T>(selector)!;
  async function act(button:HTMLButtonElement,run:()=>Promise<void>){if(busy)return;busy=true;button.disabled=true;try{await run();}catch(e){o.say((e as Error).message);}finally{busy=false;button.disabled=false;}}
- function clearAuth(){challenge=null;families=null;keep('robolab-email-challenge',null);}
+ function clearAuth(){challenge=null;families=null;connecting=false;legacyCode='';keep('robolab-email-challenge',null);}
  function clearCards(){cards=[];eventId='';batch=null;replacement=null;names=[''];keep('robolab-student-batch',null);keep('robolab-student-replacement',null);}
- async function finish(data:unknown){await o.request('/authfinish',data);clearAuth();await o.refresh();o.say('Email verified. You’re signed in. Add student nicknames to get their login cards.');}
- function entry(host:HTMLElement,legacy:HTMLElement){
+ async function finish(data:unknown){
+  try{await o.request('/authfinish',data);}catch(error){o.render();throw error;}
+  pendingKey=undefined;keep('robolab-pending-family-setup',null);clearAuth();await o.refresh();o.say('Email verified. You’re signed in. Your family and saved work are ready. Parents return with email; students keep their own codes.');
+ }
+ function entry(host:HTMLElement,student?:HTMLElement,existing?:OnboardingFamily){
   if(timer)clearInterval(timer);
-  host.innerHTML=`<div class="account-tabs" role="group" aria-label="Choose who is signing in"><button data-mode="parent" aria-pressed="${mode==='parent'}">Parent</button><button data-mode="student" aria-pressed="${mode==='student'}">Student</button></div><div id="parent-entry"></div>`;
-  legacy.hidden=mode!=='student';
+  if(existing&&!existing.recoveryEmail&&!challenge)connecting=true;
+  host.innerHTML=`${existing?'':`<div class="account-tabs" role="group" aria-label="Choose who is signing in"><button data-mode="parent" aria-pressed="${mode==='parent'}">Parent</button><button data-mode="student" aria-pressed="${mode==='student'}">Student</button></div>`}<div id="parent-entry"></div>`;
+  if(student)student.hidden=mode!=='student';
   host.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode as typeof mode;o.render();});
-  const panel=field(host,'#parent-entry');panel.hidden=mode!=='parent';
+  const panel=field(host,'#parent-entry');panel.hidden=!existing&&mode!=='parent';
+  const oldCodeField=pendingKey?'<p>This browser has an unfinished family setup. Verify your email to reconnect that same family.</p>':'<label>Old parent code<input id="connect-parent-code" type="password" autocomplete="off" maxlength="32" minlength="32" required></label>';
+  const connectHelp='<p>Connect your existing family once. Your students, their login codes and saved work stay together. After connection, this parent code stops granting access; use email next time.</p>';
   if(families){
-   panel.innerHTML=families.length?`<h3>Choose your family</h3><p>Your email is verified. Continue where you left off.</p>${families.map(f=>`<button data-family="${esc(f.id)}">${esc(f.name)} · ${esc(f.students.join(', ')||'No students yet')}</button>`).join('')}`:'<h3>Email verified — create your family</h3><p>Next, add student nicknames. Each child gets a private login, with no email or password needed.</p><button id="email-create" class="primary">Create family</button><button id="old-family">I already have a parent code</button>';
+   if(connecting){
+    panel.innerHTML=`<h3>Connect your existing family</h3>${connectHelp}<p>Email verified: <strong>${esc(challenge!.email)}</strong>.</p><form id="legacy-connect">${oldCodeField}<button class="primary">Connect this family</button></form><button id="connect-cancel">Start again</button>`;
+    if(!pendingKey)field<HTMLInputElement>(panel,'#connect-parent-code').value=legacyCode;
+    field<HTMLFormElement>(panel,'form').onsubmit=e=>{e.preventDefault();if(!pendingKey)legacyCode=field<HTMLInputElement>(panel,'#connect-parent-code').value.trim();void act(field(panel,'form button'),()=>finish({key:challenge!.key,...legacyProof()}));};
+    field(panel,'#connect-cancel').onclick=()=>{clearAuth();o.render();};return;
+   }
+   panel.innerHTML=families.length?`<h3>Choose your family</h3><p>Your email is verified. Continue where you left off.</p>${families.map(f=>`<button data-family="${esc(f.id)}">${esc(f.name)} · ${esc(f.students.join(', ')||'No students yet')}</button>`).join('')}`:'<h3>Email verified — create your family</h3><p>Next, add student nicknames. Each child gets a private login, with no email or password needed.</p><button id="email-create" class="primary">Create family</button>';
+   panel.insertAdjacentHTML('beforeend','<button id="old-family">Connect an existing code-only family</button>');
    panel.querySelectorAll<HTMLButtonElement>('[data-family]').forEach(b=>b.onclick=()=>void act(b,()=>finish({key:challenge!.key,familyId:b.dataset.family})));
    const create=panel.querySelector<HTMLButtonElement>('#email-create');if(create)create.onclick=()=>void act(create,()=>finish({key:challenge!.key,create:true}));
-   const old=panel.querySelector<HTMLButtonElement>('#old-family');if(old)old.onclick=()=>{mode='student';o.render();};return;
+   field(panel,'#old-family').onclick=()=>{connecting=true;o.render();};return;
   }
   if(challenge?.expiresAt){
-   panel.innerHTML=`<h3>Check your email</h3><p>We sent a sign-in code to <strong>${esc(challenge.email)}</strong>. Check spam if it hasn’t arrived. Enter it here within 10 minutes.</p><form id="parent-verify"><label>Six-digit sign-in code<input id="email-code" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" required></label><button class="primary">Continue</button></form><div class="code-actions"><button id="email-resend">Resend code</button><button id="email-change">Change email / start again</button></div><p id="email-countdown" role="status"></p>`;
-   field<HTMLFormElement>(panel,'form').onsubmit=e=>{e.preventDefault();const code=field<HTMLInputElement>(panel,'#email-code').value.trim();void act(field(panel,'form button'),async()=>{const r=await o.request('/authverify',{key:challenge!.key,code});families=r.families;if(families!.length===1)await finish({key:challenge!.key,familyId:families![0].id});else{o.render();o.say('Email verified.');}});};
+   panel.innerHTML=`<h3>Check your email</h3><p>We sent a sign-in code to <strong>${esc(challenge.email)}</strong>. Check spam if it hasn’t arrived. Enter it here within 10 minutes.</p>${connecting?connectHelp:''}<form id="parent-verify"><label>Six-digit sign-in code<input id="email-code" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" required></label>${connecting?oldCodeField:''}<button class="primary">${connecting?'Verify email & connect family':'Continue'}</button></form><div class="code-actions"><button id="email-resend">Resend code</button><button id="email-change">Change email / start again</button></div><p id="email-countdown" role="status"></p>`;
+   if(connecting&&!pendingKey)field<HTMLInputElement>(panel,'#connect-parent-code').value=legacyCode;
+   field<HTMLFormElement>(panel,'form').onsubmit=e=>{e.preventDefault();const code=field<HTMLInputElement>(panel,'#email-code').value.trim();if(connecting&&!pendingKey)legacyCode=field<HTMLInputElement>(panel,'#connect-parent-code').value.trim();void act(field(panel,'form button'),async()=>{const r=await o.request('/authverify',{key:challenge!.key,code});families=r.families;if(connecting)await finish({key:challenge!.key,...legacyProof()});else if(families!.length===1)await finish({key:challenge!.key,familyId:families![0].id});else{o.render();o.say('Email verified.');}});};
    const countdown=()=>{if(!challenge)return;const seconds=Math.max(0,Math.ceil(((challenge.resendAt??0)-Date.now())/1000));field<HTMLButtonElement>(panel,'#email-resend').disabled=busy||seconds>0;field(panel,'#email-countdown').textContent=challenge.expiresAt!<=Date.now()?'Code expired. Choose Start again to get a new code.':seconds?`Resend available in ${seconds}s.`:'You can resend if needed.';};countdown();timer=setInterval(countdown,1000);
    field<HTMLButtonElement>(panel,'#email-resend').onclick=e=>void act(e.currentTarget as HTMLButtonElement,async()=>{const r=await o.request('/authstart',{...challenge,resend:true});challenge={...challenge!,...r,expiresAt:Date.now()+r.expiresAt-r.serverNow,resendAt:Date.now()+r.resendAt-r.serverNow};keep('robolab-email-challenge',challenge);o.render();o.say('Sign-in code resent. Its original 10-minute expiry still applies.');});
    field(panel,'#email-change').onclick=()=>{clearAuth();o.render();};
    queueMicrotask(()=>field<HTMLInputElement>(panel,'#email-code').focus());return;
   }
-  panel.innerHTML='<h3>Save progress for your family</h3><p>New or returning parent? Start with your email. We’ll send a short sign-in code — no password to remember.</p><form id="parent-signin"><label>Parent email<input id="parent-signin-email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com"></label><button class="primary">Continue with email</button></form><p>Students don’t need an email address. Their private login cards come next.</p>';
-  if(challenge)field<HTMLInputElement>(panel,'input').value=challenge.email;
-  field<HTMLFormElement>(panel,'form').onsubmit=e=>{e.preventDefault();void act(field(panel,'button'),async()=>{const email=field<HTMLInputElement>(panel,'input').value.trim();if(!challenge||challenge.email!==email)challenge={key:key(),email};keep('robolab-email-challenge',challenge);const r=await o.request('/authstart',challenge);challenge={...challenge!,...r,expiresAt:Date.now()+r.expiresAt-r.serverNow,resendAt:Date.now()+r.resendAt-r.serverNow};keep('robolab-email-challenge',challenge);o.render();o.say('Sign-in email sent.');});};
+  panel.innerHTML=`<h3>${connecting?'Connect your email':'Save progress for your family'}</h3>${connecting?connectHelp:'<p>New or returning parent? Start with your email. We’ll send a short sign-in code — no password to remember.</p>'}<form id="parent-signin"><label>Parent email<input id="parent-signin-email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com"></label>${connecting?oldCodeField:''}<button class="primary">Continue with email</button></form><p>Students don’t need an email address. They use their own login cards.</p>${!existing?(connecting?'<button id="connect-cancel">Back to parent sign-in</button>':'<details class="recovery-help"><summary>Have an old parent code?</summary><p>Connect it to a verified email once to keep your existing family and progress.</p><button id="connect-email">Connect your email</button></details>'):''}`;
+  field<HTMLInputElement>(panel,'#parent-signin-email').value=challenge?.email??existing?.recoveryEmail??'';
+  if(connecting&&!pendingKey)field<HTMLInputElement>(panel,'#connect-parent-code').value=legacyCode;
+  const connect=panel.querySelector<HTMLButtonElement>('#connect-email');if(connect)connect.onclick=()=>{clearAuth();connecting=true;o.render();field<HTMLInputElement>(host,'#parent-signin-email').focus();};
+  const cancel=panel.querySelector<HTMLButtonElement>('#connect-cancel');if(cancel)cancel.onclick=()=>{clearAuth();o.render();};
+  field<HTMLFormElement>(panel,'form').onsubmit=e=>{e.preventDefault();void act(field(panel,'form button'),async()=>{const email=field<HTMLInputElement>(panel,'#parent-signin-email').value.trim();if(connecting&&!pendingKey)legacyCode=field<HTMLInputElement>(panel,'#connect-parent-code').value.trim();if(!challenge||challenge.email!==email)challenge={key:key(),email,connect:connecting};keep('robolab-email-challenge',challenge);const r=await o.request('/authstart',challenge);challenge={...challenge!,...r,expiresAt:Date.now()+r.expiresAt-r.serverNow,resendAt:Date.now()+r.resendAt-r.serverNow};keep('robolab-email-challenge',challenge);o.render();o.say('Sign-in email sent.');});};
  }
  function link(host:HTMLElement,family:OnboardingFamily|null){
   host.replaceChildren();if(!studentLink)return;

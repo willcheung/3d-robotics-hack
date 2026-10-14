@@ -1,5 +1,5 @@
 import {createHmac,randomBytes,randomInt,createCipheriv,createDecipheriv,timingSafeEqual,hkdfSync} from 'node:crypto';
-import {HttpError,update,current,profileIn,familyPath,hashCode,createFamily,setupIdentity,validAttempt} from './family-store.mjs';
+import {HttpError,update,current,profileIn,familyPath,hashCode,createFamily,setupIdentity,validAttempt,login} from './family-store.mjs';
 import {normalizeEmail,recoveryIndex,EMAIL_LIMIT_PATH} from './recovery.mjs';
 
 export const AUTH_TTL=10*60*1000;
@@ -45,7 +45,7 @@ async function emailAllowance(store,password,{email,ip='unknown',id,kind,now}){
 }
 
 export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=>Date.now()}){
- const ready=()=>{if(!mail?.enabled)throw new HttpError(503,'Email sign-in is unavailable right now. Your existing access code still works.');};
+ const ready=()=>{if(!mail?.enabled)throw new HttpError(503,'Email sign-in is unavailable right now. Please retry later. Existing sessions and student codes still work.');};
  const proof=async key=>{
   requireKey(key);const row=(await store.read(authPath(password,key)))?.value;
   if(!row?.verified||row.until<=now())throw invalid();return row;
@@ -127,15 +127,53 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
    const rows=await memberships(before.email);
    return {ok:true,families:rows.map(({id,name,students})=>({id,name,students})),email:before.email};
   },
-  async finish({key,familyId,create=false},expected){
-   const verified=await proof(key);let rows=await memberships(verified.email),chosen=rows.find(f=>f.id===familyId);
+  async finish({key,familyId,create=false,parentCode,parentSetupKey},expected){
+   const verified=await proof(key);
+   if(parentCode!==undefined||parentSetupKey!==undefined){
+    // A legacy code can connect its existing family only after fresh email
+    // proof. It never creates a code-authenticated browser session.
+    if(create||familyId||parentCode!==undefined&&parentSetupKey!==undefined)throw new HttpError(400,'Connect your existing family or create a new one, not both.');
+    let legacy;
+    if(parentSetupKey!==undefined){
+     const id=setupIdentity(parentSetupKey,password),f=(await store.read(familyPath(id.familyId)))?.value;
+     if(!f||f.registration?.keyHash!==id.keyHash||f.registration.codeHash!==hashCode(id.code))throw new HttpError(400,'That unfinished setup was not saved. Start again with email to create your family.');
+     parentCode=id.code;legacy={familyId:id.familyId,profileId:id.profileId,epoch:1};
+    }else legacy=await login(store,parentCode);
+    const {profile}=await current(store,legacy);
+    const linkId=hmac(password,'connect:'+key),codeHash=hashCode(parentCode);
+    if(profile.role!=='parent')throw new HttpError(403,'Use your old parent code to connect this family. Student codes cannot connect an email.');
+    if(expected&&(expected.familyId!==legacy.familyId||expected.profileId!==legacy.profileId))throw new HttpError(409,'Sign out before switching families.');
+    const check=p=>{
+     if(verified.until<=now())throw invalid();
+     if(p.accessHash&&p.accessHash!==codeHash||p.emailLogin&&p.emailConnectedWith!==linkId)throw new HttpError(403,'This family already uses email sign-in. Return with its verified email.');
+     if(p.recovery&&p.recovery.email!==verified.email)throw new HttpError(403,'This family already has a verified email. Sign in with that address.');
+    };
+    check(profile);
+    await update(store,authPath(password,key),r=>{
+     if(!r?.verified||r.until<=now())throw invalid();
+     if(r.familyId&&r.familyId!==legacy.familyId)throw new HttpError(409,'This email request is already connected to another family. Start again.');
+     r.familyId=legacy.familyId;return {value:r};
+    });
+    const index=recoveryIndex(verified.email,password);
+    // Index first: a partial write is harmless until the authoritative family
+    // matches it. After the family commits, email sign-in is already usable.
+    await update(store,index,r=>{r??={families:[]};if(!r.families.includes(legacy.familyId))r.families.push(legacy.familyId);return {value:r};});
+    await update(store,familyPath(legacy.familyId),f=>{
+     const p=profileIn(f,legacy);check(p);
+     p.recovery={email:verified.email,index,verifiedAt:p.recovery?.verifiedAt??new Date(now()).toISOString()};
+     p.emailLogin=true;p.emailConnectedWith=linkId;f.onboarding??={events:{},batches:{},notifyFirst:true};return {value:f};
+    });
+    return {session:legacy};
+   }
+   let rows=await memberships(verified.email),chosen=rows.find(f=>f.id===familyId);
    if(!chosen&&create&&rows.length){const bound=(await proof(key)).familyId;chosen=rows.find(r=>r.id===bound);}
+   if(verified.familyId&&chosen&&verified.familyId!==chosen.id)throw new HttpError(409,'This email request is already connected to another family. Start again.');
    if(expected&&(!chosen||chosen.session.familyId!==expected.familyId||chosen.session.profileId!==expected.profileId))throw new HttpError(409,'Sign out before switching families.');
    if(!chosen&&rows.length)throw new HttpError(400,'Choose your existing family.');
    if(!chosen){
     if(!create)throw new HttpError(400,'Choose Create family to continue.');
     const setupKey=tokenCode(password,'email-family:'+verified.email);
-    await update(store,authPath(password,key),r=>{if(!r?.verified||r.until<=now())throw invalid();r.familyId=setupIdentity(setupKey,password).familyId;return {value:r};});
+    await update(store,authPath(password,key),r=>{if(!r?.verified||r.until<=now())throw invalid();const id=setupIdentity(setupKey,password).familyId;if(r.familyId&&r.familyId!==id)throw new HttpError(409,'This email request is already connected to another family. Start again.');r.familyId=id;return {value:r};});
     const created=await createFamily(store,{name:'Parent',key:setupKey},password,{now:now()});
     const index=recoveryIndex(verified.email,password);
     await update(store,familyPath(created.session.familyId),f=>{const p=profileIn(f,created.session);

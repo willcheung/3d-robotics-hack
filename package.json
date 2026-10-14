@@ -16,7 +16,7 @@
     "build:vercel": "node scripts/vercel-build.mjs",
     "setup:java": "docker build --network=default -t robolab-java:s02 java",
     "test:java": "node --test tests/java.test.mjs",
-    "test:family": "node --test tests/family.test.mjs tests/recovery.test.mjs tests/onboarding.test.mjs",
+    "test:family": "node --test tests/family.test.mjs tests/recovery.test.mjs tests/onboarding.test.mjs tests/parent-email.test.mjs",
     "test:provider": "node --test tests/provider.test.mjs",
     "test:storage-provider": "node --test tests/storage-provider.test.mjs tests/recovery-storage.test.mjs tests/onboarding-storage.test.mjs",
     "test:hosted": "playwright test --config playwright.hosted.config.ts",

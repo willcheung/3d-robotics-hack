@@ -1,7 +1,8 @@
+import {fixtureParent} from '../helpers/fixture-parent.ts';
 import {test,expect,type BrowserContext,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 import {del} from '@vercel/blob';
-import {BlobStore,provision,login,familyPath} from '../../server/family-store.mjs';
+import {BlobStore,provision,login,familyPath,addStudent} from '../../server/family-store.mjs';
 import {getLesson,sensorReference,sensorTransfer} from '../../src/lessons.ts';
 import {patrolReference,patrolExtra,patrolTransfer} from '../../src/patrol-lesson.ts';
 import {lessonTargets} from '../../src/model.ts';
@@ -39,13 +40,10 @@ test('hosted Missions 1–3: both runtimes, checked unlocks, recovery and six sa
  store.write=async(path:string,...args:unknown[])=>{paths.add(path);return write(path,...args);};
  const parent=await provision(store,{parentName:'Release parent'});
  const parentContext=await browser.newContext();await protect(parentContext);const parentPage=await parentContext.newPage();
- await signIn(parentPage,parent.code,'Release parent');await parentPage.locator('#family-open').click();
+ await fixtureParent(parentContext,store,parent.code,origin);
  const cards:{code:string;name:string}[]=[];
- for(const name of ['Release Python','Release Java']){
-  await parentPage.locator('#student-name').fill(name);await parentPage.getByRole('button',{name:'Add student',exact:true}).click();
-  await expect(parentPage.locator('.family-results')).toContainText(name);const code=await parentPage.locator('#new-code input').inputValue();
-  const {hashCode}=await import('../../server/family-store.mjs');paths.add(`invites/${hashCode(code)}.json`);cards.push({code,name});
- }
+ for(const name of ['Release Python','Release Java']){const card=await addStudent(store,await login(store,parent.code),name);cards.push({code:card.code,name});}
+ await parentPage.goto(origin);await parentPage.locator('#family-open').click();
  const parentSession=await login(store,parent.code);paths.add(familyPath(parentSession.familyId));
  for(const [index,language] of (['python','java'] as const).entries()){
   const context=await browser.newContext({viewport:{width:1440,height:1050}});await protect(context);const page=await context.newPage();

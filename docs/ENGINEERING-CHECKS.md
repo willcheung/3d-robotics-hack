@@ -214,3 +214,7 @@ MISSION-03.md is the frozen acceptance contract. `tests/patrol.test.ts` supplies
 ## Progressive teaching and recovery gates
 
 Shared lesson refinements must cover all playable missions and both languages. Check predictions against the selected case and current source snapshot without automatically grading arbitrary code. Check missing milestones separately from a wrong final pose; retained diagnostic history cannot award progress or accept student-supplied results. Verify first-edit focus, reachable free hints, Run, text-only note rendering, legacy/partial local saves, six code/challenge pairs, recoverable repeated Restore clicks, full-storage recovery, profile isolation and cloud conflict/version pairing. Keep cloud code/challenge saves separate from device-only notes. Future lesson acceptance includes the retrieval/new-demand/transfer row in TEACHING-PROGRESSION.md.
+
+## FAMILY-03 parent entry regression gates
+
+PARENT-EMAIL.md supersedes tests that require public parent-code login, code-only signup or code-issuing recovery. Keep the underlying historic recovery/store fixtures as compatibility evidence, but the public API must reject retired routes. Add fresh email plus old-code/unfinished-setup ownership, index-before-family partial writes, competing emails, same-challenge response retry, retired-code rejection, unchanged student records and explicit current-session boundaries. Use parent-session fixtures only for non-auth hosted checks; they do not establish email authentication or provider delivery.
