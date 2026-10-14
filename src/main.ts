@@ -7,6 +7,7 @@ import { attachHighlighting } from './highlighting.ts';
 import { attachFamily } from './family.ts';
 import { pythonStarter, javaStarter } from './starters.ts';
 import {getLesson} from './lessons.ts';
+import {armMissions,armUI,armLanguage,armProgress,armFailure} from './arm-ui.ts';
 import {patrolMissions, patrolUI, patrolProgress} from './patrol-ui.ts';
 import {readExperiment, type Experiment} from './experiment.ts';
 import {renderTeaching, patrolFailure} from './teaching.ts';
@@ -23,7 +24,7 @@ Object.assign(missions, {
   'sensor-right': {location:'Recover from 90°',job:'Same crew, opposite starting side. Use the SAME program to recover from 90° to 60°.',waiting:'North ridge crew · light needs recovery',found:'North ridge crew located · recovery from 90° complete'},
   'sensor-transfer': {location:'Lower cove transfer',job:'A crew now waits below the station. Start at −30°, turn to −60° and tilt to 60°. Adapt the comparison value and tilt while keeping your decision rule.',waiting:'Lower cove crew · waiting for your adapted program',found:'Lower cove crew located · transfer rescue complete'},
 });
-Object.assign(missions,patrolMissions);
+Object.assign(missions,patrolMissions,armMissions);
 const missionNumber=()=>Number(lesson.slice(1));
 const icons = {
  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="m8 5 12 7-12 7z"/></svg>',
@@ -35,14 +36,14 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <header class="header"><a class="brand" href="/" aria-label="RoboLab home"><span class="brand-mark">${icons.cube}</span>Robo<span>Lab</span></a><span class="header-divider"></span><span class="workshop-label">THE ROBOTICS WORKSHOP</span><span class="preview-badge" id="language-badge"><span></span>Python · Mission 1</span><a class="help-link" href="#play-guide">How to play <span>↗</span></a></header>
 <main>
 <div class="intro"><div><div class="eyebrow">MISSION 01 <span>/</span> NUMBERS → MOVEMENT</div><h1>Signal Station<span>.</span></h1><p>Use code to help a rescue team find a stranded crew.</p></div><div class="mission-stamp"><span>YOUR CODE HAS A JOB</span><strong>Find them. Light the way.</strong><div><i class="active"></i><i></i><i></i><i></i></div></div></div>
-<nav class="lesson-picker" aria-label="Choose a mission"><label>YOUR MISSION <select id="lesson" aria-label="Mission"><option value="L01">1 · Signal Station</option><option value="L02">2 · Read, then choose</option><option value="L03">3 · Ranger patrol</option></select></label><p>Practice freely. Check each mission’s three challenges to unlock saved completion in the next mission.</p></nav>
-<p class="build-status">Run real Python or Java across three missions. Each mission keeps separate language drafts. Retries and hints never cost points.</p>
+<nav class="lesson-picker" aria-label="Choose a mission"><label>YOUR MISSION <select id="lesson" aria-label="Mission"><option value="L01">1 · Signal Station</option><option value="L02">2 · Read, then choose</option><option value="L03">3 · Ranger patrol</option><option value="L04">4 · Parcel Port</option></select></label><p>Practice freely. Check each mission’s three challenges to unlock saved completion in the next mission.</p></nav>
+<p class="build-status">Run real Python or Java across four missions. Each mission keeps separate language drafts. Retries and hints never cost points.</p>
 <section class="mission-card" aria-label="Your mission"><div class="mission-number">01</div><div class="mission-copy"><h2>Put the stranded crew in the light</h2><p id="mission-job">${missions.beacon.job}</p><p class="mission-instruction">Turn to <strong id="goal-angle">60°</strong> · Tilt servo to <strong id="goal-scanner">120°</strong> · Hold still. Change <code>turn_ticks</code> to control how long the motor turns.</p></div><label class="target-select"><span id="target-label">WHERE IS THE CREW?</span><select id="target" aria-label="Challenge target"><option value="beacon">01 · North ridge / 60°</option><option value="farther">02 · East lookout / 90°</option><option value="reverse">03 · Lower cove / −60°</option></select></label></section>
 <div class="workbench">
 <section class="world-panel" aria-label="Robot workbench"><div class="panel-heading"><span><span class="live-dot"></span> RESCUE STATION</span><span id="graphics-label" class="tiny-label">LIVE 3D</span></div><div id="scene" class="scene"><div class="scene-tag"><span>SS—01</span><strong>SIGNAL STATION</strong><small>Motor turns · servo tilts</small></div>
-<svg class="component-lines" aria-hidden="true"><g data-part="motor"><line/><circle r="5"/></g><g data-part="servo"><line/><circle r="5"/></g></svg>
+<svg class="component-lines" aria-hidden="true"><g data-part="motor"><line/><circle r="5"/></g><g data-part="servo"><line/><circle r="5"/></g><g data-part="gripper"><line/><circle r="5" cx="0" cy="0"/></g></svg>
 <div class="component-label motor-label" id="motor-label"><strong>1 · MOTOR</strong><span>Base turns left / right</span><code>motor(power)</code></div>
-<div class="component-label servo-label" id="servo-label"><strong>2 · SERVO</strong><span>Joint tilts lamp up / down</span><code>servo(degrees)</code></div><div class="camera-tools"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="top-view" aria-label="Top view">${icons.cube}</button><button id="view-reset" aria-label="Reset camera">${icons.reset}</button></div><div class="scene-caption">DRAG TO ORBIT <span>·</span> SCROLL TO ZOOM <span>·</span> RIGHT-DRAG TO PAN</div></div><p class="motion-key"><code>motor</code> turns the tower + pointer. <code>servo</code> tilts the lamp.<br><code>wait(ticks)</code> lets both movements advance. <code>motor(0)</code> stops the turn.</p><div id="crew-status" class="crew-status" role="status" aria-live="polite">${missions.beacon.waiting}</div><section id="patrol-progress" class="patrol-progress" aria-label="Route checkpoint progress" hidden></section><div class="telemetry"><div><span>LIGHT DIRECTION</span><strong id="pointer-value">0.0<em>°</em></strong><small id="pointer-target">target 60°</small></div><div><span>TILT SERVO</span><strong id="scanner-value">90.0<em>°</em></strong><small id="scanner-target">target 120°</small></div><div><span>SIMULATED TIME</span><strong id="time-value">0.00<em>s</em></strong><small>50 ticks / second</small></div></div></section>
+<div class="component-label servo-label" id="servo-label"><strong>2 · SERVO</strong><span>Joint tilts lamp up / down</span><code>servo(degrees)</code></div><div class="component-label gripper-label" id="gripper-label" hidden><strong>3 · GRIPPER</strong><span>Opens / closes the jaws</span><code>grip(millimetres)</code></div><div class="camera-tools"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="top-view" aria-label="Top view">${icons.cube}</button><button id="view-reset" aria-label="Reset camera">${icons.reset}</button></div><div class="scene-caption">DRAG TO ORBIT <span>·</span> SCROLL TO ZOOM <span>·</span> RIGHT-DRAG TO PAN</div></div><p class="motion-key"><code>motor</code> turns the tower + pointer. <code>servo</code> tilts the lamp.<br><code>wait(ticks)</code> lets both movements advance. <code>motor(0)</code> stops the turn.</p><div id="crew-status" class="crew-status" role="status" aria-live="polite">${missions.beacon.waiting}</div><section id="patrol-progress" class="patrol-progress" aria-label="Route checkpoint progress" hidden></section><section id="arm-progress" class="arm-progress" aria-label="Parcel and joint state" hidden></section><div class="telemetry"><div><span>LIGHT DIRECTION</span><strong id="pointer-value">0.0<em>°</em></strong><small id="pointer-target">target 60°</small></div><div><span>TILT SERVO</span><strong id="scanner-value">90.0<em>°</em></strong><small id="scanner-target">target 120°</small></div><div><span>SIMULATED TIME</span><strong id="time-value">0.00<em>s</em></strong><small>50 ticks / second</small></div></div></section>
 <section id="code-panel" class="code-panel" aria-label="Python editor"><div class="panel-heading"><span id="file-name" class="file-name"><i>Py</i> signal.py</span><label class="language-control">LANGUAGE <select id="language" aria-label="Programming language"><option value="python">Python</option><option value="java">Java</option></select></label></div><p class="editor-help" id="editor-help"># lines are notes. <code>await</code> waits for a robot call to return. <a href="#value-guide">Number guide ↓</a></p><div class="experiment-tools"><p id="next-edit"></p><button id="find-edit">Find first edit</button><a href="#lesson-coach">Prediction & free hints ↓</a><p id="predict-reminder"></p></div><div class="editor-wrap"><pre id="line-numbers" aria-hidden="true"></pre><div class="editor-surface"><pre class="code-highlight" aria-hidden="true"><code id="highlighted-code"></code></pre><textarea id="code" aria-label="Python code" aria-describedby="editor-shortcuts" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div><p id="editor-shortcuts" class="editor-shortcuts">Tab: indent · Shift+Tab: unindent · Esc, then Tab: leave editor</p><div class="editor-footer"><span id="draft-status">Draft saved on this device</span><button id="restore">${icons.reset} Restore example</button><button id="return-draft" hidden>Return to my draft</button></div><div class="run-bar"><button id="run" class="primary">${icons.play} Run code <kbd>⌘ ↵</kbd></button><button id="stop" disabled>${icons.stop} Stop</button><button id="reset" aria-label="Reset robot">${icons.reset} Reset</button></div><div class="console-heading"><span>CONSOLE</span><span id="runtime-label">Ready for your code</span></div><pre id="console" tabindex="0" aria-label="Python console">Your print() output will appear here.</pre></section>
 </div>
 <section id="feedback" class="feedback" role="status" aria-live="polite"><div class="feedback-icon">↗</div><div><h2 id="feedback-title">What do you think will happen?</h2><p id="feedback-text">Will the beam reach the crew? Run the example, then change how long the motor turns.</p></div><span id="status-pill">READY</span></section>
@@ -67,7 +68,7 @@ function renderCoach(){renderTeaching(lesson,language,selected,experimentFor(),s
 
 let language: Language = 'python';
 let draftPrefix = 'robolab.s01';
-const lessonDrafts = {L01:{python:pythonStarter,java:javaStarter},L02:{...getLesson('L02').starters},L03:{...getLesson('L03').starters}};
+const lessonDrafts = {L01:{python:pythonStarter,java:javaStarter},L02:{...getLesson('L02').starters},L03:{...getLesson('L03').starters},L04:{...getLesson('L04').starters}};
 let drafts = lessonDrafts[lesson];
 function storageKey(lang:Language,id=lesson){return `${draftPrefix}.${draftKey(id,lang)}`;}
 try {
@@ -95,6 +96,7 @@ function languageUI() {
   document.querySelectorAll<HTMLElement>('#value-guide code, .motion-key code').forEach(node=>{
     const py=node.dataset.python ?? node.textContent!; node.dataset.python=py; node.textContent=java?(examples[py]??py):py;
   });
+  if(lesson==='L04')armLanguage(java);
 }
 let state: State = initialState(), status: RunStatus | 'idle' = 'idle', runner: Runner | undefined;
 const completedLocations = new Set<string>();
@@ -113,26 +115,27 @@ function showState() {
   if (el('crew-status').textContent !== crewStatus) el('crew-status').textContent = crewStatus;
   el('crew-status').classList.toggle('located', success);
   patrolProgress(state,selected,success);
+  armProgress(state.arm,selected);
   updatePractice();
   scene?.update(state, goal, success);
 }
 function updatePractice() {
   const index = locationOrder.indexOf(selected);
-  const badges=el('practice-badges');if(badges){const content=lesson!=='L01'?locationOrder.map((t,i)=>`<span class="${completedLocations.has(t)?'earned':''}">${completedLocations.has(t)?'✓':'○'} ${(lesson==='L03'?['Ridge sweep','Extra checkpoint','Cove return']:['Right-turn rescue','Left-turn rescue','Transfer rescue'])[i]}</span>`).join(''):'';if(badges.innerHTML!==content)badges.innerHTML=content;badges.hidden=lesson==='L01';}
-  el('practice-progress').textContent = `${locationOrder.filter(t=>completedLocations.has(t)).length} of 3 ${lesson==='L01'?'crew locations reached':lesson==='L03'?'patrol badges earned':'recovery badges earned'} in this visit.`;
+  const badges=el('practice-badges');if(badges){const content=lesson!=='L01'?locationOrder.map((t,i)=>`<span class="${completedLocations.has(t)?'earned':''}">${completedLocations.has(t)?'✓':'○'} ${(lesson==='L04'?['Across the guard','Moved tray','Return delivery']:lesson==='L03'?['Ridge sweep','Extra checkpoint','Cove return']:['Right-turn rescue','Left-turn rescue','Transfer rescue'])[i]}</span>`).join(''):'';if(badges.innerHTML!==content)badges.innerHTML=content;badges.hidden=lesson==='L01';}
+  el('practice-progress').textContent = `${locationOrder.filter(t=>completedLocations.has(t)).length} of 3 ${lesson==='L01'?'crew locations reached':lesson==='L04'?'parcel deliveries completed':lesson==='L03'?'patrol badges earned':'recovery badges earned'} in this visit.`;
   const next = el<HTMLButtonElement>('next-rescue');
   next.hidden = index === locationOrder.length - 1;
   next.disabled = !completedLocations.has(selected) || status === 'loading' || status === 'running';
-  next.textContent = `${lesson==='L03'?'Next patrol':'Next rescue'}: ${missions[locationOrder[index + 1] ?? selected].location} →`;
+  next.textContent = `${lesson==='L04'?'Next delivery':lesson==='L03'?'Next patrol':'Next rescue'}: ${missions[locationOrder[index + 1] ?? selected].location} →`;
   const complete=locationOrder.every(t=>completedLocations.has(t));
   const nextLesson=el<HTMLButtonElement>('next-lesson');if(nextLesson){const nextId=getLesson(lesson).next;nextLesson.hidden=!nextId;nextLesson.textContent=nextId?`Mission ${Number(nextId.slice(1))}: ${getLesson(nextId).title} →`:'';nextLesson.disabled=!complete;}
   el('next-help').textContent = complete
-    ? (getLesson(lesson).next?`All three challenges completed in this visit! Continue to Mission ${Number(getLesson(lesson).next!.slice(1))}, or revisit a case.`:'All three patrol badges earned! Mission 4 is coming soon. Revisit a route or explain how your loop adapted.')
+    ? (getLesson(lesson).next?`All three challenges completed in this visit! Continue to Mission ${Number(getLesson(lesson).next!.slice(1))}, or revisit a case.`:'All three parcels delivered! Mission 5 is coming soon. Revisit a delivery and explain why your sequence works.')
     : index === locationOrder.length - 1
-      ? `This is the last practice ${lesson==='L03'?'patrol':'rescue'} in Mission ${missionNumber()}. Choose an unfinished case above. ${lesson==='L03'?'Mission 4 is coming soon.':''}`
+      ? `This is the last practice ${lesson==='L04'?'delivery':lesson==='L03'?'patrol':'rescue'} in Mission ${missionNumber()}. Choose an unfinished case above. ${lesson==='L04'?'Mission 5 is coming soon.':''}`
       : completedLocations.has(selected)
         ? `Ready for another case? Your code stays so you can adapt it. These are variations within Mission ${missionNumber()}.`
-        : (lesson==='L03'?'Log every checkpoint and stop at the last one to finish this patrol.':'Light this crew’s pickup point to unlock the next rescue, or choose a location above.');
+        : (lesson==='L04'?'Grasp the parcel, carry clear of the guard and release in the tray.':lesson==='L03'?'Log every checkpoint and stop at the last one to finish this patrol.':'Light this crew’s pickup point to unlock the next rescue, or choose a location above.');
 }
 function feedback(title: string, text: string, kind = '') {
   el('feedback-title').textContent = title; el('feedback-text').textContent = text; el('feedback').className = `feedback ${kind}`;
@@ -165,12 +168,13 @@ function setStatus(next: RunStatus, detail?: string) {
   const name = language==='java'?'Java':'Python';
   el('runtime-label').textContent = ({ loading: language==='java'?'Compiling real Java…':'Loading real Python…', running: `${name} is running`, finished: 'Program finished', stopped: language==='java'?'Program stopped':'Worker stopped', error: 'Program stopped' })[next];
   if (next === 'loading') feedback('Getting the station ready…', `${name} runs in its own sandbox. You can stop at any time.`);
-  if (next === 'running') feedback('Watch your numbers become movement.', lesson==='L03'?'Watch each stop: moving gets you there; a steady hold logs the checkpoint.':'Watch the beam: motor power turns it sideways, and the servo tilts it toward the crew.');
+  if (next === 'running') feedback('Watch your numbers become movement.', lesson==='L04'?'Watch actual joint positions and the parcel: an accepted setting is not arrival.':lesson==='L03'?'Watch each stop: moving gets you there; a steady hold logs the checkpoint.':'Watch the beam: motor power turns it sideways, and the servo tilts it toward the crew.');
   if (next === 'finished') {
     const worked=el<HTMLButtonElement>('show-solution');if(worked)worked.disabled=false;
     success = reached(state, targets[selected]);
     if (success) completedLocations.add(selected);
-    if(lesson==='L03'){const miss=patrolFailure(state,selected);feedback(success?'Route ready. Rangers can set out!':miss.title,success?'Every checkpoint received a steady hold. Explain which calls repeated and which ran once. Try a changed route; retries and hints are free.':miss.text,success?'success':'try-again');}
+    if(lesson==='L04'){const miss=armFailure(state.arm!);feedback(success?'Parcel delivered. The worker can finish!':miss.title,success?'You grasped, carried clear and released in the tray. Explain why the lift came before the turn, then adapt the moved tray.':miss.text,success?'success':'try-again');}
+    else if(lesson==='L03'){const miss=patrolFailure(state,selected);feedback(success?'Route ready. Rangers can set out!':miss.title,success?'Every checkpoint received a steady hold. Explain which calls repeated and which ran once. Try a changed route; retries and hints are free.':miss.text,success?'success':'try-again');}
     else if (success) feedback('Crew located. Pickup point lit!', lesson==='L02'
       ? `Your code recovered the light for the ${selected==='sensor-transfer'?'lower cove':'north ridge'} crew. Explain how the sensor reading chose the turn, and why the same comparison works from the other side. Then try another case.`
       : `Your code held the light on the ${missions[selected].location.toLowerCase()} crew. The rescue team can now see where to go. Try another crew, then explain how your timing helped.`, 'success');
@@ -184,7 +188,7 @@ function setStatus(next: RunStatus, detail?: string) {
     feedback('Let’s fix that and try again.', hint, 'error');
     el('console').textContent += `\n${error}`;
   }
-  if(!active && attempt){el('prediction-feedback').textContent=`Run from ${initialState(selected).angle}°: ${attemptPrediction || 'No prediction recorded.'} Result: ${next}; direction ${state.angle.toFixed(1)}°, tilt ${state.scanner.toFixed(1)}°${state.patrol?`, ${state.patrol.visited} checkpoints logged`:''}. Compare this run with your prediction before the next edit.`;}
+  if(!active && attempt){const observation=state.arm?`shoulder ${state.arm.shoulder.toFixed(1)}°, elbow ${state.arm.elbow.toFixed(1)}°, parcel ${state.arm.payload}${state.arm.collision?', guard contact':''}`:`direction ${state.angle.toFixed(1)}°, tilt ${state.scanner.toFixed(1)}°${state.patrol?`, ${state.patrol.visited} checkpoints logged`:''}`;el('prediction-feedback').textContent=`Prediction: ${attemptPrediction || 'No prediction recorded.'} Result: ${next}; ${observation}. Compare this run with your prediction before the next edit.`;}
   if(!active) recordAttempt(next==='finished'?(success?'reached':'missed'):next==='stopped'?'stopped':detail?.includes('unavailable')?'unavailable':'error',detail);
   showState();
 }
@@ -233,7 +237,7 @@ el('return-draft').onclick=()=>{
   feedback('Your draft and challenge are back.', 'Predict from this code before running again.');
 };
 el('find-edit').onclick=()=>{
-  const pattern=lesson==='L01'?/^(?:\s*int )?\s*turn_ticks\s*=/m:lesson==='L02'?/^\s*if[ (]/m:/^(?:\s*int )?\s*repeats\s*=/m;
+  const pattern=lesson==='L01'?/^(?:\s*int )?\s*turn_ticks\s*=/m:lesson==='L02'?/^\s*if[ (]/m:lesson==='L04'?/^(?:\s*int )?\s*lift_ticks\s*=/m:/^(?:\s*int )?\s*repeats\s*=/m;
   const match=pattern.exec(code.value);code.focus();
   if(match){const start=match.index+match[0].search(/\S/);code.setSelectionRange(start,code.value.indexOf('\n',start)<0?code.value.length:code.value.indexOf('\n',start));code.scrollTop=Math.max(0,(code.value.slice(0,start).split('\n').length-3)*parseFloat(getComputedStyle(code).lineHeight));code.dispatchEvent(new Event('scroll'));}
   else feedback('This draft uses a different structure.', 'Find the value or condition you want to test in your code; your draft is unchanged.');
@@ -247,7 +251,7 @@ function selectLocation(value: string) {
   el('goal-angle').textContent = `${targets[selected].angle}°`; el('goal-scanner').textContent = `${targets[selected].scanner}°`;
   el('pointer-target').textContent = `target ${targets[selected].angle}°`; el('scanner-target').textContent = `target ${targets[selected].scanner}°`;
   experimentFor().prediction='';experimentFor().reflection='';saveDraft();renderCoach();
-  feedback(lesson==='L02'&&selected!=='sensor-transfer'?'New starting side. Keep the same code.':'New challenge. What will you change?', lesson==='L03'?'Keep your code and compare the route’s count, spacing, direction and tilt. Which setting controls each change?':lesson==='L02'?(selected==='sensor-transfer'?'Compare this crew’s direction and height with the previous case. Predict which values need to change and why, then test your idea.':'Keep your code: the sensor reading should choose the other turn. Predict which branch will run.'):selected === 'reverse' ? 'The cove is left and below: try negative motor power and tilt the servo to 60°. Keep your code and experiment.' : 'Keep the same power. Predict how many ticks this new angle will need.'); showState();
+  feedback(lesson==='L02'&&selected!=='sensor-transfer'?'New starting side. Keep the same code.':'New challenge. What will you change?', lesson==='L04'?'Compare the pickup and receiving pose cards. Adapt the destination without losing the grasp, lift or release.':lesson==='L03'?'Keep your code and compare the route’s count, spacing, direction and tilt. Which setting controls each change?':lesson==='L02'?(selected==='sensor-transfer'?'Compare this crew’s direction and height with the previous case. Predict which values need to change and why, then test your idea.':'Keep your code: the sensor reading should choose the other turn. Predict which branch will run.'):selected === 'reverse' ? 'The cove is left and below: try negative motor power and tilt the servo to 60°. Keep your code and experiment.' : 'Keep the same power. Predict how many ticks this new angle will need.'); showState();
 }
 el<HTMLSelectElement>('target').onchange = event => selectLocation((event.target as HTMLSelectElement).value);
 el('next-rescue').onclick = () => {
@@ -256,6 +260,7 @@ el('next-rescue').onclick = () => {
 };
 el('view-reset').onclick = () => scene?.reset(); el('top-view').onclick = () => scene?.top();
 el('zoom-in').onclick = () => scene?.zoom(.85); el('zoom-out').onclick = () => scene?.zoom(1.18);
+const firstMotion=document.querySelector('.motion-key')!.innerHTML;
 const firstIntro=document.querySelector('.intro')!.innerHTML;
 const firstWorld=document.querySelector('.real-world')!.innerHTML;
 const firstValues=el('value-guide').innerHTML;
@@ -266,7 +271,18 @@ const badgeList=document.createElement('div');badgeList.id='practice-badges';bad
 const nextMission=document.createElement('button');nextMission.id='next-lesson';nextMission.textContent='Mission 2: Read, then choose →';nextMission.disabled=true;document.querySelector('.practice-nav')!.append(nextMission);nextMission.onclick=()=>{const next=getLesson(lesson).next;if(next)selectLesson(next);};
 function lessonUI(){
   const info=getLesson(lesson),sensor=lesson==='L02';
+  const arm=lesson==='L04';
+  el('scene').dataset.world=arm?'arm':'station';
+  el('gripper-label').hidden=!arm;
+  document.querySelector('.scene-tag')!.innerHTML=arm?'<span>PP—04</span><strong>PARCEL PORT</strong><small>Shoulder turns · elbow lifts · gripper holds</small>':'<span>SS—01</span><strong>SIGNAL STATION</strong><small>Motor turns · servo tilts</small>';
+  document.querySelector('.world-panel .panel-heading>span')!.innerHTML='<span class="live-dot"></span> '+(arm?'PARCEL PORT':'RESCUE STATION');
+  document.querySelector('.telemetry>div:first-child>span')!.textContent=arm?'SHOULDER · ACTUAL':'LIGHT DIRECTION';
+  document.querySelector('.telemetry>div:nth-child(2)>span')!.textContent=arm?'ELBOW · ACTUAL':'TILT SERVO';
+  document.querySelector('.motion-key')!.innerHTML=arm?'<code>shoulder</code> turns · <code>elbow</code> lifts · <code>grip</code> opens/closes.<br>Targets are accepted now; only <code>wait</code> advances motion.':firstMotion;
+  if(!arm)el('servo-label').innerHTML='<strong>2 · SERVO</strong><span>Joint tilts lamp up / down</span><code>servo(degrees)</code>';
   el('patrol-progress').hidden=lesson!=='L03';
+  el('arm-progress').hidden=!arm;
+  if(arm){armUI(selected);renderCoach();return;}
   el('target-label').textContent=lesson==='L03'?'CHOOSE YOUR PATROL':'WHERE IS THE CREW?';
   if(lesson==='L03'){patrolUI(selected);renderCoach();return;}
   el<HTMLSelectElement>('lesson').value=lesson;
@@ -294,7 +310,7 @@ function selectLesson(id:LessonId,target?:string,lang:Language=language,source?:
   saveDraft();reset();language=lang;lesson=id;starters=getLesson(id).starters;drafts=lessonDrafts[id];locationOrder=lessonTargets[id];selected=target&&locationOrder.includes(target)?target:experimentFor().target;state=initialState(selected);code.value=source??drafts[language];code.scrollTop=0;code.scrollLeft=0;
   lessonUI();languageUI();saveDraft();showState();
   try{localStorage.setItem(`${draftPrefix}.lesson`,lesson);}catch{}
-  feedback('Your draft and challenge are ready.',lesson==='L03'?'Trace the current loop, then compare its counter with actual logged checkpoints.':lesson==='L02'?'Trace the comparison in your current draft. Test the same code from both starting sides.':'Predict what your current values will do, then test one change. Each mission keeps separate drafts.');
+  feedback('Your draft and challenge are ready.',lesson==='L04'?'Predict whether the lift has arrived before the turn. Compare actual positions and parcel state.':lesson==='L03'?'Trace the current loop, then compare its counter with actual logged checkpoints.':lesson==='L02'?'Trace the comparison in your current draft. Test the same code from both starting sides.':'Predict what your current values will do, then test one change. Each mission keeps separate drafts.');
 }
 el<HTMLSelectElement>('lesson').onchange=e=>{const id=(e.target as HTMLSelectElement).value as LessonId;if(lessonIds.includes(id))selectLesson(id);};
 const family=attachFamily({
@@ -321,7 +337,7 @@ const family=attachFamily({
   },
 });
 if(import.meta.env.VITE_HOSTED==='1') {
-  document.querySelector('.build-status')!.textContent='Three missions in Python and Java. Sign in for hosted Java, separate saved mission drafts, checked rescues and shared family progress.';
+  document.querySelector('.build-status')!.textContent='Four missions in Python and Java. Sign in for hosted Java, separate saved mission drafts, checked rescues and shared family progress.';
   document.querySelector('footer span:last-child')!.textContent='Python + Java · Private family progress';
 }
 // Read context before the first save can overwrite it.

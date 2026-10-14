@@ -1,5 +1,13 @@
 # Public progress
 
+## S04 — Mission 4 Parcel Port candidate
+
+- Status: implemented, under review on `codex/mission-04-parcel`; no Mission 4 merge or deployment. Base: `773d02049e1460d6db32c2fcf23da9020554590a`. The owner authorized persona design, implementation and both-language testing after the contract was ready. Exclusive slice ownership protected writes.
+- [MISSION-04.md](MISSION-04.md) freezes the three-actuator teaching and `parcel-arm-v1` geometry/contact contract. [MISSION-04-QA.md](MISSION-04-QA.md) records the eight persona lenses, informed walkthrough, repaired findings, actual checks and remaining gates. L04 retrieves settings/waits, fresh readings and sequence order; student-defined functions remain L05.
+- Implemented three real parcel deliveries, visible actual/commanded joints and cargo, free hints and worked explanation, eight independent mission/language drafts, L03-gated checked progress, and old six-draft compatibility. Existing email-only account entry and runtime limits remain.
+- Local evidence covers real browser Python, server CPython API conformance, isolated Java, geometric good/wrong fixtures, errors/Stop/reset, model-version/forged-result rejection and disposable account/profile resume. Final head/check links and clean package results are recorded in the draft PR delivery receipt. The first broad run found one prior-world diagram regression and an overlapping test-output cleanup failure; focused repairs are recorded in the QA file, with exact-head CI required before handoff.
+- Remaining: separately authorized hosted qualification/release, actual learner/device and classroom pacing observations. Existing hosted progression scripts cover L01–L03 and must be extended for the L04 release gate. Review is not a completed dependency; do not start L05 or another mechanism from this checkpoint.
+
 ## FAMILY-03 — Email-only parent entry release
 
 - Status: done; [PR #5](https://github.com/willcheung/3d-robotics-hack/pull/5) merged and live on [RoboLab](https://robolab.vibecodingdad.com), October 13, 2026 (October 14 UTC). The owner explicitly authorized staging, merge and deployment after passing checks, then disposable production fixture checks. Exclusive release ownership protected the work.

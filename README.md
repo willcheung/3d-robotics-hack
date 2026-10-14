@@ -15,6 +15,8 @@ Three missions are live in real Python and Java: Mission 1 aims a rescue searchl
 
 Family play means separate attempts with shared results. All three server-checked Mission 1 challenges unlock checking in Mission 2; Mission 2's three checked challenges unlock checking in Mission 3. Practice is open in Missions 1–3; later lessons stay marked coming soon. The plan contains 16 core outlines and four optional extensions, including arms, rovers, light/color sensors and simplified flight. Badges record successful programs, not demonstrated understanding. Simultaneous co-control, official competition rankings and an AI coach are future work.
 
+The current review branch adds **Mission 4, Parcel Port**: coordinate a shoulder, elbow and gripper to carry a parcel safely into a tray. It includes three delivery cases and separate Python/Java drafts. [The contract](docs/MISSION-04.md) and [QA record](docs/MISSION-04-QA.md) distinguish this candidate from the live Missions 1–3 release.
+
 ## Run locally
 
 Use Node **22.18+** (24 recommended), npm and a running Docker engine for Java. Local play needs no cloud account or API key. Python runs in a separate-origin Pyodide worker; Java compiles and runs in a bounded, network-disabled container.
@@ -41,7 +43,7 @@ npx playwright install chromium
 npm run check
 ```
 
-The suite covers the model, account/recovery flows, browser UI, real sandboxed Java, real Python/WASM and builds. CI also packages the app and isolated runtime. Live storage, Sandbox and email tests require explicitly configured staging services and are separate from ordinary CI. See [validation](docs/VALIDATION.md).
+Checks also require Python 3 for the server API conformance fixtures. The suite covers the model, account/recovery flows, browser UI, real sandboxed Java, real Python/WASM and builds. CI also packages the app and isolated runtime. Live storage, Sandbox and email tests require explicitly configured staging services and are separate from ordinary CI. See [validation](docs/VALIDATION.md).
 
 ## Contribute
 

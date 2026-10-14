@@ -1,5 +1,11 @@
 # Manual goal contract
 
+## Current goal: Mission 4 Parcel Port
+
+The owner explicitly authorized persona design of Mission 4 as a progression from Missions 1–3, followed by implementation and real Python/Java testing once its contract is ready. MISSION-04.md freezes the teaching and model decisions. Complete one runnable S04 slice, preserve the previous missions/accounts/saved work, inspect synthetic UI evidence, and prepare a draft PR with exact-source checks and remaining gates. Real classroom observation remains deferred. This authorization does not include merging, deploying, later lessons or production fixture changes.
+
+The earlier goals below are retained as history; their completed release authorizations do not extend to Mission 4.
+
 Work only on the user's current authorized objective, in one complete slice. The S03 / Mission 2 implementation and owner-QA goal covered Python and Java with Mission 1’s teaching and family framework. See [MISSION-02.md](MISSION-02.md) and [the readiness report and owner checklist](MISSION-02-QA.md).
 
 The owner subsequently explicitly authorized merging PR #2 and releasing Mission 2 after testing both languages and saved progress on staging. That release is complete; see PROGRESS.md for exact-source CI and hosted acceptance evidence. Mission 1 and existing student data are preserved. Stop this slice here. This authorization does not extend to later missions, automation or unrelated account changes.

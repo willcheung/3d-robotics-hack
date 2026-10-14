@@ -22,7 +22,7 @@ The priority is to validate the revised foundation sequence before expanding the
 | --- | --- | --- | --- |
 | NEXT-01 · Validate the revised foundation | The owner authorized PR #4's release. The informed walkthrough and real hosted checks cover the shared L01–L03 improvements; see [Mission 3 QA](MISSION-03-QA.md) and the exact-source [release record](PROGRESS.md#missions-13-release). | Maintainer: software and persona review completed; PR #4 merged and released. Real learners remain a separate evidence source. | Both languages and all three missions pass hosted execution, checked prerequisites, saved code/challenge resume and sibling isolation. Keep these checks for future changes. |
 | NEXT-02 · Observe cumulative understanding | `src/teaching.ts` asks about the current draft; `src/lessons.ts` separates the branch comparison from movement; `docs/MISSION-03.md` explicitly allows a physical success without proving loop understanding. The informed walkthrough supports retaining the sequence, but no actual learner evidence is recorded. | Teacher/maintainer: real classroom pilot deferred by the owner. Use the observation protocol below on the released sequence when learners are available. | Record per learner whether they can predict, edit, recover, explain a changed case and resume. Use those observations to select a focused correction or retain the sequence; do not turn badges into a mastery claim. |
-| NEXT-03 · Prepare the arm transition | [L04/L05 progression](#progression-and-transfer-map) separates arm sequence from function definition. S08 has landed, but [S04](TASKS.md#s04--one-arm-mission) still has no frozen mission/model contract. | Curriculum/model authors: the next separate mission-design task is L04 Parcel Port. S04 stays draft until its contract and fixtures are ready. | A reviewed MISSION-04 contract supplies the decisions below and feasible independent fixtures. Only then can S04 be selected for an authorized implementation; do not start L05, rover or optional packs alongside it. |
+| NEXT-03 · Qualify the arm transition | [MISSION-04.md](MISSION-04.md) now freezes the reviewed L04 contract, preserving familiar syntax and deferring functions to L05. | Maintainer: owner-authorized S04 candidate implemented; [Mission 4 QA](MISSION-04-QA.md) records tests and informed walkthrough. Review/release and the deferred learner pilot remain separate. | Preserve actual-versus-commanded feedback, three real delivery cases, old drafts and profile resume. Qualify the candidate before any L05 build; observe learners before expanding the mechanism. |
 
 ### Observation protocol for Missions 1–3
 
@@ -41,7 +41,9 @@ For each observation record: lesson/case, prediction and reason, edit, result, h
 
 Decision rule: a reproducible software/data-loss fault becomes a focused fix with a regression. If an essential explanation remains unsupported, revise the smallest teaching step and observe it again before relying on that concept in L04. A green run with a copied solution is completion only. If the learner can explain the changed case and resume, retain the scaffold and carry that evidence into the arm design. Small pilots guide revision; they do not establish a population-wide learning effect.
 
-### Next mission-design brief: L04 Parcel Port
+### Mission-design brief: L04 Parcel Port
+
+The brief below is now resolved by [MISSION-04.md](MISSION-04.md); it remains the progression rationale, while TASKS.md governs current readiness.
 
 Keep the useful job: pick up a parcel, clear a marked obstruction, and place it in a worker's tray. Its main new demand is coordinating shoulder, elbow and an independently powered gripper using familiar sequential calls. Retrieve L01's setter-versus-arrival distinction and L03's order/stop/wait reasoning. Defer function definition and parameters to L05; do not introduce inverse kinematics or an opaque complete-the-job helper.
 
