@@ -92,7 +92,7 @@ test('restoring Java history preserves unsaved drafts in both languages',async({
  await expect(page.locator('#status-pill')).toHaveText('READY');
 });
 test('separate families cannot see or modify each other through the hosted API',async({browser,page})=>{
- const separate=await provision(store);await signIn(page.context(),separate.code);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Parent');
+ const separate=await provision(store);await fixtureParent(page.context(),store,separate.code,base);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Parent');
  const a=await browser.newContext();await signIn(a,codeA);const own=await (await a.request.get(base+'/api/family',{headers:protectedHeaders})).json();
  const foreign=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();expect(foreign.students).toEqual([]);expect(foreign.history).toEqual([]);expect(foreign.drafts).toEqual({});
  const denied=await page.request.post(base+'/api/family/access',{headers:{Origin:base,...protectedHeaders,'X-RoboLab-Profile':foreign.profile.id},data:{id:own.profile.id,revoke:true}});expect(denied.status()).toBe(404);
