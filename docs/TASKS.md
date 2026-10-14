@@ -20,10 +20,10 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 
 ## CURRICULUM-01 — Visual mission previews
 
-- Status: ready; owner-authorized implementation of the accepted full-row design.
+- Status: validated_local; preparing a draft review PR for the accepted full-row design. The owner explicitly authorized finishing this slice under a one-time reserve-rule exception.
 - Depends on: released L01–L03 and their existing curriculum/draft/family framework. Independent of the active Mission 4 branch.
 - Working outcome: learners can see the machine and useful job for every one of the 20 lessons before choosing a mission.
-- Scope: [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md), full-row responsive previews, real searchlight captures, distinct labeled concept diagrams for upcoming missions, chapter navigation, existing availability/prerequisite/completion states, and the future-lesson preview acceptance contract in PLAN.md.
+- Scope: [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md), full-row responsive previews, four actual model captures, 16 distinct labeled concept diagrams, chapter navigation, existing availability/prerequisite/completion states, and the future-lesson preview acceptance contract in PLAN.md. The Mission 4 image comes from its separate review candidate; its lesson stays unavailable in this branch.
 - Acceptance: all 20 lessons retain their order and truthful playable/optional state; concepts never imply a playable model; desktop/narrow images and text remain readable; chapter/Close/Escape navigation and both-language drafts are preserved; image failure never blocks lesson entry.
 - Validation: inspected artwork and desktop/narrow screenshots, browser navigation/draft/focus/availability checks, relevant family regressions, TypeScript/build and publication checks. No hosted release, later lesson implementation or learner pilot is implied.
 

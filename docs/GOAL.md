@@ -4,6 +4,8 @@
 
 The owner approved the four-row visual proposal and requested implementation for all 16 core lessons and four optional extensions, plus a standing preview requirement in the plan. Implement [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md) as the independent CURRICULUM-01 presentation slice: full-row responsive previews, actual model screenshots where available, clearly labeled concept diagrams elsewhere, chapter navigation and preserved draft/progress/availability behavior. Use an isolated branch from the released base while Mission 4 is under separate ownership. Do not incorporate that writer's unfinished source. Prepare a tested draft PR; merge, deployment and later mission implementation are outside this request.
 
+The owner explicitly granted a one-time reserve-rule exception to finish this curriculum slice and its checks. This does not change future budget rules or authorize resets or purchases.
+
 The earlier goals below are history; their release authorization does not extend to this slice.
 
 Work only on the user's current authorized objective, in one complete slice. The S03 / Mission 2 implementation and owner-QA goal covered Python and Java with Mission 1’s teaching and family framework. See [MISSION-02.md](MISSION-02.md) and [the readiness report and owner checklist](MISSION-02-QA.md).
