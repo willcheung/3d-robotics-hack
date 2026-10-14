@@ -3,13 +3,15 @@ import {test,expect} from '@playwright/test';
 test('all 20 mission previews load, with truthful availability and optional states',async({page})=>{
  await page.goto('/');await page.locator('#curriculum-open').click();
  const dialog=page.locator('#curriculum-dialog'),cards=dialog.locator('.curriculum-card');
- await expect(cards).toHaveCount(20);await expect(dialog.locator('[data-lesson]')).toHaveCount(3);
- await expect(dialog.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(17);
+ await expect(cards).toHaveCount(20);await expect(dialog.locator('[data-lesson]')).toHaveCount(4);
+ await expect(dialog.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(16);
  await expect(dialog.locator('.preview-kind').filter({hasText:'CONCEPT DIAGRAM'})).toHaveCount(16);
  await expect(dialog.locator('#curriculum-optional').locator('..').locator('..').locator('.curriculum-card')).toHaveCount(4);
- // A model screenshot does not unlock the unmerged Mission 4 candidate.
+ // Landed Mission 4 opens practice without bypassing checked prerequisites.
  await expect(dialog.locator('[data-curriculum-id="L04"] .preview-kind')).toHaveText('MODEL PREVIEW');
- await expect(dialog.locator('[data-curriculum-id="L04"] button')).toHaveCount(0);
+ await expect(dialog.locator('[data-curriculum-id="L04"] button')).toHaveText('Open Mission 4 →');
+ await expect(dialog.locator('[data-curriculum-id="L04"] .curriculum-state')).toContainText('checked completion locked');
+ await expect(dialog.locator('[data-curriculum-id="L05"] button')).toHaveCount(0);
  for(const card of await cards.all()){
   await card.scrollIntoViewIfNeeded();const image=card.locator('img');
   await expect(image).toHaveAttribute('alt',/.{25}/);
@@ -34,7 +36,7 @@ test('chapter navigation stays inside the curriculum; Escape and Close return fo
 
 test('opening missions through previews preserves all language drafts and selected challenges',async({page})=>{
  await page.goto('/');
- const targets={L01:'reverse',L02:'sensor-transfer',L03:'patrol-cove'};
+ const targets={L01:'reverse',L02:'sensor-transfer',L03:'patrol-cove',L04:'parcel-return'};
  for(const language of ['python','java'])for(const [lesson,target] of Object.entries(targets)){
   await page.locator('#language').selectOption(language);
   await page.locator('#curriculum-open').click();await page.locator(`[data-lesson="${lesson}"]`).click();

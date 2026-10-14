@@ -4,12 +4,12 @@ import {lessons,validateLessons,type Lesson} from '../src/lessons.ts';
 import {initialState,command,tick,reached,targets,targetLesson} from '../src/model.ts';
 test('lesson schema rejects incomplete teaching, missing both-language fixtures and invalid navigation',()=>{
   assert.doesNotThrow(()=>validateLessons(lessons));
-  for(const index of [0,1,2])for(const key of ['job','beneficiary','consequence','application','source','otherApplications','conceptId','concept','recap','units','comments','transfer','prerequisites','hints','scenarios','next','version','transferTarget'] as const){const copy=structuredClone(lessons);delete (copy[index] as unknown as Record<string,unknown>)[key];assert.throws(()=>validateLessons(copy),key);}
-  for(const index of [0,1,2])for(const kind of ['starters','reference','wrong','transferReference'] as const)for(const lang of ['python','java'] as const){const copy=structuredClone(lessons);copy[index][kind][lang]='';assert.throws(()=>validateLessons(copy));}
+  for(const index of [0,1,2,3])for(const key of ['job','beneficiary','consequence','application','source','otherApplications','conceptId','concept','recap','units','comments','transfer','prerequisites','hints','scenarios','next','version','transferTarget'] as const){const copy=structuredClone(lessons);delete (copy[index] as unknown as Record<string,unknown>)[key];assert.throws(()=>validateLessons(copy),key);}
+  for(const index of [0,1,2,3])for(const kind of ['starters','reference','wrong','transferReference'] as const)for(const lang of ['python','java'] as const){const copy=structuredClone(lessons);copy[index][kind][lang]='';assert.throws(()=>validateLessons(copy));}
   assert.throws(()=>validateLessons([...lessons,lessons[0]]),/Duplicate/);
   const unknown=structuredClone(lessons);unknown[1].prerequisites=['missing' as Lesson['id']];assert.throws(()=>validateLessons(unknown),/Unknown/);
   const cycle=structuredClone(lessons);cycle[0].prerequisites=['L02'];assert.throws(()=>validateLessons(cycle),/[Cc]yclic/);
-  const unreleased=structuredClone(lessons);unreleased[1].next='L04' as Lesson['id'];assert.throws(()=>validateLessons(unreleased),/Unreleased/);
+  const unreleased=structuredClone(lessons);unreleased[1].next='L05' as Lesson['id'];assert.throws(()=>validateLessons(unreleased),/Unreleased/);
 });
 test('authored starts, direction readings and independent one-second corrections',()=>{
   for(const [id,start,power,goal,tilt] of [['sensor-left',30,.5,60,120],['sensor-right',90,-.5,60,120],['sensor-transfer',-30,-.5,-60,60]] as const){

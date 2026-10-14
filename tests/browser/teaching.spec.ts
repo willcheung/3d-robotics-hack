@@ -2,11 +2,11 @@ import {test,expect} from '@playwright/test';
 import {getLesson} from '../../src/lessons.ts';
 test('each mission and language keeps its experiment context and a recoverable draft',async({page})=>{
  await page.goto('/');
- for(const id of ['L01','L02','L03'] as const)for(const lang of ['python','java'] as const){
+ for(const id of ['L01','L02','L03','L04'] as const)for(const lang of ['python','java'] as const){
   await page.locator('#lesson').selectOption(id);await page.locator('#language').selectOption(lang);
   await page.locator('#find-edit').click();
   const selection=await page.locator('#code').evaluate((node:HTMLTextAreaElement)=>node.value.slice(node.selectionStart,node.selectionEnd));
-  expect(selection).toContain(id==='L01'?'turn_ticks':id==='L02'?'if':'repeats');
+  expect(selection).toContain(id==='L01'?'turn_ticks':id==='L02'?'if':id==='L04'?'lift_ticks':'repeats');
   const target=getLesson(id).transferTarget;await page.locator('#target').selectOption(target);
   const source=`${lang==='python'?'#':'//'} my ${id} ${lang} experiment`;
   await page.locator('#code').fill(source);await page.locator('#prediction').fill('My prediction');await page.locator('#reflection').fill('My next change');
@@ -14,8 +14,8 @@ test('each mission and language keeps its experiment context and a recoverable d
   await page.locator('#restore').click();await page.locator('#restore').click();await page.reload();await page.locator('#return-draft').click();await expect(page.locator('#code')).toHaveValue(source);await expect(page.locator('#target')).toHaveValue(target);
   await page.getByText('Hint 1',{exact:true}).click();await expect(page.getByText('Hint 1',{exact:true}).locator('..').locator('p')).toBeVisible();
  }
- // Switching and reloading restores all six pairs, including the case, not just source.
- for(const id of ['L01','L02','L03'] as const)for(const lang of ['python','java'] as const){
+ // Switching and reloading restores all eight pairs, including the case, not just source.
+ for(const id of ['L01','L02','L03','L04'] as const)for(const lang of ['python','java'] as const){
   await page.locator('#lesson').selectOption(id);await page.locator('#language').selectOption(lang);await expect(page.locator('#target')).toHaveValue(getLesson(id).transferTarget);await expect(page.locator('#code')).toHaveValue(`${lang==='python'?'#':'//'} my ${id} ${lang} experiment`);
  }
 });

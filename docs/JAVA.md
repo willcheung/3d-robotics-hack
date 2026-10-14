@@ -41,6 +41,10 @@ Calls wait for the ordered reply, so Java uses no `await`. Setting power/positio
 
 Each language has its own browser draft, example and comments. Switching stops the active program, resets the mechanism and keeps this visit's unique crew completion. It never translates source or auto-runs a saved draft. Storage failure keeps both drafts in this tab. Separate origins/ports have separate browser storage; the older preview's saved draft stays there.
 
+## Parcel Port API (Mission 4 candidate)
+
+`Robot.shoulder(degrees)`, `Robot.elbow(degrees)` and `Robot.grip(mm)` set independent positions: 0..180°, 0..90° and 0..100 mm respectively. `shoulderAngle()`, `elbowAngle()`, `aperture()` and `holding()` read actual state; holding is numeric 1 or 0, not completion. These calls apply only to the arm world. Existing searchlight calls retain their meaning in Missions 1–3. Shared wait/clock behavior and all isolation limits are unchanged. Rebuild the local Java image with `npm run setup:java` after updating to this branch. [MISSION-04.md](MISSION-04.md) defines rates and contact rules.
+
 ## Isolation and resource contract
 
 Compilation and execution share one fresh, non-root container with a read-only image, no network or host mounts, all Linux capabilities dropped, no-new-privileges, private process/network namespaces and Docker's default seccomp policy. Only `/work` (64 MiB) and `/tmp` (8 MiB) are writable tmpfs, both noexec/nosuid/nodev. The trusted model and result evaluator remain in the app, outside the container.

@@ -165,7 +165,7 @@ test('lesson drafts isolate languages/lessons, retain legacy keys and enforce pe
  assert.equal(drafts.python.source,'legacy mission one');assert.equal(drafts['L02.python'].source,'sensor python');assert.equal(drafts['L02.java'].source,'sensor java');
  assert.deepEqual((await current(store,b)).profile.drafts,{});
  await assert.rejects(saveDraft(store,a,{language:'python',lesson:'L02',source:'stale',revision:0}),e=>e.status===409);
- for(const lesson of ['L04',['L02'],{}])await assert.rejects(saveDraft(store,a,{language:'python',lesson,source:'future',revision:0}),e=>e.status===400);
+ for(const lesson of ['L05',['L02'],{}])await assert.rejects(saveDraft(store,a,{language:'python',lesson,source:'future',revision:0}),e=>e.status===400);
 });
 test('Mission 2 checked unlocks require Mission 1; practice, errors and another student cannot earn badges',async()=>{
  const {store,a,b}=await fixtures(),sensor=attempt({target:'sensor-left'});
@@ -202,4 +202,19 @@ test('draft saves pair valid challenge context with code, keep old clients compa
  assert.equal((await current(store,b)).profile.drafts['L03.java'],undefined);
  const legacy=await saveDraft(store,a,{lesson:'L03',language:'java',source:'older client',revision:1});
  assert.equal(legacy.target,undefined,'do not silently attach old scenario to changed source from legacy client');
+});
+
+test('Mission 4 uses additive draft keys, L03 prerequisite and its own trusted receipt without changing old work',async()=>{
+ const {store,a,b}=await fixtures();const {lessonTargets,draftKey}=await import('../src/model.ts');
+ for(const lesson of ['L01','L02','L03','L04'])for(const language of ['python','java'])await saveDraft(store,a,{lesson,language,source:`${lesson} ${language}`,target:lessonTargets[lesson][2],revision:0});
+ const before=structuredClone((await current(store,a)).profile.drafts);assert.equal(Object.keys(before).length,8);
+ await assert.rejects(recordAttempt(store,a,attempt({target:'parcel-across'}),true),e=>e.status===403);
+ await recordAttempt(store,a,attempt({target:'parcel-across',verified:true,version:'parcel-arm-v1'}));assert.equal((await current(store,a)).profile.completed.length,0);
+ for(const lesson of ['L01','L02','L03'])for(const target of lessonTargets[lesson])await recordAttempt(store,a,attempt({target}),true);
+ for(const target of lessonTargets.L04)await recordAttempt(store,a,attempt({target,version:'signal-station-v1',lesson:'L01',lessonVersion:999}),true);
+ const p=(await current(store,a)).profile;assert.equal(p.completed.length,12);assert.equal(p.history[0].lesson,'L04');assert.equal(p.history[0].receipt.model,'parcel-arm-v1');assert.equal(p.history[0].lessonVersion,1);assert.deepEqual(p.drafts,before);
+ await assert.rejects(saveDraft(store,a,{lesson:'L04',language:'python',source:'bad pair',target:'patrol-cove',revision:1}),e=>e.status===400);
+ await assert.rejects(saveDraft(store,a,{lesson:'L04',language:'python',source:'stale',target:'parcel-return',revision:0}),e=>e.status===409);
+ assert.deepEqual((await current(store,b)).profile.drafts,{});await assert.rejects(recordAttempt(store,b,attempt({target:'parcel-across'}),true),e=>e.status===403);
+ assert.equal(draftKey('L01','java'),'java');
 });

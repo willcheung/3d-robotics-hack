@@ -8,9 +8,9 @@ illustrations introduce jobs; they do not run student code or record progress.
   poses distinguish aiming at the crew, an off-target light and patrol stations.
 - `L04.png`: actual `ArmView` geometry from Mission 4 review candidate
   `0136571` (PR #6). Its initial `parcel-across` state shows the pickup, guard and
-  receiving tray. Including this screenshot does not make Mission 4 playable;
-  availability still comes from this build's lesson registry. No runtime code
-  from that separate branch is copied here.
+  receiving tray. PR #6 subsequently landed as `6a2b516` and was integrated into
+  this branch. Availability comes from the lesson registry, independently of
+  the image; the four model missions are now playable.
 - The 16 SVG files are original schematic concepts for the remaining missions,
   authored in `scripts/generate-curriculum-diagrams.mjs`. They are explicitly
   labeled as planned concepts in the curriculum and do not promise final geometry.

@@ -21,9 +21,9 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 ## CURRICULUM-01 — Visual mission previews
 
 - Status: review in [PR #7](https://github.com/willcheung/3d-robotics-hack/pull/7); local validation passed for the accepted full-row design. The owner explicitly authorized finishing this slice under a one-time reserve-rule exception. Exact-head CI and remaining gates are recorded with the PR.
-- Depends on: released L01–L03 and their existing curriculum/draft/family framework. Independent of the active Mission 4 branch.
+- Depends on: the existing curriculum/draft/family framework. Started from released L01–L03; subsequently integrated landed Mission 4 from PR #6.
 - Working outcome: learners can see the machine and useful job for every one of the 20 lessons before choosing a mission.
-- Scope: [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md), full-row responsive previews, four actual model captures, 16 distinct labeled concept diagrams, chapter navigation, existing availability/prerequisite/completion states, and the future-lesson preview acceptance contract in PLAN.md. The Mission 4 image comes from its separate review candidate; its lesson stays unavailable in this branch.
+- Scope: [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md), full-row responsive previews, four actual model captures, 16 distinct labeled concept diagrams, chapter navigation, existing availability/prerequisite/completion states, and the future-lesson preview acceptance contract in PLAN.md. All four landed missions open through their previews; later missions remain coming soon.
 - Acceptance: all 20 lessons retain their order and truthful playable/optional state; concepts never imply a playable model; desktop/narrow images and text remain readable; chapter/Close/Escape navigation and both-language drafts are preserved; image failure never blocks lesson entry.
 - Validation: inspected artwork and desktop/narrow screenshots, browser navigation/draft/focus/availability checks, relevant family regressions, TypeScript/build and publication checks. No hosted release, later lesson implementation or learner pilot is implied.
 
@@ -126,13 +126,13 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## S04 — One arm mission
 
-- Status: draft
-- Depends on: S03 and S08 landed; review the foundation observation findings before choosing the L04 teaching contract. S03 and S08 are now landed; S04 remains draft until its arm/gripper contract and independent fixtures are reviewed.
+- Status: implemented review candidate on `codex/mission-04-parcel`; validation is recorded in [MISSION-04-QA.md](MISSION-04-QA.md). [MISSION-04.md](MISSION-04.md) freezes the reviewed teaching/model/API contract and independent fixture expectations.
+- Depends on: S03 and S08 landed (satisfied). The informed foundation walkthrough is reviewed; real classroom observation remains deferred by the owner.
 - Working outcome: control an original arm/gripper to pick up and place one parcel, with Java/Python examples and explorable 3D.
 - Scope: bounded two-joint arm, labeled axes and an independently actuated third gripper control, explicit grasp/drop geometry, one sequence mission; functions are taught separately in S09. No general contact-physics promise or full arm curriculum.
 - Acceptance: grasp/carry/place follow documented rules; limits/collisions explain failure; wrong poses cannot succeed; camera, reset, existing motor lesson, and language drafts remain intact.
 - Validation: independent arm/grasp/target boundary fixtures, deterministic trace replay, reference/wrong programs, both-language/browser flows, screenshots. Incorporate available learner feedback.
-- Next design action: use the [Parcel Port brief](TEACHING-PROGRESSION.md#next-mission-design-brief-l04-parcel-port) to author MISSION-04 with frozen mechanism/contact/API semantics and feasible fixtures. This is the next new mission after the revised L01–L03 foundation is reviewed; do not introduce L05 function syntax here.
+- Next action: review the candidate and exact-head CI, then obtain separate release authorization for hosted qualification and deployment. Observe the arm transition with real learners when available. S04 is not done until accepted work lands; no L05 build is started.
 
 ## S05 — Separate family progress
 

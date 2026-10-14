@@ -11,7 +11,7 @@ Each row shows a large mission image, a concrete job and beneficiary, one learni
 - Expand the curriculum into a wide, page-like dialog with a persistent Close control and chapter navigation. Retain native dialog focus containment, Escape and focus return to the curriculum opener; entering a lesson closes the curriculum and focuses its editor.
 - Use one full-width row per lesson. Desktop places the image beside the brief; narrow screens put it above the brief. Preserve readable text, meaningful image alternatives and visible keyboard focus at 390 px and with enlarged text.
 - Group consecutive lessons into Searchlight (L01–03), Robotic arm (L04–06), Rescue rover (R01–R04), Sensors & combined missions (C01 through C03), and Optional extensions (V01–F02). Chapter links scroll within the curriculum without changing the current lesson or replacing a draft.
-- State that Missions 1–3 are playable from the released base. Derive playable counts/actions from the existing lesson registry so a later mission integration can update availability without another layout rewrite. Keep optional status distinct from coming soon and prerequisite-locked checked completion.
+- State that Missions 1–4 are playable after the landed Mission 4 integration. Derive playable counts/actions from the existing lesson registry so a later mission integration can update availability without another layout rewrite. Keep optional status distinct from coming soon and prerequisite-locked checked completion.
 - A failed or blocked image must leave the mission title, purpose, skills, state and navigation usable. Static previews need no additional WebGL context or student runtime. Reserve image space and lazy-load below-the-fold assets.
 
 ## Preview inventory
@@ -21,7 +21,7 @@ Each row shows a large mission image, a concrete job and beneficiary, one learni
 | L01 Signal Station | Real searchlight scene aimed at the ridge crew | Light the pickup point; values, motor power and servo tilt. |
 | L02 Read, then choose | Real searchlight scene off target | Recover the light using a direction reading and one condition. |
 | L03 Ranger patrol | Real searchlight scene with numbered checkpoints | Repeat move/stop/hold to inspect a route. |
-| L04 Parcel Port | Real arm scene from the separate Mission 4 review candidate; still coming soon | Coordinate joints and a gripper to hand a parcel to a worker. |
+| L04 Parcel Port | Real arm scene showing pickup, guard and receiving tray | Coordinate joints and a gripper to hand a parcel to a worker. |
 | L05 A reusable handoff | Arm concept with two labeled receiving bays and repeated handoffs | Define an editable helper with a destination parameter. |
 | L06 Adapt and debug | Existing-mechanism concept with a moved receiving tray | Compare the old and changed job; diagnose one cause. |
 | R01 Deliver to the dock | Two-wheel rover, battery and destination dock | Coordinate wheel power for a delivery. |
@@ -43,7 +43,7 @@ Each row shows a large mission image, a concrete job and beneficiary, one learni
 
 Keep assets original, local and independent of external services. Real screenshots come from the existing renderer with documented illustrative poses and synthetic content; they do not establish a successful student run or a learner pilot. Concept diagrams use readable labels and shape/text cues as well as color. Record the capture/generation procedure and asset provenance in the asset directory. Do not publish private accounts, editor contents, contact details or runtime receipts in images.
 
-Every new mission slice includes its curriculum preview section as acceptance work: confirm the useful job/new takeaway, replace its concept with a screenshot of the actual model when available, check mobile framing and alternatives, and preserve coming-soon status until the lesson is genuinely playable. Reused mechanisms still need a view that communicates the changed task. Mission 4 now has a real screenshot captured from its separately committed review candidate; this branch incorporates only that image, without borrowing runtime source or enabling the lesson. There are four model screenshots and 16 concept diagrams. Short opt-in motion previews are a possible later enhancement, not part of this slice.
+Every new mission slice includes its curriculum preview section as acceptance work: confirm the useful job/new takeaway, replace its concept with a screenshot of the actual model when available, check mobile framing and alternatives, and preserve coming-soon status until the lesson is genuinely playable. Reused mechanisms still need a view that communicates the changed task. Mission 4's screenshot was captured from its separately committed candidate; after PR #6 landed, this branch integrated the landed source and its registry now makes Mission 4 playable. There are four model screenshots and 16 concept diagrams. Short opt-in motion previews are a possible later enhancement, not part of this slice.
 
 ## Verification and evidence boundaries
 
