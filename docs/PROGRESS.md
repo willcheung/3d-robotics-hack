@@ -1,5 +1,13 @@
 # Public progress
 
+## CURRICULUM-01 — visual mission preview plan
+
+- Status: ready; the owner approved the four-row proposal and implementation across all 20 lessons. Source implementation has not started; the manual budget-policy exception is pending in the requesting chat.
+- Base and last runnable app: `773d02049e1460d6db32c2fcf23da9020554590a`; isolated branch `codex/curriculum-previews`, managed worktree `curriculum-previews/3d-robotics-hack`. The separate Mission 4 writer and claim remain untouched. No PR, merge or deployment yet.
+- Prepared [the complete preview specification](CURRICULUM-PREVIEWS.md), an execution-queue entry and the standing PLAN.md requirement to capture each new model as part of its mission delivery. The specification maps every lesson to its scene/diagram, job and learning takeaway, and defines chapter, accessibility, draft/progress and image-failure checks.
+- Documentation verification: `git diff --check` and publication checks passed before preserving this checkpoint. No new app/runtime/browser checks or learner observations are claimed. Exact checkpoint and ownership receipt are retained in the local ignored workspace.
+- Next action: after the scoped budget exception is resolved, reacquire exclusive CURRICULUM-01 ownership, implement the accepted specification, inspect desktop/narrow artwork and run affected checks before preparing the review PR. Future lesson availability stays tied to the existing registry; do not borrow unfinished Mission 4 source.
+
 ## FAMILY-03 — Email-only parent entry release
 
 - Status: done; [PR #5](https://github.com/willcheung/3d-robotics-hack/pull/5) merged and live on [RoboLab](https://robolab.vibecodingdad.com), October 13, 2026 (October 14 UTC). The owner explicitly authorized staging, merge and deployment after passing checks, then disposable production fixture checks. Exclusive release ownership protected the work.

@@ -32,6 +32,14 @@ Show the selected “Python · Mission 1” or “Java · Mission 1,” keep sep
 
 ## The lesson loop
 
+### Curriculum preview section
+
+The owner approved full-row visual previews for every lesson. Implement [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md): a wide curriculum with chapter navigation, one scene/diagram beside each mission brief, a useful job, one learning takeaway and truthful progress/availability. Use real model screenshots where available and explicitly labeled concept diagrams for upcoming missions. Stack image and brief on narrow screens. The approved Mission 1–4 proposal is the layout reference; all 16 core and four optional lessons receive the same treatment.
+
+Building or releasing each later mission includes maintaining this preview section: replace its concept with an actual model capture when the scene exists, communicate that mission's distinct task, verify framing/alternative text and keep availability tied to the lesson registry. Static previews come first; motion previews remain a separate possible enhancement. This presentation work does not authorize building later missions or changing checked-completion rules.
+
+### In the workshop
+
 1. Meet someone with a problem; see what the robot will accomplish for them. A short demonstration connects the mechanism to that job before introducing numbers.
 2. Predict an outcome: “What will happen if this power is negative?”
 3. Run working starter code and make one meaningful change.

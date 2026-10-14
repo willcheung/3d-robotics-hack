@@ -18,6 +18,15 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 - Persist the fields in PROGRESS.md: ID/status, base SHA, branch/worktree, PR, last runnable commit, tested SHA, checks/evidence, unmet criteria, exact next action, and blockers. Recheck affected behavior after a changed base or rebase.
 - Before unattended coding, OPS-01 must establish supported durable atomic ownership of a cycle and slice. Prior chat history alone is not a lock. Do not let hourly polls or a manual goal become competing writers.
 
+## CURRICULUM-01 — Visual mission previews
+
+- Status: ready; owner-authorized implementation of the accepted full-row design.
+- Depends on: released L01–L03 and their existing curriculum/draft/family framework. Independent of the active Mission 4 branch.
+- Working outcome: learners can see the machine and useful job for every one of the 20 lessons before choosing a mission.
+- Scope: [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md), full-row responsive previews, real searchlight captures, distinct labeled concept diagrams for upcoming missions, chapter navigation, existing availability/prerequisite/completion states, and the future-lesson preview acceptance contract in PLAN.md.
+- Acceptance: all 20 lessons retain their order and truthful playable/optional state; concepts never imply a playable model; desktop/narrow images and text remain readable; chapter/Close/Escape navigation and both-language drafts are preserved; image failure never blocks lesson entry.
+- Validation: inspected artwork and desktop/narrow screenshots, browser navigation/draft/focus/availability checks, relevant family regressions, TypeScript/build and publication checks. No hosted release, later lesson implementation or learner pilot is implied.
+
 ## OPS-01 — Operational gate (not a student feature chunk)
 
 Status: ready. This read-only/setup proof does not replace a working app slice.
