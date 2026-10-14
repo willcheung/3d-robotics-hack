@@ -189,6 +189,6 @@ The owner suggested a third motor that spins, launches or grabs, plus functions 
 
 The existing multi-lesson map and saved journal now support L03's integration. For this explicitly requested manual goal, S08 depends on landed S03 and includes its own draft/map/history/unlock regressions; full S03H understanding/local-history work remains a separate draft. This changes no scheduled ownership, eligibility, merge or deployment rule. Actual teen comprehension/engagement remains unobserved and is part of the owner checklist.
 
-## Mission 4 candidate contract
+## Mission 4 implemented contract
 
-The owner authorized S04 design and implementation after Missions 1–3 landed. [MISSION-04.md](MISSION-04.md) freezes Parcel Port: coordinate shoulder yaw, elbow lift and jaw gap with familiar sequential calls, waits and payload readings. Three cases change the receiving pose and direction. Functions remain L05. The review candidate implements that contract; [MISSION-04-QA.md](MISSION-04-QA.md) records actual checks, persona findings and pending classroom/provider evidence. L01–L03 remain the live release until separate release acceptance.
+The owner authorized S04 design and implementation after Missions 1–3 landed. [MISSION-04.md](MISSION-04.md) freezes Parcel Port: coordinate shoulder yaw, elbow lift and jaw gap with familiar sequential calls, waits and payload readings. Three cases change the receiving pose and direction. Functions remain L05. The landed and deployed implementation follows that contract; [MISSION-04-QA.md](MISSION-04-QA.md) records checks and persona findings, and [PROGRESS.md](PROGRESS.md) records staging/provider acceptance and the daily-allowance block on remaining public runtime checks. Actual classroom observation remains pending.

@@ -1,6 +1,6 @@
-# Mission 4 candidate: persona and software evidence
+# Mission 4: persona, software and release evidence
 
-This records the owner-authorized S04 candidate on `codex/mission-04-parcel`, based on `773d02049e1460d6db32c2fcf23da9020554590a`. [MISSION-04.md](MISSION-04.md) is the frozen contract. The draft PR and its checks identify the exact tested head; PROGRESS.md records the delivery checkpoint. Missions 1–3 remain live. This candidate has no Mission 4 provider, production, classroom or learner-device acceptance yet.
+This records the owner-authorized S04 candidate on `codex/mission-04-parcel`, based on `773d02049e1460d6db32c2fcf23da9020554590a`. [MISSION-04.md](MISSION-04.md) is the frozen contract. PR #6 and its checks identify the exact tested head; [PROGRESS.md](PROGRESS.md) records the merged deployment, passing staging/provider and production-candidate checks, and public Python/saved-draft acceptance. The remaining public runtime suite is blocked by the shared daily allowance. Classroom and learner-device acceptance remain pending.
 
 ## Teaching decisions and informed walkthrough
 
@@ -42,6 +42,6 @@ The first broad local run exposed M4-05. One overlapping browser invocation also
 
 ## What to improve next
 
-First qualify this candidate for release only with separate authorization: execute real hosted Python/Java, all twelve milestones and eight saved code/challenge contexts against disposable authorized fixtures, then inspect the protected candidate. Existing release scripts currently prove L01–L03; extend their acceptance scope to L04 before using them to approve this release. Preserve the email-only entry and current accounts. Do not infer a provider pass from local mocks or earlier releases.
+The expanded release scripts passed all twelve milestones and eight saved code/challenge contexts in Python and Java on protected staging. Real provider checks and the production-settings candidate passed. After deployment, public Python and all eight saved contexts passed; remaining public runtime checks require the shared allowance to reset or an explicit bounded owner exception. No quotas were changed. See [PROGRESS.md](PROGRESS.md) for exact evidence and limits.
 
 For the deferred classroom pilot, use the learner's chosen language and record: (1) prediction of actual lift before turning, (2) first independent edit and help level, (3) explanation of empty closure versus holding versus delivery, (4) adaptation to the 135° tray without copying the reference, and (5) save/resume with the correct case. Record active time separately from execution waiting and use met/partial/not observed per criterion. If evidence shows a specific explanation fails, fix that step before adding L05. Keep personal observations private and publish only anonymized findings.

@@ -117,13 +117,13 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## S04 — One arm mission
 
-- Status: implemented review candidate on `codex/mission-04-parcel`; validation is recorded in [MISSION-04-QA.md](MISSION-04-QA.md). [MISSION-04.md](MISSION-04.md) freezes the reviewed teaching/model/API contract and independent fixture expectations.
+- Status: landed and deployed through [PR #6](https://github.com/willcheung/3d-robotics-hack/pull/6); staging/provider, candidate and public saved-progress checks passed. Remaining public runtime acceptance is blocked by the existing shared daily allowance. Evidence is recorded in [PROGRESS.md](PROGRESS.md) and [MISSION-04-QA.md](MISSION-04-QA.md). [MISSION-04.md](MISSION-04.md) freezes the reviewed teaching/model/API contract and independent fixture expectations.
 - Depends on: S03 and S08 landed (satisfied). The informed foundation walkthrough is reviewed; real classroom observation remains deferred by the owner.
 - Working outcome: control an original arm/gripper to pick up and place one parcel, with Java/Python examples and explorable 3D.
 - Scope: bounded two-joint arm, labeled axes and an independently actuated third gripper control, explicit grasp/drop geometry, one sequence mission; functions are taught separately in S09. No general contact-physics promise or full arm curriculum.
 - Acceptance: grasp/carry/place follow documented rules; limits/collisions explain failure; wrong poses cannot succeed; camera, reset, existing motor lesson, and language drafts remain intact.
 - Validation: independent arm/grasp/target boundary fixtures, deterministic trace replay, reference/wrong programs, both-language/browser flows, screenshots. Incorporate available learner feedback.
-- Next action: review the candidate and exact-head CI, then obtain separate release authorization for hosted qualification and deployment. Observe the arm transition with real learners when available. S04 is not done until accepted work lands; no L05 build is started.
+- Next action: finish public runtime acceptance after allowance reset or an explicit bounded owner exception. Observe the arm transition with real learners when available. No L05 build is started.
 
 ## S05 — Separate family progress
 

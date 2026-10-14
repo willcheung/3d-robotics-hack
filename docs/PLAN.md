@@ -304,7 +304,7 @@ Vercel Queues is a deployment-partitioned durable outbox transport; messages con
 
 L03 / S08 shipped under [MISSION-03.md](MISSION-03.md), reusing landed map/draft/journal/family behavior instead of waiting for the broader S03H expansion. Repeat built-in function calls to inspect every checkpoint in a route; a final pose alone is insufficient. The [curriculum review](CURRICULUM.md#october-13-review-richer-hardware-without-a-syntax-pile-up) makes the arm's third gripper actuator explicit, adds calls to student-defined helpers inside loops in L05, and scopes a later roller intake/flywheel collection proposal behind feedback and model-readiness gates. Increase meaningful job requirements while keeping retries and help free. No new actuator ships implicitly with L03.
 
-Missions 1–3 and FAMILY-02 onboarding are released. The owner authorized PR #4 merge and deployment after software qualification, with persona review now and the real classroom pilot later. PROGRESS.md records the release evidence. Mission 4 begins with its separate reviewed arm/gripper contract; no later mechanism ships implicitly.
+Missions 1–3 and FAMILY-02 onboarding are released. The owner authorized PR #4 merge and deployment after software qualification, with persona review now and the real classroom pilot later. PROGRESS.md records the release evidence. Mission 4 has since landed and deployed under its reviewed arm/gripper contract; PROGRESS.md records passing staging/candidate checks and the shared-allowance block on remaining public runtime checks. No later mechanism ships implicitly.
 
 ### Teaching refinement across the progression
 
