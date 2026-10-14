@@ -20,7 +20,7 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 
 ## CURRICULUM-01 — Visual mission previews
 
-- Status: validated_local; preparing a draft review PR for the accepted full-row design. The owner explicitly authorized finishing this slice under a one-time reserve-rule exception.
+- Status: review in [PR #7](https://github.com/willcheung/3d-robotics-hack/pull/7); local validation passed for the accepted full-row design. The owner explicitly authorized finishing this slice under a one-time reserve-rule exception. Exact-head CI and remaining gates are recorded with the PR.
 - Depends on: released L01–L03 and their existing curriculum/draft/family framework. Independent of the active Mission 4 branch.
 - Working outcome: learners can see the machine and useful job for every one of the 20 lessons before choosing a mission.
 - Scope: [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md), full-row responsive previews, four actual model captures, 16 distinct labeled concept diagrams, chapter navigation, existing availability/prerequisite/completion states, and the future-lesson preview acceptance contract in PLAN.md. The Mission 4 image comes from its separate review candidate; its lesson stays unavailable in this branch.
