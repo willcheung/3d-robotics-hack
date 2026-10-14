@@ -24,3 +24,7 @@ The owner subsequently authorized using the teaching skills to strengthen all mi
 ## Current follow-up: repository personas and next curriculum work
 
 The owner authorized saving all eight RoboLab skills in this repository, updating AGENTS.md to select the right personas for future work, and identifying the next curriculum/mission priority. Keep this a documentation/skills refinement on the existing branch and draft PR. Validate portability, manifests, links and publication safety; record the source-based priority review and observation plan in TEACHING-PROGRESSION.md. Repository copies are canonical for this project; leave the personal installation intact. This request does not authorize a new mission implementation, merge, deployment, learner contact or automation.
+
+## Current release authorization: Missions 1–3
+
+The owner subsequently authorized the two recommended review steps, including saved progress, then merging PR #4 and making the missions live if checks pass. The owner selected an informed persona walkthrough now and a real classroom pilot later. Complete protected staging, production-candidate and public acceptance with disposable fixtures; retain the existing sessions, private stores and runtime. Record exact source, CI, hosted results and the next action. This supersedes the earlier no-release scope for PR #4. Mission 4 follows this completed release as a separate design/build slice; it must first have its mission/model contract and ready acceptance criteria.

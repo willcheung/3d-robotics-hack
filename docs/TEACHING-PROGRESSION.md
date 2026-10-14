@@ -98,6 +98,25 @@ Test Missions 1–3 as a sequence with a returning-session break, in both langua
 
 Use the repository personas through the routing in [AGENTS.md](../AGENTS.md#reusable-robolab-personas): `$robolab-design` on this progression before adding a lesson, `$robolab-critique` on the actual lesson/feedback, `$robolab-student` on learner-visible content, and `$robolab-teacher` on start/recovery/resume. Use `$robolab-model` for a new mechanism, `$robolab-build` for an authorized ready slice, `$robolab-qa` for observed behavior, and `$robolab-retro` to reconcile findings with classroom evidence. A persona is a review lens, not evidence that a student or teacher actually tried the class.
 
+## Informed release walkthrough, October 13
+
+The owner selected a persona walkthrough now and a classroom pilot later. This pass used the skeptical-student, teacher and QA lenses on application source `33b51399b38598b376dc722032f54dfccc762039`. The reviewer had already read implementation and reference programs, so this is an **informed scripted walkthrough**, not an independent beginner attempt. Protected browser execution and screenshots support interface/software claims; none establish comprehension or class pacing. Final hosted outcomes belong to PROGRESS.md and PR #4.
+
+| Sequence | Visible task, action and observed feedback | Teaching implication |
+| --- | --- | --- |
+| Mission 1 | Find first edit selects `turn_ticks`; the unchanged starter misses. A longer wait reaches the ridge, then timing/direction/tilt adapt the farther and cove cases. | Preserve the turn-versus-tilt distinction and predict-before-edit prompt. In class, ask why faster power needs less time for the same angle. |
+| Mission 2 | Find first edit selects the condition. The reversed comparison misses; the corrected program works from both sides. The cove requires adapting the comparison and tilt. | Ask for the actual branch and movement, not just a changed comparison number. A comparison value does not command a stopping position. |
+| Mission 3 | One repeat leaves the patrol unfinished. Count, spacing, direction and tilt distinguish the three routes; a printed counter cannot award a checkpoint. | Retrieve Mission 1's stop/wait behavior and Mission 2's fresh measurement. Ask which lines repeat and why the hold belongs inside the loop. |
+| Help and return | First-edit and hint controls are reachable. Worked explanation is opt-in after a run. The hosted checks cover code/challenge save pairs and local notes separately. | Keep help free and keep the local-versus-profile distinction explicit. A real returning learner should identify the saved case and next change without reconstructing the experiment. |
+
+Priorities after software qualification:
+
+1. **Observe explanation and transfer before removing scaffolding.** The key unanswered question is whether learners can explain the changed case after using a hint. Observe one causal explanation and one changed case per mission; copied success alone does not satisfy the criterion.
+2. **Observe reading and navigation burden, especially in Java.** The first-edit shortcut helps locate the decision, but the long commented program and lower-page explanation still need an actual learner check. Record help and active reading separately from runtime waiting; do not shorten necessary units or syntax explanations on an assumption.
+3. **Prepare L04 with familiar syntax and a new mechanism.** After the release, freeze the Parcel Port arm/gripper contract and independent good/wrong traces. Keep learner-defined functions and parameters in L05. Real pilot feedback remains an input to that design; its absence must remain visible.
+
+No demonstrated teaching defect in this informed pass calls for another sequence rewrite before release. The accepted release improvement is durable hosted coverage of the whole progression and saved context. Preserve the current scaffolding while collecting the missing human evidence.
+
 ## Implemented interface evidence
 
 Inspected synthetic guest captures at 1366×900 and 390×844. Run and the hint link sit above the commented program; Find first edit focuses the mission's editable value or condition. These captures establish layout, not learner usability or measured learning.
