@@ -47,3 +47,11 @@ test('server Python rejects missing/excess arguments without emitting a redirect
   const run=await execute(`from robot import ${name}\nawait ${name}('clock')`);assert.notEqual(run.code,0);assert.match(run.stderr,/TypeError/);assert.equal(run.commands,0);
  }
 });
+test('server Python accepts the same named arguments as browser practice',async()=>{
+ for(const [name,key,value,target] of [['motor','power',0,'beacon'],['servo','degrees',120,'beacon'],['wait','ticks',1,'beacon'],['shoulder','degrees',45,'parcel-across'],['elbow','degrees',70,'parcel-across'],['grip','mm',40,'parcel-across']] as const){
+  const named=await execute(`from robot import ${name}\nawait ${name}(${key}=${value})`,target);
+  const positional=await execute(`from robot import ${name}\nawait ${name}(${value})`,target);
+  assert.equal(named.code,0,named.stderr);assert.equal(named.commands,1);assert.deepEqual(named.state,positional.state);
+  const wrong=await execute(`from robot import ${name}\nawait ${name}(value=${value})`,target);assert.notEqual(wrong.code,0);assert.match(wrong.stderr,/TypeError/);assert.equal(wrong.commands,0);
+ }
+});
