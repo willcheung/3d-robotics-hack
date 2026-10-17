@@ -30,7 +30,7 @@ Each lesson begins with a 10–15 minute guided activity around one main new ide
 
 Every numeric input has its range, inclusive ends, unit, sign/zero meaning, integer/decimal rule and invalid-input behavior beside the example. Explain each executable starter line, including reads and prints; follow the inline-comment contract below. Keep 1 tick = 0.02 simulated seconds and whole waits of 1–600 ticks per call unless a separately versioned contract change is justified; design reference missions within existing 30-second simulated and 20-second execution limits. Test runtime startup separately. New worlds do not silently relax resource limits.
 
-The title **Real life machines / robots** stays visible. Explain the real machine connection and what our model leaves out. Practice errors retain code and invite a correction. Next preserves drafts, distinguishes available lessons from locked or unreleased content, and supports revisiting experiments. Keep ECO removed, camera motion independent, and keyboard/reduced-motion/WebGL behavior intact.
+The title **Real life machines / robots** stays visible. Explain the real machine connection and what our model leaves out. Practice errors retain code and invite a correction. Next preserves drafts and appears after all three server-checked challenges. Sign-in is required for checked progress. Later missions stay visible as read-only previews until their prerequisites are checked; completed missions remain available to revisit through the curriculum. Keep ECO removed, camera motion independent, and keyboard/reduced-motion/WebGL behavior intact.
 
 ## Rescue Rover: direction, feedback, routes and debugging
 

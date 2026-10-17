@@ -60,4 +60,9 @@ test('prediction and results stay beside Run and describe the executed note',asy
  await expect(page.locator('#output-panel')).toHaveJSProperty('open',true);
  await expect(page.locator('#console')).toContainText('SyntaxError');
  await expect(page.locator('#code')).toHaveValue('await = broken');
+ // A traceback can end with a newline: empty hint text must not hide errors.
+ await page.locator('#code').fill('1 / 0');await page.locator('#run').click();
+ await expect(page.locator('#status-pill')).toHaveText('ERROR');
+ await expect(page.locator('#console')).toContainText('ZeroDivisionError');
+ await expect(page.locator('#feedback')).toBeVisible();await expect(page.locator('#feedback-title')).toBeVisible();
 });

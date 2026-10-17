@@ -10,7 +10,7 @@ export function attachEditor(code: HTMLTextAreaElement, changed: () => void, run
   }
   code.addEventListener('blur', () => { leaveOnTab = false; });
   code.addEventListener('keydown', e => {
-    if (e.isComposing) return;
+    if (e.isComposing || code.readOnly || code.disabled) return;
     if (e.key === 'Escape') { leaveOnTab = true; return; }
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); run(); return; }
     if (e.key === 'Tab' && leaveOnTab) { leaveOnTab = false; return; }

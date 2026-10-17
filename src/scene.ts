@@ -147,6 +147,7 @@ export class StationScene {
     this.world.add(this.station);this.armView=new ArmView();this.world.add(this.armView.root);
     new ResizeObserver(() => this.resize()).observe(container);
     this.renderer.domElement.addEventListener('keydown', e => {
+      if(!this.controls.enabled)return;
       if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Home'].includes(e.key)) {
         e.preventDefault();
         if (e.key === 'Home') this.reset();
@@ -207,6 +208,7 @@ export class StationScene {
   }
   private resize() { const w = this.container.clientWidth, h = this.container.clientHeight; if (!w || !h) return; this.renderer.setSize(w, h); this.camera.aspect = w/h; this.camera.updateProjectionMatrix(); this.dirty = true; }
 
+  setInteractive(enabled:boolean) { this.controls.enabled=enabled; }
   reset() { if(this.armMode){this.camera.position.set(2.7,3.3,5.2);this.controls.target.set(0,.55,.5);}else{this.camera.position.set(2.5, 5.6, 8.8); this.controls.target.set(0,1.05,0);} this.controls.update(); }
   top() { this.camera.position.set(.01,10,.01); this.controls.target.set(0,1.05,0); this.controls.update(); }
   zoom(factor: number) { const offset = this.camera.position.clone().sub(this.controls.target); offset.multiplyScalar(factor).clampLength(4,13); this.camera.position.copy(this.controls.target).add(offset); this.controls.update(); }

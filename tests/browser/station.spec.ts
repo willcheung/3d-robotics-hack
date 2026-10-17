@@ -1,3 +1,4 @@
+import {openMission} from '../learning-ui.ts';
 import { test, expect, type Page } from '@playwright/test';
 const runtimeOrigin = process.env.VITE_RUNTIME_ORIGIN || 'http://127.0.0.1:4174';
 const good = `from robot import motor, servo, wait, angle
@@ -310,7 +311,7 @@ test('missing runtime hits startup deadline and preserves the source', async ({p
 
 test('teaching copy, keyboard editing, undo, indentation, escape and shortcut Run work', async ({page}) => {
   await expect(page.getByText('Python · Mission 1',{exact:true})).toBeVisible();
-  await expect(page.locator('.build-status')).toContainText('Run real Python or Java');
+  await expect(page.locator('.build-status')).toContainText('Four missions in Python and Java');
   await expect(page.locator('#value-guide')).toContainText('50 ticks = 1 second');
   await page.locator('.real-world-help>summary').click();
   await expect(page.getByText('REAL LIFE MACHINES / ROBOTS',{exact:true})).toBeVisible();
@@ -379,7 +380,7 @@ print(round(await angle()), round(await scanner()), round(await clock(), 2))`);
   await expect(page.locator('#feedback')).not.toHaveClass(/error|success/);
 });
 
-test('next rescue preserves code, counts unique successes and advances to Mission 2 without losing Mission 1', async ({page}) => {
+test('next rescue preserves code and unique successes; practice alone leaves Mission 2 locked without losing Mission 1', async ({page}) => {
   const next=page.locator('#next-rescue'); await expect(next).toBeDisabled();
   await run(page,good.replace('wait(100)','wait(50)')); await done(page); await expect(next).toBeDisabled();
   await run(page,good); await done(page); await expect(next).toBeEnabled();
@@ -391,9 +392,9 @@ test('next rescue preserves code, counts unique successes and advances to Missio
   await expect(page.getByLabel('Challenge target')).toHaveValue('reverse');
   await run(page,good.replace('servo(120)','servo(60)').replace('motor(0.5)','motor(-0.5)')); await done(page);
   await expect(page.locator('#practice-progress')).toHaveText('3 of 3 completed this visit');
-  await expect(next).toBeHidden(); await expect(page.locator('#next-help')).toContainText('Continue to Mission 2');
-  await page.locator('#next-lesson').click();await expect(page.locator('#lesson')).toHaveValue('L02');await expect(page.locator('#code')).toHaveValue(/reading = await angle/);
-  await page.locator('#lesson').selectOption('L01');await expect(page.locator('#code')).toHaveValue(/motor\(-0.5\)/);
+  await expect(next).toBeHidden(); await expect(page.locator('#next-help')).toContainText('Check & save progress');
+  await expect(page.locator('#next-lesson')).toBeHidden();await openMission(page,'L02');await expect(page.locator('html')).toHaveAttribute('data-current-mission','L02');await expect(page.locator('#code')).toHaveValue(/reading = await angle/);await expect(page.locator('#code')).not.toBeEditable();
+  await openMission(page,'L01');await expect(page.locator('#code')).toHaveValue(/motor\(-0.5\)/);
   await page.screenshot({path:'test-results/s01-complete.png',fullPage:true});
   await page.reload(); await expect(page.locator('#practice-progress')).toHaveText('0 of 3 completed this visit');
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(/motor\(-0.5\)/);

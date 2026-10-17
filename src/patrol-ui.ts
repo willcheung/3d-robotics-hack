@@ -8,7 +8,7 @@ export const patrolMissions = {
 };
 export function patrolUI(selected:string){
   const info=patrolLesson;
-  el<HTMLSelectElement>('lesson').value='L03';
+
   document.querySelector('.intro')!.innerHTML='<div><div class="eyebrow">MISSION 03 / MOVE → STOP → HOLD → REPEAT</div><h1>Ranger patrol<span>.</span></h1></div>';
   document.querySelector('.mission-copy h2')!.textContent='Get the ranger route ready';
   document.querySelector('.mission-instruction')!.innerHTML='Log each numbered checkpoint in order · Finish at <strong id="goal-angle"></strong> · Tilt <strong id="goal-scanner"></strong> · Hold 25 ticks at each stop.';

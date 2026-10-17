@@ -202,7 +202,7 @@ The combined manual goal froze normalized-email rules, challenge storage/TTL/att
 
 ## S03 / Mission 2 regression gates
 
-Every future lesson must preserve the shared mission selector and four current drafts, declared starting poses, real sensor/branch behavior in both runtimes, existing family privacy/recovery, and checked-only unlocks. New tests in `lessons.test.ts`, `mission2.spec.ts`, `mission-drafts.spec.ts`, `family.test.mjs` and `java.test.mjs` cover the S03 contract. Keep server-owned scenario selection and canonical lesson/version receipts; reject unknown targets and ignore client-supplied pose/outcome fields. A new lesson must not overwrite an earlier lesson's draft or count its milestones toward another lesson. Keep local transport tests, actual provider acceptance and observed teen learning distinct. See [MISSION-02.md](MISSION-02.md).
+Every future lesson must preserve curriculum navigation and independent mission/language drafts, declared starting poses, real sensor/branch behavior in both runtimes, existing family privacy/recovery, and checked-only unlocks. New tests in `lessons.test.ts`, `mission2.spec.ts`, `mission-drafts.spec.ts`, `family.test.mjs` and `java.test.mjs` cover the S03 contract. Keep server-owned scenario selection and canonical lesson/version receipts; reject unknown targets and ignore client-supplied pose/outcome fields. A new lesson must not overwrite an earlier lesson's draft or count its milestones toward another lesson. Keep local transport tests, actual provider acceptance and observed teen learning distinct. See [MISSION-02.md](MISSION-02.md).
 
 Owner-QA additions: while a checked run is pending, attempted rescue/mission/language changes must keep the selector and underlying scenario consistent. Open every hint in both languages and verify no penalty. Exercise the complete prerequisite-to-completion student UI with real local isolated execution, wrong-program rejection, second-device resume and independent sibling progress. The disposable account test server must not fall back to cloud services. See [MISSION-02-QA.md](MISSION-02-QA.md) for evidence boundaries and the owner checklist.
 
@@ -218,3 +218,10 @@ Shared lesson refinements must cover all playable missions and both languages. C
 ## FAMILY-03 parent entry regression gates
 
 PARENT-EMAIL.md supersedes tests that require public parent-code login, code-only signup or code-issuing recovery. Keep the underlying historic recovery/store fixtures as compatibility evidence, but the public API must reject retired routes. Add fresh email plus old-code/unfinished-setup ownership, index-before-family partial writes, competing emails, same-challenge response retry, retired-code rejection, unchanged student records and explicit current-session boundaries. Use parent-session fixtures only for non-auth hosted checks; they do not establish email authentication or provider delivery.
+
+
+## UI-03 — Checked mission access
+
+See [GUIDED-MISSIONS-QA.md](GUIDED-MISSIONS-QA.md). New access checks cover guest previews, existing locked drafts, read-only keyboard/editor/world controls, practice-only non-unlocks, the third real checked result, Next mission, fresh-device resume, sibling separation and session expiry/change. Delayed responses cannot invalidate a newer identity or roll back newer checked progress; wrong submitted parent credentials must not discard an otherwise valid session.
+
+Browser mechanism/teaching tests use explicit account-response fixtures for already checked prerequisites, with the real local Python and Java runtimes. These fixtures are not evidence of completion. The local family UI journey separately runs all twelve real Java progress checks through the application API. Test-only persisted prerequisites support unrelated recovery/draft scenarios; none are exposed by production endpoints. Existing server tests continue to reject forged completion and premature checks.
