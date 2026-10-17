@@ -351,7 +351,7 @@ test('invalid robot values stop without losing code or unlocking progress', asyn
     await expect(page.getByLabel('Python console')).not.toContainText('SHOULD NOT RUN');
     await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(source);
     await expect(page.locator('#next-rescue')).toBeDisabled();
-    await expect(page.locator('#practice-progress')).toHaveText('0 of 3 crew locations reached in this visit.');
+    await expect(page.locator('#practice-progress')).toHaveText('0 of 3 completed this visit');
   }
 });
 
