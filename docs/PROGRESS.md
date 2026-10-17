@@ -1,5 +1,12 @@
 # Public progress
 
+## UI-01 — Compact workshop and readable progress
+
+- Status: review candidate on `codex/compact-workshop`, based on `2cd78c972539d736fc7219006d04ab7f8e298318`. Owner-authorized navigation/layout cleanup; exclusive ownership claimed before source writes. Application/tested source: `755f1ad8890f7ccea720aaad8afc865bb975b41a`; the PR identifies its final head and exact-head checks.
+- Curriculum and Family actions moved to the header. Mission/challenge selectors share a compact heading; redundant introduction/prediction text was removed while purpose, targets, first edit, free help and range guidance remain. At 1366×900, the workbench starts about 302 pixels higher and editable code about 325 pixels higher. The progress-toolbar heading now has 13.66:1 contrast.
+- [Workspace UI QA](WORKSPACE-UI-QA.md) records checks, inspected synthetic screenshots and evidence limits. Build, 30 model/preview checks, 49 account checks, 14 family UI journeys and final navigation/layout/diagram checks passed locally. Broad browser and exact-head CI results are recorded in the PR. Existing drafts/accounts and the separate curriculum-preview work were preserved.
+- Next action: review and acceptance. This branch is not landed or deployed; provider and actual learner checks are not claimed.
+
 ## S04 — Mission 4 landed and deployed; public runtime follow-up pending
 
 - [PR #6](https://github.com/willcheung/3d-robotics-hack/pull/6) merged and Mission 4 is deployed on [RoboLab](https://robolab.vibecodingdad.com), October 14, 2026. The owner explicitly authorized staging, conditional merge and deployment. All pre-merge staging, candidate and exact-head CI gates passed. The post-promotion runtime suite is incomplete because the existing shared service allowance reached its 120-run UTC-day cap. No quota reset or limit change was made.
