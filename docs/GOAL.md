@@ -1,6 +1,16 @@
 # Manual goal contract
 
-## Current goal: Mission 4 Parcel Port
+## Current goal: curriculum mission previews
+
+The owner approved the four-row visual proposal and requested implementation for all 16 core lessons and four optional extensions, plus a standing preview requirement in the plan. Implement [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md) as the independent CURRICULUM-01 presentation slice: full-row responsive previews, actual model screenshots where available, clearly labeled concept diagrams elsewhere, chapter navigation and preserved draft/progress/availability behavior. Use an isolated branch from the released base while Mission 4 is under separate ownership. Do not incorporate that writer's unfinished source. Prepare a tested draft PR; merge, deployment and later mission implementation are outside this request.
+
+The owner explicitly granted a one-time reserve-rule exception to finish this curriculum slice and its checks. This does not change future budget rules or authorize resets or purchases.
+
+Mission 4 landed in PR #6 while this slice was being checked. Integrate that landed source so all four playable missions retain their previews, drafts and checked prerequisites; this is integration of accepted work, not a new lesson implementation.
+
+The earlier goals below are history; their release authorization does not extend to this slice.
+
+## Prior implementation goal: Mission 4 Parcel Port
 
 The owner explicitly authorized persona design of Mission 4 as a progression from Missions 1–3, followed by implementation and real Python/Java testing once its contract is ready. MISSION-04.md freezes the teaching and model decisions. Complete one runnable S04 slice, preserve the previous missions/accounts/saved work, inspect synthetic UI evidence, and prepare a draft PR with exact-source checks and remaining gates. Real classroom observation remains deferred. This authorization does not include merging, deploying, later lessons or production fixture changes.
 

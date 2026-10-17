@@ -1,6 +1,6 @@
 import {attachOnboarding,type OnboardingFamily} from './onboarding.ts';
-import {curriculum} from './curriculum.ts';
-import {lessonTargets,lessonIds,missingPrerequisite,targetLesson,draftKey,type LessonId} from './model.ts';
+import {curriculumHeader,curriculumRows,bindCurriculumPreviews} from './curriculum-view.ts';
+import {lessonTargets,targetLesson,draftKey,type LessonId} from './model.ts';
 type Language='python'|'java';
 type Draft={source:string;revision:number;target?:string};
 type Attempt={id:string;source:string;language:Language;target:string;outcome:string;seconds:number|null;error?:string;verified?:boolean;at?:string};
@@ -20,13 +20,14 @@ export function attachFamily(hooks:Hooks){
  readRecoveryLink();
  const shell=document.createElement('div');shell.innerHTML=`
  <nav class="learning-nav" aria-label="Learning and family"><button id="curriculum-open">Curriculum & unlocks</button><button id="family-open">Family & progress</button><span id="profile-label">Guest practice</span></nav>
- <dialog id="curriculum-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Your robotics curriculum</h2><button data-close aria-label="Close curriculum">Close ✕</button></div><p>The plan contains 16 core lessons and 4 optional extensions. About an hour per lesson is a pacing goal to test in class; pause and resume when needed. Missions 1–3 are available for practice. Checked completion unlocks after all three challenges in the preceding mission. More missions become playable as they are built and their prerequisites are met.</p><div id="curriculum-list" class="curriculum-grid"></div><p>Completing a rescue shows that your program worked. Explain why it worked and how a real robot could use it to check your understanding.</p></dialog>
+ <dialog id="curriculum-dialog" class="learning-dialog" aria-labelledby="curriculum-title">${curriculumHeader()}</dialog>
  <dialog id="family-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Family & progress</h2><button data-close aria-label="Close family progress">Close ✕</button></div><p>Take separate turns on the same missions and share family progress. Experiment freely: retries and help never cost points.</p><section id="email-verification-notice" class="verification-notice" role="status" aria-live="polite" aria-atomic="true" hidden></section><p id="family-message" role="status" aria-live="polite"></p><div id="student-link-flow"></div><div id="recovery-flow"></div><div id="setup-receipt"></div><div id="family-content"></div></dialog>`;
  document.querySelector('.intro')!.before(shell);
  const q=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
  const dialog=(id:string)=>q<HTMLDialogElement>(id);
  shell.querySelectorAll<HTMLButtonElement>('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog')!.close());
- q('curriculum-open').onclick=()=>{renderCurriculum();dialog('curriculum-dialog').showModal();};
+ q('curriculum-open').onclick=()=>{renderCurriculum();dialog('curriculum-dialog').showModal();q('curriculum-dialog').scrollTop=0;};
+ shell.querySelectorAll<HTMLAnchorElement>('[data-chapter]').forEach(link=>link.onclick=e=>{e.preventDefault();const heading=q('curriculum-'+link.dataset.chapter);heading.scrollIntoView({block:'start',behavior:'instant'});heading.focus({preventScroll:true});});
  q('family-open').onclick=()=>{render();dialog('family-dialog').showModal();};
  const toolbar=document.createElement('section');toolbar.className='family-tools';toolbar.hidden=!hosted;
  toolbar.innerHTML='<div><strong>Keep your progress</strong><p id="save-help">Sign in to save code and share checked rescues with your family.</p></div><button id="save-cloud">Save draft</button><button id="verify-cloud">Check & save progress</button><button id="stop-check" hidden>Stop check</button><button id="resolve-conflict" hidden>Compare saved versions</button>';
@@ -52,10 +53,8 @@ export function attachFamily(hooks:Hooks){
  }
  function count(completed:string[],lesson:LessonId){return lessonTargets[lesson].filter(t=>completed.includes(t)).length;}
  function renderCurriculum(){
-  q('curriculum-list').innerHTML=curriculum.map(([id,title,purpose,prereq],i)=>{
-   const released=lessonIds.includes(id as LessonId),complete=released&&count(family?.completed??[],id as LessonId)===3,unlocked=released&&!missingPrerequisite(id as LessonId,family?.completed??[]);
-   return `<article class="curriculum-card ${released?'released':''}"><span class="eyebrow">${id} ${i>=16?'· OPTIONAL':''}</span><h3>${escape(title)}</h3><p>${escape(purpose)}</p><p class="curriculum-state">${released?(complete?`✓ Mission ${i+1} complete`:unlocked?`Available · Mission ${i+1}`:'Practice available · checked completion locked'):'Coming soon'}</p><small>${released?(i===0?'Check all three rescue locations to complete this mission.':`Check Mission ${i} first, then earn three checked ${i===3?'delivery':i===2?'patrol':'recovery'} badges. Retries and hints are free.`):`Prerequisite: ${escape(prereq)}. This mission is not playable yet.`}</small>${released?`<button ${i===0?'id="revisit-mission"':''} data-lesson="${id}">Open Mission ${i+1} →</button>`:''}</article>`;
-  }).join('');
+  q('curriculum-list').innerHTML=curriculumRows(family?.completed??[]);
+  bindCurriculumPreviews(q('curriculum-list'));
   shell.querySelectorAll<HTMLButtonElement>('[data-lesson]').forEach(b=>b.onclick=()=>{hooks.openLesson(b.dataset.lesson as LessonId);dialog('curriculum-dialog').close();q('code').focus();});
  }
  function renderVerificationNotice(){
