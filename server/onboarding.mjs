@@ -65,9 +65,9 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
   for(const b of Object.values(f.onboarding?.batches??{}))if(b.until<=now())delete b.cards;
  }
  function readCards(f,id,batch){
-  if(batch.until<=now()||!batch.cards)throw new HttpError(400,'These login cards expired. Generate replacement codes if needed.');
+  if(batch.until<=now()||!batch.cards)throw new HttpError(400,'These login cards expired. Your students are saved; generate replacement codes if needed.','batch-receipt-unavailable');
   const cards=open(password,'cards:'+id,batch.cards);
-  if(cards.some(c=>!f.profiles.some(p=>p.id===c.id&&p.active&&p.accessHash===hashCode(c.code))))throw new HttpError(409,'These cards have been replaced or revoked. Use the latest login cards.');
+  if(cards.some(c=>!f.profiles.some(p=>p.id===c.id&&p.active&&p.accessHash===hashCode(c.code))))throw new HttpError(409,'These cards have been replaced or revoked. Use the latest login cards.','batch-receipt-unavailable');
   return {cards,eventId:id};
  }
  function newEvent(f,id,kind,payload,profiles=[]){
@@ -205,7 +205,7 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
     const p=profileIn(f,session);if(p.role!=='parent'||p.recovery?.index!==event.emailIndex)throw new HttpError(403,'Parent email changed. Sign in again.');
     f.onboarding??={events:{},batches:{},notifyFirst:true};scrub(f);
     const old=f.onboarding.batches[id];if(old){if(old.inputHash!==inputHash)throw new HttpError(409,'This request changed.');return {value:f};}
-    if(f.profiles.filter(p=>p.active&&p.role==='student').length+cards.length>6||f.profiles.length+cards.length>25)throw new HttpError(400,'This family supports six active students.');
+    if(f.profiles.filter(p=>p.active&&p.role==='student').length+cards.length>6||f.profiles.length+cards.length>25)throw new HttpError(400,'This family supports six active students. Remove an extra nickname and try again.','batch-uncommitted');
     for(const c of cards)f.profiles.push({id:c.id,name:c.name,role:'student',epoch:1,accessHash:hashCode(c.code),active:true,drafts:{},history:[],completed:[],experiments:0,onboardingStudent:true,firstSignedInAt:null});
     event.status=queued?'pending':'retry';f.onboarding.events[id]=event;f.onboarding.batches[id]={inputHash,until:event.until,cards:seal(password,'cards:'+id,cards)};return {value:f};
    });

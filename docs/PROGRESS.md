@@ -1,5 +1,11 @@
 # Public progress
 
+## FE-01 — Family access and automatic progress
+
+- In progress on `codex/family-experience`, base `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`; exclusive ownership held. See [contract and QA evidence](FAMILY-EXPERIENCE.md).
+- Parent-entry checkpoint fixes removable nickname rows, visible parent sign-in, verified returning-account messaging, legacy public connection retirement and recovery/late-response defects found by native persona review. TypeScript, 24 account tests and seven browser journeys pass locally. Further authorized automatic-save/progress/dashboard work continues in the same slice.
+- No merge, deployment or provider/learner evidence is claimed.
+
 ## UI-03 — Guided mission access
 
 - Status: validated locally on `codex/guided-missions`, base `442ea6981def5f2122ae400709d114ace5f353a7`. The owner explicitly requested actual mission locks, visible read-only previews and an earned Next mission button, then chose all three server-checked challenges with sign-in required. Exclusive ownership was acquired before source writes.

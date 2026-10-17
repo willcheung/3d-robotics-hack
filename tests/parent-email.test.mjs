@@ -82,23 +82,22 @@ test('HTTP accepts student codes only, retires legacy credential endpoints and p
   const state=await (await fetch(base+'/api/family',{headers:{cookie}})).json();assert.equal(state.profile.id,f.student.profileId);
   for(const path of ['/create','/forgot','/recover','/email','/emailverify']){const r=await post(path,{code:f.seed.code,key:newCode()},cookie);assert.equal(r.status,410);assert.equal(r.headers.get('set-cookie'),null);}
   assert.equal((await post('/create',{},'',{origin:'https://foreign.test'})).status,403);
-  const key=await f.proof();assert.equal((await post('/authfinish',{key,parentCode:f.seed.code},cookie)).status,409);
-  const connected=await post('/authfinish',{key,parentCode:f.seed.code});assert.equal(connected.status,200);assert.match(connected.headers.get('set-cookie'),/HttpOnly/i);
+  const key=await f.proof();assert.equal((await post('/authfinish',{key,parentCode:f.seed.code},cookie)).status,410);
+  const connected=await post('/authfinish',{key,parentCode:f.seed.code});assert.equal(connected.status,410);assert.equal(connected.headers.get('set-cookie'),null);
   assert.equal((await post('/login',{code:f.seed.code})).status,403);assert.equal((await post('/login',{code:f.child.code})).status,200);
-  assert.equal((await post('/authfinish',{key,parentCode:f.seed.code})).status,200,'same challenge can retry after its response was lost');
+  assert.equal((await post('/authfinish',{key,parentCode:f.seed.code})).status,410,'retired connection cannot create a session on retry');
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
-test('an existing legacy parent session can connect only its own family and requires a current profile header',async()=>{
+test('retiring legacy connection preserves existing sessions and student work',async()=>{
  const f=await fixture();let api;const server=createServer((req,res)=>void api(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const base=`http://127.0.0.1:${server.address().port}`;api=hostedApi({store:f.store,password,appOrigin:base,mail:f.mail,enqueue:async()=>{}});
  const cookie='robolab-local='+await sealData(f.parent,{password,ttl:3600});
- const post=(path,data,profile)=>fetch(base+'/api/family'+path,{method:'POST',headers:{origin:base,'content-type':'application/json',cookie,...(profile?{'x-robolab-profile':profile}:{})},body:JSON.stringify(data)});
+ const post=(path,data)=>fetch(base+'/api/family'+path,{method:'POST',headers:{origin:base,'content-type':'application/json',cookie,'x-robolab-profile':f.parent.profileId},body:JSON.stringify(data)});
  try{
-  const key=newCode(),data={key,email:'legacy-session@example.test'};
-  assert.equal((await post('/authstart',data)).status,409);assert.equal((await post('/authstart',data,'other-profile')).status,409);
-  assert.equal((await post('/authstart',data,f.parent.profileId)).status,200);
-  assert.equal((await post('/authverify',{key,code:f.messages.at(-1).text.match(/\b\d{6}\b/)[0]},f.parent.profileId)).status,200);
-  const other=await provision(f.store);assert.equal((await post('/authfinish',{key,parentCode:other.code},f.parent.profileId)).status,409);
-  assert.equal((await post('/authfinish',{key,parentCode:f.seed.code},f.parent.profileId)).status,200);
+  assert.equal((await post('/authstart',{key:newCode(),email:'legacy-session@example.test'})).status,409);
+  const before=structuredClone((await current(f.store,f.student)).profile);
+  for(const data of [{parentCode:f.seed.code},{parentSetupKey:newCode()},{connect:true}])assert.equal((await post('/authfinish',{key:newCode(),...data})).status,410);
+  assert.equal((await (await fetch(base+'/api/family',{headers:{cookie}})).json()).profile.id,f.parent.profileId);
+  assert.deepEqual((await current(f.store,f.student)).profile,before);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });

@@ -51,3 +51,30 @@ test('parent entry is keyboard usable at narrow width and preserves a failed req
  await page.locator('#email-code').fill('bad');await page.locator('#email-code').press('Enter');await expect(page.locator('#email-code')).toBeVisible();
  await page.locator('#email-change').click();await expect(page.locator('#parent-signin-email')).toBeVisible();await page.locator('[data-mode=student]').click();await expect(page.locator('#access-code')).toBeVisible();await expect(page.locator('#parent-entry')).toBeHidden();
 });
+
+test('accidental nickname rows can be removed or left blank without duplicate students',async({page,browser})=>{
+ await page.request.post('/__test/newday');await begin(page,'removable-parent@example.test');await page.locator('#email-code').fill((await mail(page.request)).text.match(/\b\d{6}\b/)[0]);await page.locator('#parent-verify button').click();await page.locator('#email-create').click();
+ await page.locator('[data-name="0"]').fill('Kept pilot');await page.locator('#another-student').click();await page.locator('[data-name="1"]').fill('Remove me');await page.locator('#another-student').click();
+ await page.getByRole('button',{name:'Remove student 2'}).click();await expect(page.locator('[data-name]')).toHaveCount(2);await expect(page.locator('[data-name="1"]')).toBeFocused();await expect(page.locator('[data-name="0"]')).toHaveValue('Kept pilot');
+ await page.locator('#create-student-logins').click();await expect(page.locator('.student-login-card')).toHaveCount(1);await expect(page.locator('.family-results article')).toHaveCount(1);await expect(page.locator('.rescue-checklist')).toHaveCount(0);
+ await page.setViewportSize({width:390,height:844});expect(await page.locator('#family-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);await page.locator('#family-dialog').screenshot({path:'test-results-family-ui/family-entry-narrow.png'});
+ await page.request.post('/__test/advance');const device=await browser.newContext();try{const returning=await device.newPage();await begin(returning,'removable-parent@example.test');await returning.locator('#email-code').fill((await mail(page.request)).text.match(/\b\d{6}\b/)[0]);await returning.locator('#parent-verify button').click();await expect(returning.locator('#family-message')).toContainText('already has a RoboLab account');await expect(returning.locator('.family-results article')).toHaveCount(1);await expect(returning.locator('#email-create')).toHaveCount(0);}finally{await device.close();}
+});
+
+test('expired proof can restart and a rejected batch can be edited',async({page,request})=>{
+ await request.post('/__test/newday');await begin(page,'recovery-parent@example.test');await page.locator('#email-code').fill((await mail(request)).text.match(/\b\d{6}\b/)[0]);await page.locator('#parent-verify button').click();
+ await request.post('/__test/newday');await page.locator('#email-create').click();await expect(page.locator('#family-message')).toContainText('expired');await page.locator('#email-restart').click();await expect(page.locator('#parent-signin-email')).toBeVisible();
+ await page.locator('#parent-signin-email').fill('recovery-parent@example.test');await page.locator('#parent-signin button').click();await page.locator('#email-code').fill((await mail(request)).text.match(/\b\d{6}\b/)[0]);await page.locator('#parent-verify button').click();await page.locator('#email-create').click();
+ await page.locator('[data-name="0"]').fill('Keep me');await page.locator('#another-student').click();await page.locator('[data-name="1"]').fill('Remove me');
+ let reject=true;await page.route('**/api/family/studentbatch',async route=>{if(reject){reject=false;await route.fulfill({status:400,json:{error:'This family supports six active students.',code:'batch-uncommitted'}});}else await route.continue();});
+ await page.locator('#create-student-logins').click();await expect(page.locator('[data-name="0"]')).toBeEditable();await page.getByRole('button',{name:'Remove student 2'}).click();await page.locator('#create-student-logins').click();await expect(page.locator('.student-login-card')).toHaveCount(1);
+});
+
+test('late replacement credentials never appear after switching parents',async({page,request})=>{
+ await request.post('/__test/newday');await begin(page,'delayed-parent@example.test');await page.locator('#email-code').fill((await mail(request)).text.match(/\b\d{6}\b/)[0]);await page.locator('#parent-verify button').click();await page.locator('#email-create').click();await page.locator('[data-name="0"]').fill('Private A');await page.locator('#create-student-logins').click();await expect(page.locator('.student-login-card')).toHaveCount(1);
+ let release!:()=>void;const held=new Promise<void>(resolve=>release=resolve);let fetched!:()=>void;const ready=new Promise<void>(resolve=>fetched=resolve);
+ await page.route('**/api/family/studentreplace',async route=>{const response=await route.fetch();fetched();await held;await route.fulfill({response});});
+ page.once('dialog',d=>d.accept());await page.locator('[data-code]').click();await ready;await page.locator('#family-logout').click();
+ await page.locator('#parent-signin-email').fill('other-parent@example.test');await page.locator('#parent-signin button').click();await page.locator('#email-code').fill((await mail(request)).text.match(/\b\d{6}\b/)[0]);await page.locator('#parent-verify button').click();await page.locator('#email-create').click();await expect(page.locator('#student-batch')).toBeVisible();
+ release();await expect(page.locator('.student-login-card')).toHaveCount(0);await page.locator('#family-refresh').click();await expect(page.locator('#family-content')).not.toContainText('Private A');await expect(page.locator('#family-message')).not.toContainText('Replacement login ready');
+});

@@ -4,6 +4,12 @@ Kickoff is authorized. Each delivered chunk must be a runnable, self-contained a
 
 FOUNDATION.md is the current cross-slice acceptance contract and implemented/planned capability ledger. Detailed engineering coverage is retained in ENGINEERING-CHECKS.md. That document is not the execution queue. Vercel build/hosting requirements and the separately authorized DEPLOY-01 gate are in DEPLOYMENT.md. Every slice retains a deployable web build; no automatic deployment is authorized.
 
+## FE-01 — Family access and automatic progress
+
+- Status: in_progress; owner authorized the combined experience and QA.
+- Contract and evidence: [FAMILY-EXPERIENCE.md](FAMILY-EXPERIENCE.md).
+- One cumulative runnable slice with internal implementation checkpoints. No later lessons or gamification, merge or deployment.
+
 ## Execution rules
 
 Read BUDGET.md for the temporary owner-authorized exception to the reserve thresholds. The live weekly reset must match; otherwise the defaults below apply.

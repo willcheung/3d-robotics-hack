@@ -25,17 +25,18 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
    const ip=req.headers['x-vercel-forwarded-for']?.split(',')[0]??req.socket?.remoteAddress??'unknown';
    if(['/api/family/authstart','/api/family/authverify','/api/family/authfinish'].includes(path)&&req.method==='POST'){
     let active;
-    if(session.familyId){try{active=await current(store,session);if(!path.endsWith('authfinish')&&!(active.profile.role==='parent'&&!active.profile.emailLogin&&req.headers['x-robolab-profile']===active.profile.id))throw new HttpError(409,'Sign out before using another parent email. Your saved work will be kept.');}catch(e){if(e.status!==401)throw e;}}
+    if(session.familyId){try{active=await current(store,session);if(!path.endsWith('authfinish'))throw new HttpError(409,'Sign out before using another parent email. Your saved work will be kept.');}catch(e){if(e.status!==401)throw e;}}
     const data=await body(req);
+    if(data.parentCode!==undefined||data.parentSetupKey!==undefined||data.connect)throw new HttpError(410,'Parent-code setup is retired. Sign in with your parent email. Student logins and saved work are kept.');
     if(path.endsWith('authstart'))json(res,200,await onboarding.start(data,ip));
     else if(path.endsWith('authverify'))json(res,200,await onboarding.verify(data,ip));
     else {const result=await onboarding.finish(data,active?session:undefined);if(active&&(result.session.profileId!==session.profileId||result.session.familyId!==session.familyId))throw new HttpError(409,'Sign out before switching families.');Object.assign(session,result.session);await session.save();json(res,200,{ok:true});}
     return true;
    }
-   if(['/api/family/create','/api/family/forgot','/api/family/recover','/api/family/email','/api/family/emailverify'].includes(path))throw new HttpError(410,'Parents now sign in by email. Use Continue with email, or Connect your email if you have an old parent code. Your students and saved work are kept.');
+   if(['/api/family/create','/api/family/forgot','/api/family/recover','/api/family/email','/api/family/emailverify'].includes(path))throw new HttpError(410,'Parents now sign in by email. Use Parent sign in, then Continue with email. Your students and saved work are kept.');
    if(path==='/api/family/login'&&req.method==='POST'){
     const data=await body(req),entered=await login(store,data.code),{profile}=await current(store,entered);
-    if(profile.role!=='student')throw new HttpError(403,'Parents sign in by email. Choose Parent, then Continue with email. For an old code-only family, choose Connect your email.');
+    if(profile.role!=='student')throw new HttpError(403,'Parents sign in by email. Choose Parent, then Continue with email.');
     Object.assign(session,entered);await session.save();try{await onboarding.studentSignedIn(session);}catch{/* A durable login is usable even while notification storage/delivery is down. */}json(res,200,{ok:true});return true;
    }
    if(path==='/api/family/logout'&&req.method==='POST'){session.destroy();json(res,200,{ok:true});return true;}
@@ -100,7 +101,7 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
     return true;
    }
    throw new HttpError(404,'Unknown family operation.');
-  } catch(e){if(!res.headersSent)json(res,e.status??503,{error:e.status?e.message:'Family service unavailable. Your editor is safe; try again shortly.'});else if(!res.destroyed)res.end();return true;}
+  } catch(e){if(!res.headersSent)json(res,e.status??503,{error:e.status?e.message:'Family service unavailable. Your editor is safe; try again shortly.',...(e.status&&e.code?{code:e.code}:{})});else if(!res.destroyed)res.end();return true;}
  };
 }
 const deployedHandler=hostedApi();

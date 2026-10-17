@@ -3,7 +3,7 @@ import {randomBytes,randomUUID,createHash,createHmac} from 'node:crypto';
 import {targets,lessonTargets,missingPrerequisite,modelVersion,targetLesson,draftKey} from '../src/model.ts';
 export const hashCode=code=>createHash('sha256').update(code).digest('hex');
 export const newCode=()=>randomBytes(24).toString('base64url');
-export class HttpError extends Error {constructor(status,message){super(message);this.status=status;}}
+export class HttpError extends Error {constructor(status,message,code){super(message);this.status=status;if(code)this.code=code;}}
 // Conditional writes need the storage representation's strong ETag. Compression
 // can turn a JSON response into W/"...", which cannot satisfy If-Match.
 export class BlobStore {
