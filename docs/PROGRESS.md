@@ -1,11 +1,23 @@
 # Public progress
 
+## UI-03 — Guided mission access
+
+- Status: validated locally on `codex/guided-missions`, base `442ea6981def5f2122ae400709d114ace5f353a7`. The owner explicitly requested actual mission locks, visible read-only previews and an earned Next mission button, then chose all three server-checked challenges with sign-in required. Exclusive ownership was acquired before source writes.
+- Runnable application/test checkpoint: `759d71e0b6f6c13749e0598d95dcc2f9340ff65d`. Subsequent checkpoint changes record evidence only. No PR or exact-head CI run exists for this slice yet.
+- The mission dropdown is removed. Curriculum previews explain the earliest unfinished prerequisite and return to it. Editing, running, restoring, saving, notes and world controls are blocked in a locked preview. Checked completion earns Next mission in the top progress strip; practice success alone never unlocks.
+- [Guided mission QA](GUIDED-MISSIONS-QA.md) records local checks, screenshots, informed persona review and remaining delivery gates. This slice has not been merged or deployed.
+- Local evidence: TypeScript/build, 30 model/Python/preview checks, 49 account/API checks, 17 isolated Java checks, all 14 family journeys and all 77 current workshop browser cases are covered. Browser evidence combines a broad run with final affected-case batches; the QA record preserves initial failures and corrections. Real server checks complete all 12 challenges and exercise the earned Next mission, reload and sibling/draft separation. Final source review found no remaining actionable issue.
+- Next action: review the local preview, then qualify GitHub/CI and hosting for this slice. No new hosted, production or learner observation is claimed.
+
+
 ## UI-02 — Compact practice and help
+
+Release update: [PR #8](https://github.com/willcheung/3d-robotics-hack/pull/8) subsequently merged and deployed as `442ea6981def5f2122ae400709d114ace5f353a7` after owner authorization. The local checkpoint below is historical; UI-03 builds on that release.
 
 - Status: validated locally on `codex/compact-workshop`. The owner accepted the whole-page review and authorized this implementation. Application commit: `dc2722042217a8dcc65d42a331278af84a2c61e3`; final code/test commit: `efeeea30dd64297cf99a3934a943f6af7b6c2fb8`. Main `c69c06d234c20babb92358386fe32ba3449b7afe` was incorporated in local merge `8428bec` to preserve the released curriculum previews. Exclusive ownership was claimed before writing source.
 - Practice selection/completion is compact at the top. Prediction, Run, actual results and post-attempt reflection share the editor. Notes and support are optional disclosures with purpose labels; units, hints, examples, errors and recovery remain available. All four missions and both languages keep the 3D view and editable code above the laptop fold. The default page is about half its previous length.
 - [Workspace UI QA](WORKSPACE-UI-QA.md) records final screenshots, checks and evidence limits. Build, 30 model checks, 49 account checks and 14 family UI journeys pass. All 72 workshop browser checks are covered by 68 broad-batch passes and five final affected journeys: four old display expectations were updated for the optional examples and concise progress wording, preserving behavior assertions. Earlier focused navigation/teaching/curriculum and three new flow checks also pass. An independent review found no required fixes; both optional wording/icon refinements were applied.
-- Next action: inspect the local preview. GitHub publication remains pending authorization; no PR, exact-head CI, merge to main, deployment or observed learner pilot is claimed.
+- Historical next action was GitHub publication; PR #8 completed that release. No actual learner pilot is claimed.
 
 ## UI-01 — Compact workshop and readable progress
 

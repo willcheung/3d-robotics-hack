@@ -251,3 +251,19 @@ h1 {font-size:30px;line-height:1.2;letter-spacing:-1px;margin:6px 0 0;}
  .recovery-guide dd {margin-bottom:12px;}
  .next-actions button {max-width:100%;}
 }
+
+/* Locked missions remain legible without looking like active workspaces. */
+.mission-access{display:flex;align-items:center;gap:16px;justify-content:space-between;margin:0 0 12px;padding:12px 16px;background:#edf1e5;border:1px solid #bdcbb0;border-radius:10px;}
+.mission-access[hidden],.practice-nav[hidden]{display:none;}
+.mission-access strong{font-size:14px;color:#243e2c;}
+.mission-access p{font-size:12px;line-height:1.5;margin:4px 0 0;color:#42533e;}
+.mission-access button{flex-shrink:0;min-height:44px;padding:10px 14px;border:1px solid #91a47b;border-radius:7px;background:#d5f674;color:#203b25;font:inherit;font-size:12px;cursor:pointer;}
+[data-preview=true] #code{cursor:default;}
+[data-preview=true] .scene-caption{visibility:hidden;}
+[data-preview=true] button:disabled,[data-preview=true] select:disabled{opacity:.55;cursor:not-allowed;}
+#next-lesson{font-weight:700;background:#d5f674;}
+@media(max-width:760px){.lesson-picker{grid-template-columns:1fr;}.mission-access{align-items:flex-start;flex-direction:column;gap:8px;}}
+[data-preview=true] #feedback,[data-preview=true] .experiment-tools{display:none;}
+#next-lesson{min-height:44px;}
+/* Empty readiness notices repeat the controls; reserve this space for feedback. */
+[data-run-status=idle] .code-panel .feedback:has(#feedback-text:empty){display:none;}

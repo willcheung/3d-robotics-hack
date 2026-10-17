@@ -7,7 +7,7 @@ export const armMissions={
  'parcel-return':{location:'Return delivery',job:'A return parcel starts at 150°. The worker now needs it in the 30° tray. Keep the safe sequence and adapt the turn.',waiting:'Return tray · waiting for the parcel',found:'Return parcel delivered · worker can finish the job'},
 };
 export function armUI(selected:string){
- el<HTMLSelectElement>('lesson').value='L04';
+
  document.querySelector('.intro')!.innerHTML='<div><div class="eyebrow">MISSION 04 / GRASP → LIFT → TURN → RELEASE</div><h1>Parcel Port<span>.</span></h1></div>';
  document.querySelector('.mission-copy h2')!.textContent='Hand the parcel to the dispatch worker';
  document.querySelector('.mission-instruction')!.innerHTML='Receiving pose: shoulder <strong id="goal-angle"></strong> · elbow <strong id="goal-scanner">0°</strong> · Open the gripper after arrival. First, test whether <code>lift_ticks</code> lets the elbow finish lifting before you turn.';

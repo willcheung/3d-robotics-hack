@@ -1,3 +1,4 @@
+import {openMission} from '../learning-ui.ts';
 import {test,expect} from '@playwright/test';
 import {parentEmail,studentCode} from '../helpers/email-ui.ts';
 test.skip(!process.env.FAMILY_UI_MEMORY,'Synthetic legacy families and local inbox only.');
@@ -17,7 +18,7 @@ test('legacy parent connects once, retries a lost response, and preserves all si
  const device=await browser.newContext();try{
   const returning=await device.newPage();await parentEmail(returning,'connected-parent@example.test');expect(await returning.locator('html').getAttribute('data-profile')).toBe(seed.profileId);
   await returning.locator('#family-logout').click();await studentCode(returning,seed.studentCode);await expect(returning.locator('#email-verification-notice')).toBeHidden();await expect(returning.locator('.rescue-checklist').first()).toContainText('✓ North ridge');await returning.getByRole('button',{name:'Close family progress'}).click();
-  for(const lesson of ['L01','L02','L03'])for(const lang of ['python','java']){await returning.locator('#lesson').selectOption(lesson);await returning.locator('#language').selectOption(lang);await expect(returning.locator('#code')).toHaveValue(`${lesson} ${lang} returning draft`);await expect(returning.locator('#target')).toHaveValue(({L01:'reverse',L02:'sensor-transfer',L03:'patrol-cove'} as Record<string,string>)[lesson]);}
+  for(const lesson of ['L01','L02','L03'])for(const lang of ['python','java']){await openMission(returning,lesson);await returning.locator('#language').selectOption(lang);await expect(returning.locator('#code')).toHaveValue(`${lesson} ${lang} returning draft`);await expect(returning.locator('#target')).toHaveValue(({L01:'reverse',L02:'sensor-transfer',L03:'patrol-cove'} as Record<string,string>)[lesson]);}
  }finally{await device.close();}
 });
 test('connection keeps input after a wrong code, fits a narrow screen, and cannot use a student code',async({page})=>{
@@ -40,5 +41,5 @@ test('verified recovery parents use email directly; old links cannot change auth
 });
 test('an already signed-in code-only parent connects email without replacing the profile or local editor',async({page})=>{
  await page.request.post('/__test/newday');const seed=await (await page.request.post('/__test/legacy',{data:{session:true}})).json();await page.goto('/');await page.locator('#code').fill('# parent experiment still here');await page.locator('#family-open').click();
- await page.locator('#parent-signin-email').fill('active-parent@example.test');await page.locator('#connect-parent-code').fill(seed.code);await page.locator('#parent-signin button').click();await page.locator('#email-code').fill(await otp(page));await page.locator('#parent-verify button').click();await expect(page.locator('#email-verification-notice')).toContainText('active-parent@example.test');expect(await page.locator('html').getAttribute('data-profile')).toBe(seed.profileId);await page.getByRole('button',{name:'Close family progress'}).click();await expect(page.locator('#code')).toHaveValue('# parent experiment still here');
+ await page.locator('#parent-signin-email').fill('active-parent@example.test');await page.locator('#connect-parent-code').fill(seed.code.slice(0,-1)+(seed.code.endsWith('A')?'B':'A'));await page.locator('#parent-signin button').click();await page.locator('#email-code').fill(await otp(page));await page.locator('#parent-verify button').click();await expect(page.locator('#legacy-connect button')).toBeVisible();await expect(page.locator('html')).toHaveAttribute('data-profile',seed.profileId);await expect(page.locator('#code')).toHaveValue('# parent experiment still here');await page.locator('#connect-parent-code').fill(seed.code);await page.locator('#legacy-connect button').click();await expect(page.locator('#email-verification-notice')).toContainText('active-parent@example.test');expect(await page.locator('html').getAttribute('data-profile')).toBe(seed.profileId);await page.getByRole('button',{name:'Close family progress'}).click();await expect(page.locator('#code')).toHaveValue('# parent experiment still here');
 });
