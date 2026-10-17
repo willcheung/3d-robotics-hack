@@ -43,7 +43,10 @@ test('diagram labels connect each real command to its moving part and follow cam
 test('fresh launch, real edit, wrong/reference program, reset/restore, persistent draft', async ({ page }, testInfo) => {
   await expect(page.getByRole('heading', {name:'Signal Station.'})).toBeVisible();
   await expect(page.locator('#mission-job')).toContainText('so the rescue team can find their pickup point');
+  await expect(page.locator('.real-world-help')).toHaveJSProperty('open',false);
+  await page.locator('.real-world-help>summary').click();
   await expect(page.getByRole('heading', {name:'Point a camera at a doorway.'})).toBeVisible();
+  await page.locator('.real-world-help>summary').click();
   await expect(page.locator('#crew-status')).toHaveText('North ridge crew · waiting for light');
   await page.screenshot({path:'test-results/s01-waiting.png',fullPage:true});
   const source = await page.getByLabel('Python code', {exact:true}).inputValue();
