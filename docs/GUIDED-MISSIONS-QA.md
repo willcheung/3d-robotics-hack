@@ -17,7 +17,7 @@ The access state comes from the current profile's server response. Local storage
 
 ## Local evidence
 
-Base: `442ea6981def5f2122ae400709d114ace5f353a7`. Branch: `codex/guided-missions`. Exclusive ownership was acquired before source edits. Validation is local; the final checkpoint is recorded in PROGRESS.md.
+Base: `442ea6981def5f2122ae400709d114ace5f353a7`. Branch: `codex/guided-missions`. Runnable application/test checkpoint: `759d71e0b6f6c13749e0598d95dcc2f9340ff65d`. Exclusive ownership was acquired before source edits. Validation is local; the final checkpoint is recorded in PROGRESS.md.
 
 | Check | Evidence |
 | --- | --- |

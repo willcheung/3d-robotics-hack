@@ -3,6 +3,7 @@
 ## UI-03 — Guided mission access
 
 - Status: validated locally on `codex/guided-missions`, base `442ea6981def5f2122ae400709d114ace5f353a7`. The owner explicitly requested actual mission locks, visible read-only previews and an earned Next mission button, then chose all three server-checked challenges with sign-in required. Exclusive ownership was acquired before source writes.
+- Runnable application/test checkpoint: `759d71e0b6f6c13749e0598d95dcc2f9340ff65d`. Subsequent checkpoint changes record evidence only. No PR or exact-head CI run exists for this slice yet.
 - The mission dropdown is removed. Curriculum previews explain the earliest unfinished prerequisite and return to it. Editing, running, restoring, saving, notes and world controls are blocked in a locked preview. Checked completion earns Next mission in the top progress strip; practice success alone never unlocks.
 - [Guided mission QA](GUIDED-MISSIONS-QA.md) records local checks, screenshots, informed persona review and remaining delivery gates. This slice has not been merged or deployed.
 - Local evidence: TypeScript/build, 30 model/Python/preview checks, 49 account/API checks, 17 isolated Java checks, all 14 family journeys and all 77 current workshop browser cases are covered. Browser evidence combines a broad run with final affected-case batches; the QA record preserves initial failures and corrections. Real server checks complete all 12 challenges and exercise the earned Next mission, reload and sibling/draft separation. Final source review found no remaining actionable issue.
