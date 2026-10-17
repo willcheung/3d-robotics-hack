@@ -1,0 +1,61 @@
+/* The curriculum has its own reading surface; family forms retain their theme. */
+#curriculum-dialog{width:min(1200px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);padding:0 34px 26px;background:#f4f5ed;color:#203738;border-color:#d7dfd1;scroll-padding-top:90px}
+#curriculum-dialog .curriculum-heading{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px;background:#f4f5ed;border-bottom:1px solid #d7dfd1}
+#curriculum-dialog .eyebrow{color:#526c5e;font-size:11px;letter-spacing:1.5px}
+#curriculum-dialog button{background:#243f3d;color:#f4f7e7;border:1px solid #243f3d;font-size:13px;font-weight:600;min-height:44px}
+#curriculum-dialog button:hover{background:#365b54}
+#curriculum-dialog :is(button,a):focus-visible{outline:3px solid #547c35;outline-offset:4px}
+#curriculum-dialog .curriculum-intro{padding:28px 0 23px}
+#curriculum-dialog h2{font-size:clamp(30px,4vw,44px);line-height:1.12;letter-spacing:-1.5px;margin:0 0 14px}
+#curriculum-dialog p{color:#526357;line-height:1.6}
+#curriculum-dialog .curriculum-intro>p{font-size:16px;margin:0 0 10px}
+#curriculum-dialog .curriculum-summary{font-size:13px!important;margin-bottom:0!important}
+#curriculum-dialog .curriculum-chapters{display:flex;flex-wrap:wrap;gap:6px 17px;border-block:1px solid #d7dfd1;padding:12px 0;margin:0 0 28px}
+#curriculum-dialog .curriculum-chapters a{display:flex;align-items:center;min-height:44px;font-size:13px;font-weight:600;color:#31574b;text-decoration:underline;text-underline-offset:4px}
+#curriculum-dialog .curriculum-chapter{margin-bottom:30px}
+#curriculum-dialog .curriculum-chapter-heading{margin-bottom:16px}
+#curriculum-dialog .curriculum-chapter-heading h3{font-size:22px;letter-spacing:-.5px;margin:0 0 5px;scroll-margin-top:90px}
+#curriculum-dialog .curriculum-chapter-heading p{font-size:13px;margin:0}
+#curriculum-dialog .curriculum-grid{display:grid;grid-template-columns:1fr;gap:18px;margin:0}
+#curriculum-dialog .curriculum-card{display:grid;grid-template-columns:44% minmax(0,1fr);border:1px solid #d7dfd1;border-radius:14px;padding:0;overflow:hidden;background:#fffef8}
+#curriculum-dialog .curriculum-card.upcoming{background:#edf0e5}
+#curriculum-dialog .curriculum-preview{position:relative;margin:0;min-height:300px;background:#142d31;isolation:isolate;display:flex;align-items:center;justify-content:center}
+#curriculum-dialog .upcoming .curriculum-preview{background:#e2e8da}
+#curriculum-dialog .curriculum-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#curriculum-dialog .preview-kind{position:absolute;top:14px;left:14px;right:14px;width:fit-content;max-width:calc(100% - 28px);padding:6px 8px;border:1px solid #54756a;border-radius:4px;background:#152e31;color:#e8f0df;font-size:10px;font-weight:650;letter-spacing:1px;line-height:1.5}
+#curriculum-dialog figcaption{position:absolute;bottom:13px;left:14px;max-width:calc(100% - 28px);padding:6px 8px;background:#152e31;color:#eff5df;border-radius:4px;font-size:12px;line-height:1.5}
+#curriculum-dialog .preview-fallback{display:none;color:#f4f7e7;background:#243f3d;padding:12px;font-size:14px}
+#curriculum-dialog .preview-unavailable img{display:none}
+#curriculum-dialog .preview-unavailable .preview-fallback{display:block}
+#curriculum-dialog .curriculum-copy{min-width:0;padding:25px 28px;display:flex;flex-direction:column;align-items:flex-start}
+#curriculum-dialog .curriculum-copy h4{font-size:27px;line-height:1.2;letter-spacing:-.7px;margin:10px 0}
+#curriculum-dialog .curriculum-job{font-size:15px;margin:0 0 13px}
+#curriculum-dialog .curriculum-skill{font-size:13px;margin:0 0 15px}
+#curriculum-dialog .curriculum-skill strong{color:#233c36}
+#curriculum-dialog .curriculum-state{color:#356048!important;font-size:13px;margin:auto 0 5px;font-weight:700}
+#curriculum-dialog .upcoming .curriculum-state{color:#736038!important}
+#curriculum-dialog .curriculum-copy small{color:#526357;font-size:12px;line-height:1.6}
+#curriculum-dialog .curriculum-copy button{margin-top:13px}
+#curriculum-dialog #revisit-mission{background:#d5f674;color:#233921;border-color:#bdd767}
+#curriculum-dialog #revisit-mission:hover{background:#c4e568}
+#curriculum-dialog .curriculum-footer{font-size:13px;margin:15px 0 0}
+@media(max-width:700px){
+ #curriculum-dialog{width:100%;max-height:100dvh;height:100dvh;border-radius:0;border:0;padding:0 18px 24px;scroll-padding-top:80px}
+ #curriculum-dialog .curriculum-heading{min-height:70px}
+ #curriculum-dialog .curriculum-heading .eyebrow{font-size:10px;max-width:165px;line-height:1.6}
+ #curriculum-dialog .curriculum-heading button{padding:10px;flex-shrink:0}
+ #curriculum-dialog .curriculum-intro{padding-top:23px}
+ #curriculum-dialog .curriculum-intro>p{font-size:14px}
+ #curriculum-dialog .curriculum-chapters{gap:0 16px}
+ #curriculum-dialog .curriculum-card{grid-template-columns:minmax(0,1fr)}
+ #curriculum-dialog .curriculum-preview{min-height:0;aspect-ratio:800/550}
+ #curriculum-dialog .curriculum-copy{padding:22px}
+ #curriculum-dialog .curriculum-copy h4{font-size:25px}
+ #curriculum-dialog .preview-kind{font-size:9px;top:10px;left:10px}
+ #curriculum-dialog figcaption{font-size:11px;bottom:10px;left:10px}
+}
+@media(forced-colors:active){
+ #curriculum-dialog,#curriculum-dialog .curriculum-heading,#curriculum-dialog .curriculum-card{background:Canvas;color:CanvasText;border:1px solid CanvasText}
+ #curriculum-dialog :is(p,small,.eyebrow,.curriculum-state){color:CanvasText!important}
+ #curriculum-dialog :is(button,a){color:LinkText;background:Canvas;border-color:ButtonText}
+}

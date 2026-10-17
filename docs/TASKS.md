@@ -18,6 +18,15 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 - Persist the fields in PROGRESS.md: ID/status, base SHA, branch/worktree, PR, last runnable commit, tested SHA, checks/evidence, unmet criteria, exact next action, and blockers. Recheck affected behavior after a changed base or rebase.
 - Before unattended coding, OPS-01 must establish supported durable atomic ownership of a cycle and slice. Prior chat history alone is not a lock. Do not let hourly polls or a manual goal become competing writers.
 
+## CURRICULUM-01 — Visual mission previews
+
+- Status: done; [PR #7](https://github.com/willcheung/3d-robotics-hack/pull/7) is merged, deployed and verified after explicit owner authorization. Exact-source CI, staging/provider, candidate and public evidence are recorded in [PROGRESS.md](PROGRESS.md).
+- Depends on: the existing curriculum/draft/family framework. Started from released L01–L03; subsequently integrated landed Mission 4 from PR #6.
+- Working outcome: learners can see the machine and useful job for every one of the 20 lessons before choosing a mission.
+- Scope: [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md), full-row responsive previews, four actual model captures, 16 distinct labeled concept diagrams, chapter navigation, existing availability/prerequisite/completion states, and the future-lesson preview acceptance contract in PLAN.md. All four landed missions open through their previews; later missions remain coming soon.
+- Acceptance: all 20 lessons retain their order and truthful playable/optional state; concepts never imply a playable model; desktop/narrow images and text remain readable; chapter/Close/Escape navigation and both-language drafts are preserved; image failure never blocks lesson entry.
+- Validation: inspected artwork and desktop/narrow screenshots, browser navigation/draft/focus/availability checks, relevant family regressions, TypeScript/build and publication checks. Hosted acceptance passed; later lesson implementation and actual learner observation remain separate.
+
 ## OPS-01 — Operational gate (not a student feature chunk)
 
 Status: ready. This read-only/setup proof does not replace a working app slice.
@@ -117,13 +126,13 @@ If the environment cannot support those guarantees, report the specific missing 
 
 ## S04 — One arm mission
 
-- Status: landed and deployed through [PR #6](https://github.com/willcheung/3d-robotics-hack/pull/6); staging/provider, candidate and public saved-progress checks passed. Remaining public runtime acceptance is blocked by the existing shared daily allowance. Evidence is recorded in [PROGRESS.md](PROGRESS.md) and [MISSION-04-QA.md](MISSION-04-QA.md). [MISSION-04.md](MISSION-04.md) freezes the reviewed teaching/model/API contract and independent fixture expectations.
+- Status: landed and deployed through [PR #6](https://github.com/willcheung/3d-robotics-hack/pull/6); staging/provider, candidate and public saved-progress checks passed. Public runtime acceptance was completed during the October 17 preview release, after the automatic allowance reset. Evidence is recorded in [PROGRESS.md](PROGRESS.md) and [MISSION-04-QA.md](MISSION-04-QA.md). [MISSION-04.md](MISSION-04.md) freezes the reviewed teaching/model/API contract and independent fixture expectations.
 - Depends on: S03 and S08 landed (satisfied). The informed foundation walkthrough is reviewed; real classroom observation remains deferred by the owner.
 - Working outcome: control an original arm/gripper to pick up and place one parcel, with Java/Python examples and explorable 3D.
 - Scope: bounded two-joint arm, labeled axes and an independently actuated third gripper control, explicit grasp/drop geometry, one sequence mission; functions are taught separately in S09. No general contact-physics promise or full arm curriculum.
 - Acceptance: grasp/carry/place follow documented rules; limits/collisions explain failure; wrong poses cannot succeed; camera, reset, existing motor lesson, and language drafts remain intact.
 - Validation: independent arm/grasp/target boundary fixtures, deterministic trace replay, reference/wrong programs, both-language/browser flows, screenshots. Incorporate available learner feedback.
-- Next action: finish public runtime acceptance after allowance reset or an explicit bounded owner exception. Observe the arm transition with real learners when available. No L05 build is started.
+- Next action: Observe the arm transition with real learners when available. No L05 build is started.
 
 ## S05 — Separate family progress
 

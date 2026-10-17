@@ -1,10 +1,20 @@
 # Manual goal contract
 
-## Current goal: Mission 4 Parcel Port
+## Completed goal: curriculum mission previews
+
+The owner approved the four-row visual proposal and requested implementation for all 16 core lessons and four optional extensions, plus a standing preview requirement in the plan. Implement [CURRICULUM-PREVIEWS.md](CURRICULUM-PREVIEWS.md) as the independent CURRICULUM-01 presentation slice: full-row responsive previews, actual model screenshots where available, clearly labeled concept diagrams elsewhere, chapter navigation and preserved draft/progress/availability behavior. Use an isolated branch from the released base while Mission 4 is under separate ownership. Do not incorporate that writer's unfinished source. The implementation was prepared in PR #7. The owner subsequently authorized check-in, deployment and testing; that release is complete, as recorded below and in PROGRESS.md. Later mission implementation remains outside this slice.
+
+The owner explicitly granted a one-time reserve-rule exception to finish this curriculum slice and its checks. This does not change future budget rules or authorize resets or purchases.
+
+Mission 4 landed in PR #6 while this slice was being checked. Integrate that landed source so all four playable missions retain their previews, drafts and checked prerequisites; this is integration of accepted work, not a new lesson implementation.
+
+The earlier goals below are history; their release authorization does not extend to this slice.
+
+## Prior implementation goal: Mission 4 Parcel Port
 
 The owner explicitly authorized persona design of Mission 4 as a progression from Missions 1–3, followed by implementation and real Python/Java testing once its contract is ready. MISSION-04.md freezes the teaching and model decisions. Complete one runnable S04 slice, preserve the previous missions/accounts/saved work, inspect synthetic UI evidence, and prepare a draft PR with exact-source checks and remaining gates. Real classroom observation remains deferred. This authorization does not include merging, deploying, later lessons or production fixture changes.
 
-The owner subsequently explicitly authorized staging checks, merging PR #6 and making Mission 4 live if those checks passed. PR #6 is merged as `6a2b5169bc774f6353254d10bbbd982c8e2a8be6` with the identical tested tree, and the app/runtime are deployed. Staging/provider and candidate checks passed; public Python and eight-context saved-progress checks passed. Remaining public runtime acceptance is blocked by the existing 120-run UTC-day service cap. No quota reset is authorized by ordinary fixture approval. Preserve this checkpoint until the automatic reset or an explicit bounded owner exception; do not start Mission 5.
+The owner subsequently explicitly authorized staging checks, merging PR #6 and making Mission 4 live if those checks passed. PR #6 is merged as `6a2b5169bc774f6353254d10bbbd982c8e2a8be6` with the identical tested tree, and the app/runtime are deployed. Staging/provider and candidate checks passed; public Python and eight-context saved-progress checks passed. The public-runtime follow-up was completed during the October 17 curriculum preview release after the automatic allowance reset. No quota was changed; Mission 5 remains a separate slice.
 
 The earlier goals below are retained as history; their completed release authorizations do not extend to Mission 4.
 
@@ -44,3 +54,7 @@ This release is complete: PR #4 merged as `9e10f3a89ecd2c9177e528f2bc1f0a5e9fda0
 The owner approved retiring reusable parent access codes: email is the parent sign-in method, students keep their codes, and existing code-only families connect an email once while retaining their family and progress. Guest Python practice remains. Implement the reviewed transition under PARENT-EMAIL.md with failure/race, student isolation, browser recovery and saved-work checks. Preserve the previous release and prepare one review PR with exact CI and visual evidence. The earlier PR #4 release authorization was for that completed slice; this follow-up does not itself authorize production promotion or Mission 4 implementation.
 
 The owner subsequently explicitly authorized staging checks, merging PR #5 and making it live if everything passed, then approved disposable production fixture checks. This release is complete: PR #5 merged as `07f5cc8c5e6b3fa7e2cc1d0f449d8dc54c70a384`, with the tested email-only candidate live. Exact-head CI, actual protected-staging inbox transitions, Blob/Sandbox checks, production-candidate checks and all 14 public browser checks passed; PROGRESS.md records the evidence and initial fixture corrections. Existing families, work, secrets and quotas were preserved. Stop this release slice. The next separate task is the Mission 4 Parcel Port contract; the real classroom pilot remains deferred.
+
+## Completed release: curriculum previews
+
+The owner explicitly requested check-in, deployment and completed testing for the approved full-row preview slice. PR #7 is merged and live; all 176 exact-head CI tests, fresh staging/provider and candidate checks, public curriculum/family checks and the complete Python/Java four-mission progression passed. The latter also completes Mission 4’s earlier public-runtime follow-up after the automatic allowance reset. No quota was changed. See PROGRESS.md for source and evidence. This supersedes the earlier review-only scope for CURRICULUM-01. Stop this release slice; future missions and actual learner pilots remain separate.
