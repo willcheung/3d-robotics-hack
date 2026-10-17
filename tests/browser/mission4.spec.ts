@@ -1,3 +1,4 @@
+import {openNotes,openHints} from '../learning-ui.ts';
 import {test,expect,type Page} from '@playwright/test';
 import {armReference,armMoved,armTransfer} from '../../src/arm-lesson.ts';
 async function run(page:Page,source?:string){
@@ -10,10 +11,10 @@ for(const lang of ['python','java'] as const){
   await page.goto('/');await page.locator('#lesson').selectOption('L04');await page.locator('#language').selectOption(lang);
   await expect(page.locator('#mission-job')).toContainText('dispatch worker');await expect(page.locator('#arm-progress')).toContainText('Shoulder 30°');await expect(page.locator('#arm-progress')).toContainText('Shoulder 150°');await expect(page.locator('#gripper-label')).toBeVisible();await expect(page.locator('#show-solution')).toBeDisabled();
   await page.locator('#find-edit').click();expect(await page.locator('#code').evaluate((e:HTMLTextAreaElement)=>e.value.slice(e.selectionStart,e.selectionEnd))).toContain('lift_ticks');
-  await page.locator('#prediction').fill('The target is 70°, but ten ticks only lifts 9° before turning.');
+  await openNotes(page);await page.locator('#prediction').fill('The target is 70°, but ten ticks only lifts 9° before turning.');
   await run(page);await expect(page.locator('#feedback-title')).toHaveText('The arm hit the guard.');await expect(page.locator('#arm-progress')).toContainText('PARCEL · HELD');await expect(page.locator('#console')).toContainText('Before turn, elbow: 9');await expect(page.locator('#prediction-feedback')).toContainText('guard contact');
   await expect(page.locator('#scanner-target')).toHaveText('commanded 70°');await expect(page.locator('#pointer-target')).toHaveText('commanded 150°');
-  for(const name of ['Hint 1','Hint 2','Hint 3']){await page.getByText(name,{exact:true}).click();await expect(page.getByText(name,{exact:true}).locator('..').locator('p')).toBeVisible();}
+  for(const name of ['Hint 1','Hint 2','Hint 3']){await openHints(page);await page.getByText(name,{exact:true}).click();await expect(page.getByText(name,{exact:true}).locator('..').locator('p')).toBeVisible();}
   await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toContainText('80 ticks');
   await run(page,armReference[lang]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#arm-progress')).toContainText('PARCEL · DELIVERED');await expect(page.locator('#console')).toContainText('After closing, holding: 1');await expect(page.locator('#console')).toContainText('After opening, holding: 0');await expect(page.locator('#time-value')).toHaveText('6.40s');
   await page.locator('#top-view').click();await expect(page.locator('#arm-progress')).toContainText('DELIVERED');await page.locator('#view-reset').click();await page.locator('.world-panel').screenshot({path:`test-results/mission-04-${lang}-delivered.png`});
@@ -40,7 +41,7 @@ for(const lang of ['python','java'] as const){
 test('Parcel Port narrow layout, keyboard camera, eight local contexts and WebGL fallback',async({page})=>{
  await page.goto('/');await page.locator('#lesson').selectOption('L04');await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);await page.locator('#scene canvas').focus();await page.keyboard.press('ArrowLeft');await page.keyboard.press('Home');await expect(page.locator('#pointer-value')).toHaveText('30.0°');
- await page.locator('.world-panel').screenshot({path:'test-results/mission-04-narrow-scene.png'});await page.locator('#code-panel').screenshot({path:'test-results/mission-04-narrow-code.png'});await page.locator('#lesson-coach').screenshot({path:'test-results/mission-04-narrow-coach.png'});
+ await page.locator('.world-panel').screenshot({path:'test-results/mission-04-narrow-scene.png'});await page.locator('#code-panel').screenshot({path:'test-results/mission-04-narrow-code.png'});await openNotes(page);await page.locator('#lesson-coach').screenshot({path:'test-results/mission-04-narrow-coach.png'});
  await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type:string,...args:unknown[]){if(type.includes('webgl'))return null;return (original as Function).apply(this,[type,...args]);} as typeof original;});
  await page.reload();await expect(page.locator('.webgl-warning')).toBeVisible();await expect(page.locator('#arm-progress')).toContainText('WAITING');await expect(page.locator('#value-guide')).toContainText('0..100 millimetres');
 });

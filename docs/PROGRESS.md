@@ -1,5 +1,19 @@
 # Public progress
 
+## UI-02 — Compact practice and help
+
+- Status: validated locally on `codex/compact-workshop`. The owner accepted the whole-page review and authorized this implementation. Application commit: `dc2722042217a8dcc65d42a331278af84a2c61e3`; final code/test commit: `efeeea30dd64297cf99a3934a943f6af7b6c2fb8`. Main `c69c06d234c20babb92358386fe32ba3449b7afe` was incorporated in local merge `8428bec` to preserve the released curriculum previews. Exclusive ownership was claimed before writing source.
+- Practice selection/completion is compact at the top. Prediction, Run, actual results and post-attempt reflection share the editor. Notes and support are optional disclosures with purpose labels; units, hints, examples, errors and recovery remain available. All four missions and both languages keep the 3D view and editable code above the laptop fold. The default page is about half its previous length.
+- [Workspace UI QA](WORKSPACE-UI-QA.md) records final screenshots, checks and evidence limits. Build, 30 model checks, 49 account checks and 14 family UI journeys pass. All 72 workshop browser checks are covered by 68 broad-batch passes and five final affected journeys: four old display expectations were updated for the optional examples and concise progress wording, preserving behavior assertions. Earlier focused navigation/teaching/curriculum and three new flow checks also pass. An independent review found no required fixes; both optional wording/icon refinements were applied.
+- Next action: inspect the local preview. GitHub publication remains pending authorization; no PR, exact-head CI, merge to main, deployment or observed learner pilot is claimed.
+
+## UI-01 — Compact workshop and readable progress
+
+- Status: validated locally on `codex/compact-workshop`, based on `2cd78c972539d736fc7219006d04ab7f8e298318`. Owner-authorized navigation/layout cleanup; exclusive ownership claimed before source writes. Application/tested source: `755f1ad8890f7ccea720aaad8afc865bb975b41a`; subsequent commits update evidence only. The branch is not published and no PR or exact-head CI is claimed.
+- Curriculum and Family actions moved to the header. Mission/challenge selectors share a compact heading; redundant introduction/prediction text was removed while purpose, targets, first edit, free help and range guidance remain. At 1366×900, the workbench starts about 302 pixels higher and editable code about 325 pixels higher. The progress-toolbar heading now has 13.66:1 contrast.
+- [Workspace UI QA](WORKSPACE-UI-QA.md) records checks, inspected synthetic screenshots and evidence limits. Build, 30 model/preview checks, 49 account checks, 14 family UI journeys, 64 workshop browser checks and final navigation/layout/diagram checks passed locally. The broad browser batch predates the final camera-size restoration, which the final focused checks cover. Exact-head CI remains pending publication. Existing drafts/accounts and the separate curriculum-preview work were preserved.
+- Next action: inspect the local preview and authorize GitHub publication before opening a draft PR and checking exact-head CI. This branch is not landed or deployed; provider and actual learner checks are not claimed.
+
 ## CURRICULUM-01 — visual mission previews released
 
 - Status: done; [PR #7](https://github.com/willcheung/3d-robotics-hack/pull/7) is merged and live on [RoboLab](https://robolab.vibecodingdad.com), October 17, 2026. The owner explicitly authorized check-in, deployment and testing after approving the preview implementation. No later mission is implemented by this release.

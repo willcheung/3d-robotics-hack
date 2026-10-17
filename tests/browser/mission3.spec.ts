@@ -1,3 +1,4 @@
+import {openNotes,openHints,openCommands} from '../learning-ui.ts';
 import {test,expect,type Page} from '@playwright/test';
 import {patrolReference,patrolExtra,patrolTransfer} from '../../src/patrol-lesson.ts';
 async function run(page:Page,source?:string){
@@ -13,8 +14,8 @@ for(const lang of ['python','java'] as const){
   await page.goto('/');await page.locator('#lesson').selectOption('L03');await page.locator('#language').selectOption(lang);
   await expect(page.locator('#mission-job')).toContainText('rangers');await expect(page.locator('.real-world')).toContainText('inspection camera');await expect(page.locator('#value-guide')).toContainText('25 consecutive ticks');
   await expect(page.locator('#code')).toHaveValue(/repeats = 1/);await expect(page.locator('#show-solution')).toBeDisabled();
-  await page.locator('#prediction').fill('One repeat stops at -30°; only the first checkpoint can log.');await expect(page.locator('#prediction-feedback')).toContainText('not an automatically graded answer');
-  for(const name of ['Hint 1','Hint 2','Hint 3']){await page.getByText(name,{exact:true}).click();await expect(page.getByText(name,{exact:true}).locator('..').locator('p')).toBeVisible();}
+  await openNotes(page);await page.locator('#prediction').fill('One repeat stops at -30°; only the first checkpoint can log.');await expect(page.locator('#prediction-feedback')).toContainText('not an automatically graded answer');
+  for(const name of ['Hint 1','Hint 2','Hint 3']){await openHints(page);await page.getByText(name,{exact:true}).click();await expect(page.getByText(name,{exact:true}).locator('..').locator('p')).toBeVisible();}
   await run(page);await expect(page.locator('#feedback')).not.toHaveClass(/success/);await expect(page.locator('#patrol-progress')).toContainText('1 of 3');await expect(page.locator('#console')).toContainText('Repeat 1 stopped at -30');await expect(page.locator('#console')).not.toContainText('Repeat 2');
   await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toBeVisible();await expect(page.locator('#practice-progress')).toContainText('0 of 3');
   await run(page,patrolReference[lang]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#patrol-progress .logged')).toHaveCount(3);await expect(page.locator('#console')).toContainText('Repeat 3 stopped at 90');await expect(page.locator('#time-value')).toHaveText('7.50s');
@@ -47,5 +48,5 @@ test('six local drafts, curriculum, reload and narrow fallback retain all missio
  await page.locator('#curriculum-open').click();await expect(page.locator('[data-lesson="L03"]')).toBeVisible();await expect(page.locator('[data-lesson="L04"]')).toBeVisible();await page.locator('[data-lesson="L03"]').click();
  await page.locator('#code').fill(patrolReference.java);await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);await page.screenshot({path:'test-results/mission-03-narrow.png',fullPage:true});await page.locator('.world-panel').screenshot({path:'test-results/mission-03-narrow-scene.png'});
  await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type:string,...args:unknown[]){if(type.includes('webgl'))return null;return (original as Function).apply(this,[type,...args]);} as typeof original;});
- await page.reload();await expect(page.locator('.webgl-warning')).toBeVisible();await expect(page.locator('#patrol-progress')).toContainText('0 of 3');await expect(page.locator('#code')).toHaveValue(patrolReference.java);await expect(page.locator('#value-guide')).toBeVisible();
+ await page.reload();await expect(page.locator('.webgl-warning')).toBeVisible();await expect(page.locator('#patrol-progress')).toContainText('0 of 3');await expect(page.locator('#code')).toHaveValue(patrolReference.java);await openCommands(page);await expect(page.locator('#value-guide')).toBeVisible();
 });

@@ -43,7 +43,10 @@ test('diagram labels connect each real command to its moving part and follow cam
 test('fresh launch, real edit, wrong/reference program, reset/restore, persistent draft', async ({ page }, testInfo) => {
   await expect(page.getByRole('heading', {name:'Signal Station.'})).toBeVisible();
   await expect(page.locator('#mission-job')).toContainText('so the rescue team can find their pickup point');
+  await expect(page.locator('.real-world-help')).toHaveJSProperty('open',false);
+  await page.locator('.real-world-help>summary').click();
   await expect(page.getByRole('heading', {name:'Point a camera at a doorway.'})).toBeVisible();
+  await page.locator('.real-world-help>summary').click();
   await expect(page.locator('#crew-status')).toHaveText('North ridge crew · waiting for light');
   await page.screenshot({path:'test-results/s01-waiting.png',fullPage:true});
   const source = await page.getByLabel('Python code', {exact:true}).inputValue();
@@ -309,7 +312,9 @@ test('teaching copy, keyboard editing, undo, indentation, escape and shortcut Ru
   await expect(page.getByText('Python · Mission 1',{exact:true})).toBeVisible();
   await expect(page.locator('.build-status')).toContainText('Run real Python or Java');
   await expect(page.locator('#value-guide')).toContainText('50 ticks = 1 second');
+  await page.locator('.real-world-help>summary').click();
   await expect(page.getByText('REAL LIFE MACHINES / ROBOTS',{exact:true})).toBeVisible();
+  await page.locator('.real-world-help>summary').click();
   const editor = page.getByLabel('Python code',{exact:true});
   await expect(editor).toHaveValue(/# Store the waiting time: 1 to 600 whole ticks per wait/);
   await editor.fill(''); await editor.pressSequentially('for i in range(2):'); await editor.press('Enter');
@@ -346,7 +351,7 @@ test('invalid robot values stop without losing code or unlocking progress', asyn
     await expect(page.getByLabel('Python console')).not.toContainText('SHOULD NOT RUN');
     await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(source);
     await expect(page.locator('#next-rescue')).toBeDisabled();
-    await expect(page.locator('#practice-progress')).toHaveText('0 of 3 crew locations reached in this visit.');
+    await expect(page.locator('#practice-progress')).toHaveText('0 of 3 completed this visit');
   }
 });
 
@@ -379,18 +384,18 @@ test('next rescue preserves code, counts unique successes and advances to Missio
   await run(page,good.replace('wait(100)','wait(50)')); await done(page); await expect(next).toBeDisabled();
   await run(page,good); await done(page); await expect(next).toBeEnabled();
   await page.getByRole('button',{name:'Run code'}).click(); await done(page);
-  await expect(page.locator('#practice-progress')).toHaveText('1 of 3 crew locations reached in this visit.');
+  await expect(page.locator('#practice-progress')).toHaveText('1 of 3 completed this visit');
   await next.click(); await expect(page.getByLabel('Challenge target')).toHaveValue('farther');
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(good); await expect(next).toBeDisabled();
   await run(page,good.replace('wait(100)','wait(150)')); await done(page); await next.click();
   await expect(page.getByLabel('Challenge target')).toHaveValue('reverse');
   await run(page,good.replace('servo(120)','servo(60)').replace('motor(0.5)','motor(-0.5)')); await done(page);
-  await expect(page.locator('#practice-progress')).toHaveText('3 of 3 crew locations reached in this visit.');
+  await expect(page.locator('#practice-progress')).toHaveText('3 of 3 completed this visit');
   await expect(next).toBeHidden(); await expect(page.locator('#next-help')).toContainText('Continue to Mission 2');
   await page.locator('#next-lesson').click();await expect(page.locator('#lesson')).toHaveValue('L02');await expect(page.locator('#code')).toHaveValue(/reading = await angle/);
   await page.locator('#lesson').selectOption('L01');await expect(page.locator('#code')).toHaveValue(/motor\(-0.5\)/);
   await page.screenshot({path:'test-results/s01-complete.png',fullPage:true});
-  await page.reload(); await expect(page.locator('#practice-progress')).toHaveText('0 of 3 crew locations reached in this visit.');
+  await page.reload(); await expect(page.locator('#practice-progress')).toHaveText('0 of 3 completed this visit');
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(/motor\(-0.5\)/);
 });
 
@@ -411,9 +416,9 @@ test('duplicate keyboard Run and target changes cannot mix workers or unlock sta
   await page.getByLabel('Challenge target').selectOption('reverse');
   await expect(page.locator('iframe')).toHaveCount(0);
   await expect(page.locator('#pointer-value')).toHaveText('0.0°');
-  await expect(page.locator('#practice-progress')).toHaveText('0 of 3 crew locations reached in this visit.');
+  await expect(page.locator('#practice-progress')).toHaveText('0 of 3 completed this visit');
   await run(page,good.replace('servo(120)','servo(60)').replace('motor(0.5)','motor(-0.5)')); await done(page);
   await expect(page.locator('#pointer-value')).toHaveText('-60.0°');
-  await expect(page.locator('#practice-progress')).toHaveText('1 of 3 crew locations reached in this visit.');
+  await expect(page.locator('#practice-progress')).toHaveText('1 of 3 completed this visit');
   await expect(page.locator('#crew-status')).toContainText('Lower cove crew located');
 });
