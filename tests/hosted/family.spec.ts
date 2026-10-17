@@ -77,7 +77,9 @@ test('Stop check cancels real server execution without recording a completed exp
 });
 test('a sign-in change in another tab cannot save old student code to the new profile',async({page})=>{
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');await page.locator('#code').fill('print("belongs only to Nova")');
- await signIn(page.context(),parentCode);await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('profile changed');await expect(page.locator('#code')).toHaveValue('print("belongs only to Nova")');
+ const profile=await page.locator('html').getAttribute('data-profile');
+ await signIn(page.context(),parentCode);await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('profile changed');await expect(page.locator('#profile-label')).toHaveText('Guest practice');await expect(page.locator('#code')).not.toHaveValue('print("belongs only to Nova")');
+ expect(await page.evaluate(key=>localStorage.getItem(key),`robolab.profile.${profile}.python`)).toBe('print("belongs only to Nova")');
  const state=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();expect(state.profile.name).toBe('Parent');expect(JSON.stringify(state.drafts)).not.toContain('belongs only to Nova');
 });
 
