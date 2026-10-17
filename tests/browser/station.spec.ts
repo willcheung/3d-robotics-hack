@@ -312,7 +312,9 @@ test('teaching copy, keyboard editing, undo, indentation, escape and shortcut Ru
   await expect(page.getByText('Python · Mission 1',{exact:true})).toBeVisible();
   await expect(page.locator('.build-status')).toContainText('Run real Python or Java');
   await expect(page.locator('#value-guide')).toContainText('50 ticks = 1 second');
+  await page.locator('.real-world-help>summary').click();
   await expect(page.getByText('REAL LIFE MACHINES / ROBOTS',{exact:true})).toBeVisible();
+  await page.locator('.real-world-help>summary').click();
   const editor = page.getByLabel('Python code',{exact:true});
   await expect(editor).toHaveValue(/# Store the waiting time: 1 to 600 whole ticks per wait/);
   await editor.fill(''); await editor.pressSequentially('for i in range(2):'); await editor.press('Enter');
