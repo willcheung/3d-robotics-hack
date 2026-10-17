@@ -53,7 +53,9 @@ Building or releasing each later mission includes maintaining this preview secti
 
 Target the core explanation and first small win at 10–15 minutes within an approximately one-hour weekly session, leaving time for debugging, variations, transfer and reflection. Introduce one main new idea per lesson and revisit earlier concepts. These are design targets to validate with learners, not established learning outcomes.
 
-Hints progress from a visual clue to a concept reminder, a small code change, and finally a worked example. Hints and AI help do not erase progress. After repeated difficulty, offer a shorter practice mission and an easier starting state. Advanced students can skip explanations after a short mastery check.
+After a successful run, show a clear challenge-complete label, the measured outcome and a short “Why it worked” explanation beside Run. Connect actual simulator evidence to the taught control concept; never infer branch/loop understanding from a green result. Keep one optional reflection and an immediate next action. Explanations describe the last executed run, even while the draft is edited. See TEACHING-PROGRESSION.md for the shared pattern.
+
+Hints progress from a visual clue to a concept reminder, a small code change, and finally a worked example. Present one hint at a time with forward/back controls; keep worked examples opt-in after an attempt and label their scenario. Hints and AI help do not erase progress. After repeated difficulty, offer a shorter practice mission and an easier starting state. Advanced students can skip explanations after a short mastery check.
 
 ## Every lesson must have a purpose
 

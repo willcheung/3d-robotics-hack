@@ -1,4 +1,4 @@
-import {openMission,openNotes,openHints} from '../learning-ui.ts';
+import {openMission,openNotes,openHints,readHints} from '../learning-ui.ts';
 import {test,expect} from '../workshop-fixture.ts';
 import {getLesson} from '../../src/lessons.ts';
 test('each mission and language keeps its experiment context and a recoverable draft',async({page})=>{
@@ -13,7 +13,7 @@ test('each mission and language keeps its experiment context and a recoverable d
   await page.locator('#code').fill(source);await openNotes(page);await page.locator('#prediction').fill('My prediction');await openNotes(page);await page.locator('#reflection').fill('My next change');
   await page.reload();await expect(page.locator('#target')).toHaveValue(target);await expect(page.locator('#code')).toHaveValue(source);await expect(page.locator('#prediction')).toHaveValue('My prediction');await expect(page.locator('#reflection')).toHaveValue('My next change');
   await page.locator('#restore').click();await page.locator('#restore').click();await page.reload();await page.locator('#return-draft').click();await expect(page.locator('#code')).toHaveValue(source);await expect(page.locator('#target')).toHaveValue(target);
-  await openHints(page);await page.getByText('Hint 1',{exact:true}).click();await expect(page.getByText('Hint 1',{exact:true}).locator('..').locator('p')).toBeVisible();
+  await readHints(page,1);
  }
  // Switching and reloading restores all eight pairs, including the case, not just source.
  for(const id of ['L01','L02','L03','L04'] as const)for(const lang of ['python','java'] as const){

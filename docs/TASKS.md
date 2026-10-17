@@ -26,6 +26,13 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 - Acceptance: read-only editing/runtime/world controls; precise unlock/return guidance; server-owned progress; profile/draft recovery; desktop/narrow visual checks. No new lesson, runtime semantics, quota or account settings change.
 - Evidence and remaining gates: [GUIDED-MISSIONS-QA.md](GUIDED-MISSIONS-QA.md).
 
+## UI-04 — Explain successful runs and simplify hints
+
+- Status: in_progress; owner-authorized shared teaching/UI refinement on `codex/lesson-feedback`, isolated from the concurrent mission-lock release.
+- Scope: Missions 1–4 in both languages; clear completion, actual outcome and causal explanation beside Run; one progressive three-level hint card and optional worked example. Future authoring gates use the same pattern.
+- Acceptance: alternate valid solutions, misses/forged output, stale-result clearing, all hints, preserved drafts and navigation, desktop/narrow screenshots and real Python/Java journeys. No changes to model, runtime isolation, scoring, accounts, data, mission scope or automation.
+- Evidence and remaining gates: [LESSON-FEEDBACK-QA.md](LESSON-FEEDBACK-QA.md). Merge and deployment require separate authorization.
+
 ## CURRICULUM-01 — Visual mission previews
 
 - Status: done; [PR #7](https://github.com/willcheung/3d-robotics-hack/pull/7) is merged, deployed and verified after explicit owner authorization. Exact-source CI, staging/provider, candidate and public evidence are recorded in [PROGRESS.md](PROGRESS.md).

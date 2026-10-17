@@ -267,3 +267,18 @@ h1 {font-size:30px;line-height:1.2;letter-spacing:-1px;margin:6px 0 0;}
 #next-lesson{min-height:44px;}
 /* Empty readiness notices repeat the controls; reserve this space for feedback. */
 [data-run-status=idle] .code-panel .feedback:has(#feedback-text:empty){display:none;}
+
+/* Success explains the observed run beside Run; help reveals one step at a time. */
+.code-panel .feedback-copy {flex:1;min-width:0;}
+.code-panel .feedback.success {border-left:4px solid #487538;padding-left:12px;}
+.code-panel .feedback #result-label {font-size:13px;font-weight:750;color:#244c22;margin:0 0 4px;}
+.code-panel .feedback.success h2 {font-size:16px;}
+#run-explanation h3 {font-size:13px;margin:10px 0 0;color:#24412c;}
+#run-explanation small {display:block;font-size:10px;line-height:1.5;color:#52614f;margin-top:8px;}
+.code-panel #result-label[hidden],#run-explanation[hidden],#hints-content [hidden] {display:none;}
+.hint-card {padding:16px;border:1px solid #b2c99a;border-radius:8px;background:#f2f7e8;}
+.hint-card h3 {font-size:14px;margin:0 0 8px;color:#24412c;}
+.hint-card p {margin:0;}
+.hint-actions {display:flex;flex-wrap:wrap;gap:8px;}
+#hints-content .hint-context,#worked-availability {font-size:12px;}
+#hints-content #worked-availability {margin-top:10px;}

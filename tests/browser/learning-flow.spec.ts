@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {openNotes,openHints,openCommands} from '../learning-ui.ts';
+import {openNotes,openHints,readHints,openCommands} from '../learning-ui.ts';
 
 test('optional support opens from the editor without replacing code or changing the challenge',async({page})=>{
  await page.goto('/');
@@ -10,8 +10,7 @@ test('optional support opens from the editor without replacing code or changing 
  await page.locator('#prediction').fill('I expect a left turn.');
  await page.locator('#reflection').fill('Try a longer wait next.');
  await page.locator('#experiment-notes>summary').click();
- await openHints(page);await page.getByText('Hint 1',{exact:true}).click();
- await expect(page.getByText('Hint 1',{exact:true}).locator('..').locator('p')).toBeVisible();
+ await readHints(page,1);
  await expect(page.locator('#show-solution')).toBeDisabled();
  await openCommands(page);await expect(page.locator('#value-guide')).toBeVisible();
  await expect(page.locator('#value-guide')).toContainText('1 to 600 whole ticks');

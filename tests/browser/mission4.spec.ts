@@ -1,4 +1,4 @@
-import {openMission,openNotes,openHints} from '../learning-ui.ts';
+import {openMission,openNotes,openHints,readHints} from '../learning-ui.ts';
 import {test,expect,type Page} from '../workshop-fixture.ts';
 import {armReference,armMoved,armTransfer} from '../../src/arm-lesson.ts';
 async function run(page:Page,source?:string){
@@ -14,7 +14,7 @@ for(const lang of ['python','java'] as const){
   await openNotes(page);await page.locator('#prediction').fill('The target is 70°, but ten ticks only lifts 9° before turning.');
   await run(page);await expect(page.locator('#feedback-title')).toHaveText('The arm hit the guard.');await expect(page.locator('#arm-progress')).toContainText('PARCEL · HELD');await expect(page.locator('#console')).toContainText('Before turn, elbow: 9');await expect(page.locator('#prediction-feedback')).toContainText('guard contact');
   await expect(page.locator('#scanner-target')).toHaveText('commanded 70°');await expect(page.locator('#pointer-target')).toHaveText('commanded 150°');
-  for(const name of ['Hint 1','Hint 2','Hint 3']){await openHints(page);await page.getByText(name,{exact:true}).click();await expect(page.getByText(name,{exact:true}).locator('..').locator('p')).toBeVisible();}
+  await readHints(page);
   await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toContainText('80 ticks');
   await run(page,armReference[lang]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#arm-progress')).toContainText('PARCEL · DELIVERED');await expect(page.locator('#console')).toContainText('After closing, holding: 1');await expect(page.locator('#console')).toContainText('After opening, holding: 0');await expect(page.locator('#time-value')).toHaveText('6.40s');
   await page.locator('#top-view').click();await expect(page.locator('#arm-progress')).toContainText('DELIVERED');await page.locator('#view-reset').click();await page.locator('.world-panel').screenshot({path:`test-results/mission-04-${lang}-delivered.png`});

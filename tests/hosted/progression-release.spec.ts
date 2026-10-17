@@ -1,4 +1,4 @@
-import {openMission,openNotes,openHints} from '../learning-ui.ts';
+import {openMission,openNotes,openHints,readHints} from '../learning-ui.ts';
 import {fixtureParent} from '../helpers/fixture-parent.ts';
 import {test,expect,type BrowserContext,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
@@ -60,7 +60,7 @@ test('hosted Missions 1–4: both runtimes, checked unlocks, recovery and eight 
    expect(selected).toContain(id==='L01'?'turn_ticks':id==='L02'?'if':id==='L03'?'repeats':'lift_ticks');
    await openNotes(page);await page.locator('#prediction').fill(id==='L03'?'One repeat should log one checkpoint.':'The original example should miss; I will compare its stop with the target.');
    await run(page,lesson.starters[language],false);await expect(page.locator('#prediction-feedback')).toContainText('Result: finished');
-   await openHints(page);await page.getByText('Hint 1',{exact:true}).click();await expect(page.getByText('Hint 1',{exact:true}).locator('..').locator('p')).toBeVisible();
+   await readHints(page);
    await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toBeVisible();
    if(id==='L03')await check(page,'patrol-ridge',lesson.starters[language],false);
    if(id==='L04')await check(page,'parcel-across',lesson.starters[language],false);

@@ -12,6 +12,7 @@ import {armMissions,armUI,armLanguage,armProgress,armFailure} from './arm-ui.ts'
 import {patrolMissions, patrolUI, patrolProgress} from './patrol-ui.ts';
 import {readExperiment, type Experiment} from './experiment.ts';
 import {renderTeaching, patrolFailure} from './teaching.ts';
+import {explainSuccess} from './run-explanation.ts';
 type Language = 'python' | 'java';
 let lesson: LessonId = 'L01';
 let checked:readonly string[] = [];
@@ -52,7 +53,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <div class="component-label servo-label" id="servo-label"><strong>2 · SERVO</strong><span>Joint tilts lamp up / down</span><code>servo(degrees)</code></div><div class="component-label gripper-label" id="gripper-label" hidden><strong>3 · GRIPPER</strong><span>Opens / closes the jaws</span><code>grip(millimetres)</code></div><div class="camera-tools"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="top-view" aria-label="Top view">${icons.cube}</button><button id="view-reset" aria-label="Reset camera">${icons.reset}</button></div><div class="scene-caption">DRAG TO ORBIT <span>·</span> SCROLL TO ZOOM <span>·</span> RIGHT-DRAG TO PAN</div></div><p class="motion-key"><code>motor</code> turns the tower + pointer. <code>servo</code> tilts the lamp.<br><code>wait(ticks)</code> lets both movements advance. <code>motor(0)</code> stops the turn.</p><div id="crew-status" class="crew-status" role="status" aria-live="polite">${missions.beacon.waiting}</div><section id="patrol-progress" class="patrol-progress" aria-label="Route checkpoint progress" hidden></section><section id="arm-progress" class="arm-progress" aria-label="Parcel and joint state" hidden></section><div class="telemetry"><div><span>LIGHT DIRECTION</span><strong id="pointer-value">0.0<em>°</em></strong><small id="pointer-target">target 60°</small></div><div><span>TILT SERVO</span><strong id="scanner-value">90.0<em>°</em></strong><small id="scanner-target">target 120°</small></div><div><span>SIMULATED TIME</span><strong id="time-value">0.00<em>s</em></strong><small>50 ticks / second</small></div></div></section>
 <section id="code-panel" class="code-panel" aria-label="Python editor"><div class="panel-heading"><span id="file-name" class="file-name"><i>Py</i> signal.py</span><label class="language-control">LANGUAGE <select id="language" aria-label="Programming language"><option value="python">Python</option><option value="java">Java</option></select></label></div><p class="editor-help" id="editor-help"># lines are notes. <code>await</code> waits for a robot call to return. <a href="#commands-help" data-help="commands-help">Commands & numbers</a></p><div class="experiment-tools"><div class="first-edit"><button id="find-edit">Find first edit</button><p id="next-edit"></p><a href="#hints-help" data-help="hints-help">Hints</a></div><p class="predict-line"><strong>Before Run</strong> <span id="predict-prompt"></span> <button class="text-action" data-note="prediction">Add note</button></p></div><div class="editor-wrap"><pre id="line-numbers" aria-hidden="true"></pre><div class="editor-surface"><pre class="code-highlight" aria-hidden="true"><code id="highlighted-code"></code></pre><textarea id="code" aria-label="Python code" aria-describedby="editor-shortcuts" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div><p id="editor-shortcuts" class="editor-shortcuts">Tab: indent · Shift+Tab: unindent · Esc, then Tab: leave editor</p><div class="editor-footer"><span id="draft-status">Draft saved on this device</span><button id="restore">${icons.reset} Restore example</button><button id="return-draft" hidden>Return to my draft</button></div><div class="run-bar"><button id="run" class="primary">${icons.play} Run code <kbd>⌘ ↵</kbd></button><button id="stop" disabled>${icons.stop} Stop</button><button id="reset" aria-label="Reset robot">${icons.reset} Reset</button></div><details id="output-panel"><summary class="console-heading"><span>Output</span><span id="runtime-label">Messages from your code</span><b>+</b></summary><pre id="console" tabindex="0" aria-label="Python console">Your print() output will appear here.</pre></details></section>
 </div>
-<section id="feedback" class="feedback" role="status" aria-live="polite"><div class="feedback-icon">↗</div><div><h2 id="feedback-title">Ready to run</h2><p id="feedback-text"></p></div><span id="status-pill">READY</span></section>
+<section id="feedback" class="feedback" role="status" aria-live="polite"><div class="feedback-icon">↗</div><div class="feedback-copy"><p id="result-label" hidden>✓ Challenge complete</p><h2 id="feedback-title">Ready to run</h2><p id="feedback-text"></p><div id="run-explanation" hidden><p id="run-observation"></p><h3>Why it worked</h3><p id="run-reason"></p><small>From the last run · editing your draft does not change this result.</small></div></div><span id="status-pill">READY</span></section>
 <div id="run-followup" hidden><p id="reflect-prompt"></p><button class="text-action" data-note="reflection">Add reflection</button><div class="next-actions"><p id="next-help"></p><button id="next-rescue" disabled>Next rescue →</button></div></div>
 <details id="experiment-notes" class="support-section"><summary>Experiment notes <span>Optional · saved on this device</span><b>+</b></summary><section id="lesson-coach" class="lesson-coach" aria-label="Experiment notes"></section></details>
 <section id="play-guide" class="help-hub" aria-labelledby="help-title"><h2 id="help-title">Help when you need it</h2><details id="hints-help" class="support-section"><summary>Hints <span>Find your next edit</span><b>+</b></summary><div id="hints-content"></div></details><details id="commands-help" class="support-section"><summary>Commands & numbers <span>Understand the code</span><b>+</b></summary>
@@ -188,6 +189,8 @@ function renderAccess() {
   el('experiment-notes').inert=preview;
 }
 function feedback(title: string, text: string, kind = '') {
+  el('result-label').hidden = kind !== 'success';
+  el('run-explanation').hidden = true;
   el('feedback-title').textContent = title; el('feedback-text').textContent = text; el('feedback').className = `feedback ${kind}`;
 }
 function saveDraft() {
@@ -221,20 +224,25 @@ function setStatus(next: RunStatus, detail?: string) {
   if (next === 'loading') feedback(language==='java'?'Compiling Java…':'Loading Python…', 'You can Stop at any time.');
   if (next === 'running') feedback('Running your code…', lesson==='L04'?'Watch the actual joints and parcel.':lesson==='L03'?'Watch each stop and steady hold.':'Watch where the beam stops.');
   if (next === 'finished') {
-    const worked=el<HTMLButtonElement>('show-solution');if(worked)worked.disabled=false;
+    const worked=el<HTMLButtonElement>('show-solution');if(worked){worked.disabled=false;el('worked-availability').hidden=true;}
     success = reached(state, targets[selected]);
     if (success) completedLocations.add(selected);
-    if(lesson==='L04'){const miss=armFailure(state.arm!);feedback(success?'Parcel delivered. The worker can finish!':miss.title,success?'You grasped, carried clear and released in the tray. Explain why the lift came before the turn, then adapt the moved tray.':miss.text,success?'success':'try-again');}
-    else if(lesson==='L03'){const miss=patrolFailure(state,selected);feedback(success?'Route ready. Rangers can set out!':miss.title,success?'Every checkpoint received a steady hold. Explain which calls repeated and which ran once. Try a changed route; retries and hints are free.':miss.text,success?'success':'try-again');}
-    else if (success) feedback('Crew located. Pickup point lit!', lesson==='L02'
-      ? `Your code recovered the light for the ${selected==='sensor-transfer'?'lower cove':'north ridge'} crew. Explain how the sensor reading chose the turn, and why the same comparison works from the other side. Then try another case.`
-      : `The ${missions[selected].location.toLowerCase()} pickup point has a steady light.`, 'success');
+    if(lesson==='L04'){const miss=armFailure(state.arm!);feedback(success?'Parcel delivered. The worker can finish!':miss.title,success?'':miss.text,success?'success':'try-again');}
+    else if(lesson==='L03'){const miss=patrolFailure(state,selected);feedback(success?'Route ready. Rangers can set out!':miss.title,success?'':miss.text,success?'success':'try-again');}
+    else if (success) feedback('Crew located. Pickup point lit!', '', 'success');
     else feedback('Not on target yet.', `Direction: ${state.angle.toFixed(1)}° / ${targets[selected].angle}° · Tilt: ${state.scanner.toFixed(1)}° / ${targets[selected].scanner}°. ${state.power ? `Use ${language==='java'?'Robot.motor(0);':'await motor(0)'} to stop.` : lesson==='L02'?'Compare Read, Decision and Now in Output. Check the branch, movement and tilt.':'Change your timing or direction, then Run again.'}`, 'try-again');
   }
+  if (next === 'finished' && success) {
+    const explanation = explainSuccess(state, selected)!;
+    el('run-observation').textContent = explanation.observation;
+    el('run-reason').textContent = explanation.reason;
+    el('run-explanation').hidden = false;
+  }
+
   if (next === 'stopped') feedback('Stopped. Your code is safe.', 'Run again from this case’s starting direction, or Reset. Your draft stays.');
   if (next === 'error') {
     el<HTMLDetailsElement>('output-panel').open=true;
-    const worked=el<HTMLButtonElement>('show-solution');if(worked)worked.disabled=false;
+    const worked=el<HTMLButtonElement>('show-solution');if(worked){worked.disabled=false;el('worked-availability').hidden=true;}
     const error = detail || `${name} was interrupted. Try again.`;
     const hint = language==='java' && error.includes('possible lossy conversion') ? 'Java cannot put a decimal into an int. Counts and waitTicks need whole numbers; use double for values that allow decimals. See the original compiler error below.' : error.includes('SyntaxError') ? 'Python found a syntax error. Check the line shown in the console.' : error.includes('NameError') ? 'Python found an unknown name. Check spelling and your imports in the console.' : error.split('\n').at(-1)!;
     feedback('Let’s fix that and try again.', hint, 'error');
