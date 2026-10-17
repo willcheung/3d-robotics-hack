@@ -10,3 +10,8 @@ export async function openHints(page:Page) {
 export async function openCommands(page:Page) {
   await page.locator('[data-help="commands-help"]').click();
 }
+
+export async function openMission(page:Page,id:string) {
+  await page.locator('#curriculum-open').click();
+  await page.locator(`[data-lesson="${id}"]`).click();
+}

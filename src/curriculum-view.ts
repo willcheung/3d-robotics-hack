@@ -1,6 +1,7 @@
 import {curriculum} from './curriculum.ts';
-import {lessonIds, lessonTargets, missingPrerequisite, type LessonId} from './model.ts';
+import {lessonIds, lessonTargets, type LessonId} from './model.ts';
 import './curriculum.css';
+import {missionAccess} from './progression.ts';
 
 type CurriculumId = typeof curriculum[number][0];
 type Preview = {job:string;skill:string;caption:string;alt:string;kind:'scene'|'concept'};
@@ -44,7 +45,7 @@ export function curriculumHeader() {
  return `<div class="curriculum-heading"><span class="eyebrow">YOUR ROBOTICS CURRICULUM</span><button data-close aria-label="Close curriculum" autofocus>Close ✕</button></div>
  <div class="curriculum-intro"><h2 id="curriculum-title">Give your code a mission.</h2><p>Aim a rescue light. Program a robotic arm. Send a rover with supplies.<br>Start with one machine, then combine what you learn.</p><p class="curriculum-summary">16 core lessons · 4 optional extensions · ${lessonIds.length} playable now in Python + Java</p></div>
  <nav class="curriculum-chapters" aria-label="Curriculum chapters">${chapters.map(c=>`<a href="#curriculum-${c.id}" data-chapter="${c.id}">${c.label}</a>`).join('')}</nav>
- <div id="curriculum-list"></div><p class="curriculum-footer">Practice freely. Retries and hints are free. Checked completion unlocks after all required challenges in the prerequisite mission. A successful run shows that your program worked; explaining why and adapting it checks your understanding.</p>
+ <div id="curriculum-list"></div><p class="curriculum-footer">Finish all 3 challenges with Check & save progress to unlock the next mission. Sign-in required. Locked missions have read-only previews; retries and hints are free. A successful run shows that your program worked; explaining why and adapting it checks your understanding.</p>
  <p class="curriculum-footer">Plan for about an hour per lesson, with pause and resume when needed. This is a pacing goal to test in class, not a time limit. Concept diagrams show planned missions; their design may change.</p>`;
 }
 
@@ -55,13 +56,13 @@ export function curriculumRows(completed:readonly string[]) {
   return `<section class="curriculum-chapter" aria-labelledby="curriculum-${chapter.id}"><div class="curriculum-chapter-heading"><h3 id="curriculum-${chapter.id}" tabindex="-1">${chapter.title}</h3><p>${chapter.description}</p></div><div class="curriculum-grid">${curriculum.slice(start,end).map(([id,title,,prereq],offset)=>{
    const i=start+offset, preview=previews[id], optional=chapter.id==='optional';
    const released=lessonIds.includes(id as LessonId), lesson=id as LessonId;
-   const complete=released&&lessonTargets[lesson].every(t=>completed.includes(t));
-   const missing=released?missingPrerequisite(lesson,[...completed]):undefined;
-   const state=released?(complete?`✓ Mission ${i+1} complete`:!missing?`Available · Mission ${i+1}`:'Practice available · checked completion locked'):'Coming soon';
-   const detail=released?(complete?'All checked challenges complete. Revisit and experiment freely.':missing?`Complete all checked challenges in ${titleFor(missing)} to unlock checked completion here. Practice is available now.`:`Check all ${lessonTargets[lesson].length} challenges to complete this mission. Retries and hints are free.`):`Planned after ${prereq.split(' + ').map(titleFor).join(' + ')}. This mission is not playable yet.`;
+   const access=released?missionAccess(lesson,completed):undefined;
+   const complete=access?.complete, missing=access?.required;
+   const state=released?(complete?`✓ Mission ${i+1} complete`:!missing?`Available · Mission ${i+1}`:'Locked · read-only preview'):'Coming soon';
+   const detail=released?(complete?'All checked challenges complete. Revisit and experiment freely.':missing?access!.message:`Check all ${lessonTargets[lesson].length} challenges to complete this mission. Retries and hints are free.`):`Planned after ${prereq.split(' + ').map(titleFor).join(' + ')}. This mission is not playable yet.`;
    return `<article class="curriculum-card ${released?'released':'upcoming'}" data-curriculum-id="${id}" aria-labelledby="curriculum-title-${id}">
     <figure class="curriculum-preview"><span class="preview-fallback">Preview unavailable</span><img src="/curriculum/${id}.${preview.kind==='scene'?'png':'svg'}" width="800" height="510" loading="${i===0?'eager':'lazy'}" decoding="async" alt="${escape(preview.alt)}"><span class="preview-kind">${preview.kind==='scene'?'MODEL PREVIEW':'CONCEPT DIAGRAM · PLANNED MISSION'}</span><figcaption>${escape(preview.caption)}</figcaption></figure>
-    <div class="curriculum-copy"><span class="eyebrow">${optional?`OPTIONAL ${String(offset+1).padStart(2,'0')}`:`MISSION ${String(i+1).padStart(2,'0')}`} · ${id}</span><h4 id="curriculum-title-${id}">${escape(title)}</h4><p class="curriculum-job">${escape(preview.job)}</p><p class="curriculum-skill"><strong>You’ll learn</strong> · ${escape(preview.skill)}</p><p class="curriculum-state">${state}</p><small>${escape(detail)}</small>${released?`<button ${i===0?'id="revisit-mission"':''} data-lesson="${id}">Open Mission ${i+1} →</button>`:''}</div>
+    <div class="curriculum-copy"><span class="eyebrow">${optional?`OPTIONAL ${String(offset+1).padStart(2,'0')}`:`MISSION ${String(i+1).padStart(2,'0')}`} · ${id}</span><h4 id="curriculum-title-${id}">${escape(title)}</h4><p class="curriculum-job">${escape(preview.job)}</p><p class="curriculum-skill"><strong>You’ll learn</strong> · ${escape(preview.skill)}</p><p class="curriculum-state">${state}</p><small>${escape(detail)}</small>${released?`<button ${i===0?'id="revisit-mission"':''} data-lesson="${id}">${missing?'Preview':complete?'Revisit':'Open'} Mission ${i+1} →</button>`:''}</div>
    </article>`;
   }).join('')}</div></section>`;
  }).join('');

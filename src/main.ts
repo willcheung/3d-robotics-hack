@@ -1,5 +1,6 @@
 import './style.css';
 import { initialState, reached, targets, lessonIds, lessonTargets, targetLesson, draftKey, type LessonId, type State } from './model.ts';
+import {missionAccess} from './progression.ts';
 import { Runner, type RunStatus } from './runner.ts';
 import { StationScene } from './scene.ts';
 import { attachEditor } from './editor.ts';
@@ -13,6 +14,10 @@ import {readExperiment, type Experiment} from './experiment.ts';
 import {renderTeaching, patrolFailure} from './teaching.ts';
 type Language = 'python' | 'java';
 let lesson: LessonId = 'L01';
+let checked:readonly string[] = [];
+let signedIn = false, checkActive = false;
+const access=(id=lesson)=>missionAccess(id,checked);
+const locked=()=>!!access().required;
 let starters = getLesson(lesson).starters;
 const missions: Record<string, { location: string; job: string; waiting: string; found: string }> = {
   beacon: { location: 'North ridge', job: 'Two hikers are stranded on the north ridge. Aim and hold the searchlight on them so the rescue team can find their pickup point.', waiting: 'North ridge crew · waiting for light', found: 'North ridge crew located · pickup point lit' },
@@ -36,8 +41,9 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <header class="header"><a class="brand" href="/" aria-label="RoboLab home"><span class="brand-mark">${icons.cube}</span>Robo<span>Lab</span></a><span class="preview-badge" id="language-badge"><span></span>Python · Mission 1</span><a class="help-link" href="#play-guide">Help <span>↓</span></a></header>
 <main>
 <div class="workspace-heading"><div class="intro"><div><div class="eyebrow">MISSION 01 <span>/</span> NUMBERS → MOVEMENT</div><h1>Signal Station<span>.</span></h1></div></div>
-<nav class="lesson-picker" aria-label="Choose a mission"><label>Mission <select id="lesson" aria-label="Mission"><option value="L01">1 · Signal Station</option><option value="L02">2 · Read, then choose</option><option value="L03">3 · Ranger patrol</option><option value="L04">4 · Parcel Port</option></select></label><label class="target-select"><span id="target-label">WHERE IS THE CREW?</span><select id="target" aria-label="Challenge target"><option value="beacon">01 · North ridge / 60°</option><option value="farther">02 · East lookout / 90°</option><option value="reverse">03 · Lower cove / −60°</option></select></label></nav></div>
-<section class="practice-nav" aria-label="Practice progress"><strong id="practice-current">Practice · Rescue 1 of 3</strong><div id="practice-badges" class="practice-badges" aria-label="Challenge status"></div><p id="practice-progress">0 of 3 completed this visit</p></section>
+<nav class="lesson-picker" aria-label="Choose a challenge"><label class="target-select"><span id="target-label">WHERE IS THE CREW?</span><select id="target" aria-label="Challenge target"><option value="beacon">01 · North ridge / 60°</option><option value="farther">02 · East lookout / 90°</option><option value="reverse">03 · Lower cove / −60°</option></select></label></nav></div>
+<section id="mission-access" class="mission-access" aria-labelledby="preview-title" hidden><div><strong id="preview-title" tabindex="-1">Read-only preview</strong><p id="unlock-help"></p></div><button id="return-mission"></button></section>
+<section class="practice-nav" aria-label="Practice progress"><strong id="practice-current">Practice · Rescue 1 of 3</strong><div id="practice-badges" class="practice-badges" aria-label="Challenge status"></div><p id="practice-progress">0 of 3 completed this visit</p><p id="checked-progress" hidden></p></section>
 <section class="mission-card" aria-label="Your mission"><div class="mission-copy"><h2>Put the stranded crew in the light</h2><p id="mission-job">${missions.beacon.job}</p><p class="mission-instruction">Turn to <strong id="goal-angle">60°</strong> · Tilt servo to <strong id="goal-scanner">120°</strong> · Hold still. Change <code>turn_ticks</code> to control how long the motor turns.</p></div></section>
 <div class="workbench">
 <section class="world-panel" aria-label="Robot workbench"><div class="panel-heading"><span><span class="live-dot"></span> RESCUE STATION</span><span id="graphics-label" class="tiny-label">LIVE 3D</span></div><div id="scene" class="scene"><div class="scene-tag"><span>SS—01</span><strong>SIGNAL STATION</strong><small>Motor turns · servo tilts</small></div>
@@ -65,6 +71,7 @@ runBar.after(el('feedback'),el('run-followup'));
 document.addEventListener('click',event=>{
   const link=(event.target as Element).closest<HTMLElement>('[data-help],[data-note]');if(!link)return;
   event.preventDefault();
+  if(locked()&&link.dataset.note)return;
   const note=link.dataset.note, destination=note?'experiment-notes':link.dataset.help!;
   el<HTMLDetailsElement>(destination).open=true;
   if(note)el(note).focus();else el(destination).querySelector('summary')!.focus();
@@ -75,7 +82,7 @@ function experimentFor(lang=language,id=lesson):Experiment {
   if(!experiments.has(key)){let raw=null;try{raw=localStorage.getItem(key+'.experiment');}catch{}experiments.set(key,readExperiment(raw,source,id));}
   return experiments.get(key)!;
 }
-function renderCoach(){renderTeaching(lesson,language,selected,experimentFor(),saveDraft);el('return-draft').hidden=!experimentFor().previous;}
+function renderCoach(){renderTeaching(lesson,language,selected,experimentFor(),saveDraft);el('return-draft').hidden=!experimentFor().previous;renderAccess();}
 
 let language: Language = 'python';
 let draftPrefix = 'robolab.s01';
@@ -131,27 +138,54 @@ function showState() {
   scene?.update(state, goal, success);
 }
 function updatePractice() {
+  renderAccess();
   const index = locationOrder.indexOf(selected);
   const kind=lesson==='L04'?'Delivery':lesson==='L03'?'Patrol':'Rescue';
-  el('practice-current').textContent=`Practice · ${kind} ${index+1} of 3`;
+  el('practice-current').textContent=access().complete?`Mission ${missionNumber()} complete`:`Practice · ${kind} ${index+1} of 3`;
   const badges=el('practice-badges');
-  const content=locationOrder.map((target,i)=>{const done=completedLocations.has(target),current=target===selected,label=`${missions[target].location}: ${done?'completed':'not completed'}${current?', current':''}`;return `<span class="${done?'earned':''}" ${current?'aria-current="step"':''} aria-label="${label}" title="${label}">${done?'✓':i+1}</span>`;}).join('');
+  const content=locationOrder.map((target,i)=>{const done=access().complete||completedLocations.has(target),current=target===selected,label=`${missions[target].location}: ${done?'completed':'not completed'}${current?', current':''}`;return `<span class="${done?'earned':''}" ${current?'aria-current="step"':''} aria-label="${label}" title="${label}">${done?'✓':i+1}</span>`;}).join('');
   if(badges.innerHTML!==content)badges.innerHTML=content;
-  el('practice-progress').textContent = `${locationOrder.filter(t=>completedLocations.has(t)).length} of 3 completed this visit`;
+  el('practice-progress').textContent = access().complete?'3 of 3 checked!':`${locationOrder.filter(t=>completedLocations.has(t)).length} of 3 completed this visit`;
+  el('checked-progress').hidden=!signedIn||access().complete;
+  el('checked-progress').textContent=`Checked: ${locationOrder.filter(t=>checked.includes(t)).length}/3`;
   const next = el<HTMLButtonElement>('next-rescue');
   next.hidden = index === locationOrder.length - 1 || !completedLocations.has(selected);
   next.disabled = !completedLocations.has(selected) || status === 'loading' || status === 'running';
   next.textContent = `${lesson==='L04'?'Next delivery':lesson==='L03'?'Next patrol':'Next rescue'}: ${missions[locationOrder[index + 1] ?? selected].location} →`;
-  const complete=locationOrder.every(t=>completedLocations.has(t));
-  const nextLesson=el<HTMLButtonElement>('next-lesson');if(nextLesson){const nextId=getLesson(lesson).next;nextLesson.hidden=!nextId||!complete;nextLesson.textContent=nextId?`Mission ${Number(nextId.slice(1))}: ${getLesson(nextId).title} →`:'';nextLesson.disabled=!complete;}
-  el('run-followup').hidden=status==='loading'||status==='running'||(status!=='finished'&&!completedLocations.has(selected));
+  const practiced=locationOrder.every(t=>completedLocations.has(t));
+  const complete=access().complete;
+  const nextLesson=el<HTMLButtonElement>('next-lesson');if(nextLesson){const nextId=getLesson(lesson).next;nextLesson.hidden=!nextId||!complete;nextLesson.textContent=nextId?`Next mission: ${getLesson(nextId).title} →`:'';nextLesson.disabled=!complete;}
+  el('run-followup').hidden=locked()||status==='loading'||status==='running'||(status!=='finished'&&!completedLocations.has(selected));
   el('reflect-prompt').hidden=status!=='finished';
   document.querySelector<HTMLButtonElement>('[data-note="reflection"]')!.hidden=status!=='finished';
   el('next-help').textContent = complete
-    ? (getLesson(lesson).next?`Continue to Mission ${Number(getLesson(lesson).next!.slice(1))}, or revisit a challenge.`:'All three delivered. Mission 5 is coming soon.')
+    ? `Mission ${missionNumber()} complete · 3 of 3 checked!${getLesson(lesson).next?'':' Mission 5 is coming soon.'}`
+    : practiced ? `${signedIn?'Use':'Sign in and use'} Check & save progress on all 3 challenges to finish this mission.`
     : completedLocations.has(selected)
       ? (index===locationOrder.length-1?'Choose an unfinished challenge above.':'Keep your code and adapt it to the next challenge.')
       : '';
+}
+function renderAccess() {
+  const info=access(), preview=!!info.required;
+  document.documentElement.dataset.currentMission=lesson;
+  document.documentElement.dataset.runStatus=status;
+  document.documentElement.dataset.preview=String(preview);
+  el('mission-access').hidden=!preview;
+  document.querySelector<HTMLElement>('.practice-nav')!.hidden=preview;
+  el('unlock-help').textContent=info.message;
+  el('return-mission').textContent=`Go to Mission ${Number(info.required?.slice(1))}`;
+  code.readOnly=preview;
+  code.setAttribute('aria-describedby',preview?'unlock-help':'editor-shortcuts');
+  el('editor-shortcuts').textContent=preview?'Preview · editing and running unlock after the previous mission.':'Tab: indent · Shift+Tab: unindent · Esc, then Tab: leave editor';
+  el('graphics-label').textContent=preview?'3D PREVIEW':'LIVE 3D';
+  el('scene').inert=preview;scene?.setInteractive(!preview);
+  for(const id of ['language','target','restore','return-draft','find-edit','reset','view-reset','top-view','zoom-in','zoom-out','save-cloud','verify-cloud','resolve-conflict']){
+    const control=document.getElementById(id) as HTMLButtonElement|null;if(control)control.disabled=preview||(id==='verify-cloud'&&checkActive);
+  }
+  el<HTMLButtonElement>('run').disabled=preview||status==='loading'||status==='running';
+  for(const control of document.querySelectorAll<HTMLButtonElement|HTMLTextAreaElement>('#lesson-coach textarea,[data-note]'))control.disabled=preview;
+  if(preview)for(const control of document.querySelectorAll<HTMLButtonElement>('#lesson-coach button,#hints-content button'))control.disabled=true;
+  el('experiment-notes').inert=preview;
 }
 function feedback(title: string, text: string, kind = '') {
   el('feedback-title').textContent = title; el('feedback-text').textContent = text; el('feedback').className = `feedback ${kind}`;
@@ -159,6 +193,7 @@ function feedback(title: string, text: string, kind = '') {
 function saveDraft() {
   highlight(language);
   el('line-numbers').textContent = code.value.split('\n').map((_, i) => i + 1).join('\n');
+  if(locked()){el('draft-status').textContent='Preview · your saved draft is unchanged';return;}
   drafts[language]=code.value;
   const experiment=experimentFor();experiment.source=code.value;experiment.target=selected;
   try { localStorage.setItem(storageKey(language), code.value);localStorage.setItem(storageKey(language)+'.experiment',JSON.stringify(experiment));el('draft-status').textContent = 'Draft & challenge saved on this device'; }
@@ -210,7 +245,7 @@ function setStatus(next: RunStatus, detail?: string) {
   showState();
 }
 function run() {
-  if (status === 'loading' || status === 'running' || family.isChecking()) return;
+  if (locked() || status === 'loading' || status === 'running' || family.isChecking()) return;
   const current = ++generation;
   runner?.stop(); state = initialState(selected); success = false; showState(); el('console').textContent = '';
   saveDraft();attemptPrediction=experimentFor().prediction;el<HTMLDetailsElement>('output-panel').open=false;
@@ -229,6 +264,7 @@ function reset() {
   feedback('Ready for another run. Your code stays.', ''); showState();
 }
 el<HTMLSelectElement>('language').onchange = event => {
+  if(locked()){el<HTMLSelectElement>('language').value=language;return;}
   if(family.isChecking()){el<HTMLSelectElement>('language').value=language;feedback('Wait for the progress check.','Stop the check before switching languages.');return;}
   saveDraft(); reset();
   language=(event.target as HTMLSelectElement).value==='java'?'java':'python';
@@ -238,9 +274,9 @@ el<HTMLSelectElement>('language').onchange = event => {
 };
 el('run').onclick = run;
 el('stop').onclick = () => runner?.stop();
-el('reset').onclick = reset;
+el('reset').onclick = () => {if(!locked())reset();};
 el('restore').onclick = () => {
-  if(family.isChecking())return;
+  if(locked()||family.isChecking())return;
   const experiment=experimentFor();
   // Repeated Restore clicks must not overwrite the student's return copy.
   if(!experiment.previous)experiment.previous={source:code.value,target:selected};
@@ -248,18 +284,20 @@ el('restore').onclick = () => {
   feedback('Example restored. Your draft has a return copy.', 'The example was written for the first challenge. Your selected challenge stays; compare the two before running. Return to my draft restores your saved code and challenge.');
 };
 el('return-draft').onclick=()=>{
-  if(family.isChecking())return;
+  if(locked()||family.isChecking())return;
   const experiment=experimentFor(),previous=experiment.previous;if(!previous)return;
   reset();selected=previous.target;state=initialState(selected);code.value=previous.source;delete experiment.previous;experiment.prediction='';experiment.reflection='';saveDraft();lessonUI();languageUI();renderCoach();showState();
   feedback('Your draft and challenge are back.', 'Predict from this code before running again.');
 };
 el('find-edit').onclick=()=>{
+  if(locked())return;
   const pattern=lesson==='L01'?/^(?:\s*int )?\s*turn_ticks\s*=/m:lesson==='L02'?/^\s*if[ (]/m:lesson==='L04'?/^(?:\s*int )?\s*lift_ticks\s*=/m:/^(?:\s*int )?\s*repeats\s*=/m;
   const match=pattern.exec(code.value);code.focus();
   if(match){const start=match.index+match[0].search(/\S/);code.setSelectionRange(start,code.value.indexOf('\n',start)<0?code.value.length:code.value.indexOf('\n',start));code.scrollTop=Math.max(0,(code.value.slice(0,start).split('\n').length-3)*parseFloat(getComputedStyle(code).lineHeight));code.dispatchEvent(new Event('scroll'));}
   else feedback('This draft uses a different structure.', 'Find the value or condition you want to test in your code; your draft is unchanged.');
 };
 function selectLocation(value: string) {
+  if(locked()){el<HTMLSelectElement>('target').value=selected;return;}
   if(family.isChecking()){el<HTMLSelectElement>('target').value=selected;feedback('Wait for the progress check.','Stop the check before changing rescues.');return;}
   if(!locationOrder.includes(value))return;
   reset(); selected = value;state=initialState(selected);
@@ -275,14 +313,14 @@ el('next-rescue').onclick = () => {
   const next = locationOrder[locationOrder.indexOf(selected) + 1];
   if (next && completedLocations.has(selected) && status !== 'loading' && status !== 'running') selectLocation(next);
 };
-el('view-reset').onclick = () => scene?.reset(); el('top-view').onclick = () => scene?.top();
-el('zoom-in').onclick = () => scene?.zoom(.85); el('zoom-out').onclick = () => scene?.zoom(1.18);
+el('view-reset').onclick = () => !locked() && scene?.reset(); el('top-view').onclick = () => !locked() && scene?.top();
+el('zoom-in').onclick = () => !locked() && scene?.zoom(.85); el('zoom-out').onclick = () => !locked() && scene?.zoom(1.18);
 const firstMotion=document.querySelector('.motion-key')!.innerHTML;
 const firstIntro=document.querySelector('.intro')!.innerHTML;
 const firstWorld=document.querySelector('.real-world')!.innerHTML;
 const firstValues=el('value-guide').innerHTML;
 const firstInstruction=document.querySelector('.mission-instruction')!.innerHTML;
-const nextMission=document.createElement('button');nextMission.id='next-lesson';nextMission.textContent='Mission 2: Read, then choose →';nextMission.disabled=true;document.querySelector('.next-actions')!.append(nextMission);nextMission.onclick=()=>{const next=getLesson(lesson).next;if(next)selectLesson(next);};
+const nextMission=document.createElement('button');nextMission.id='next-lesson';nextMission.textContent='Mission 2: Read, then choose →';nextMission.disabled=true;document.querySelector('.practice-nav')!.append(nextMission);nextMission.onclick=()=>{const next=getLesson(lesson).next;if(next&&access().complete)selectLesson(next);};
 function lessonUI(){
   const info=getLesson(lesson),sensor=lesson==='L02';
   const arm=lesson==='L04';
@@ -299,7 +337,7 @@ function lessonUI(){
   if(arm){armUI(selected);renderCoach();return;}
   el('target-label').textContent=lesson==='L03'?'CHOOSE YOUR PATROL':'WHERE IS THE CREW?';
   if(lesson==='L03'){patrolUI(selected);renderCoach();return;}
-  el<HTMLSelectElement>('lesson').value=lesson;
+
   document.querySelector('.intro')!.innerHTML=sensor?'<div><div class="eyebrow">MISSION 02 / READING → DECISION → MOVEMENT</div><h1>Read, then choose<span>.</span></h1></div>':firstIntro;
   document.querySelector('.mission-copy h2')!.textContent=sensor?'Recover the rescue light':'Put the stranded crew in the light';
   document.querySelector('.mission-instruction')!.innerHTML=sensor?'Turn to <strong id="goal-angle">60°</strong> · Tilt to <strong id="goal-scanner">120°</strong> · Hold still. Fix the <code>if</code> comparison; test both starting sides.':firstInstruction;
@@ -316,23 +354,28 @@ function lessonUI(){
   renderCoach();
 }
 function selectLesson(id:LessonId,target?:string,lang:Language=language,source?:string){
-  if(family.isChecking()){el<HTMLSelectElement>('lesson').value=lesson;feedback('Wait for the progress check.','Stop the check before changing missions.');return;}
+  if(family.isChecking()){feedback('Wait for the progress check.','Stop the check before changing missions.');return;}
+  if(source!==undefined&&access(id).required)return;
   saveDraft();reset();language=lang;lesson=id;starters=getLesson(id).starters;drafts=lessonDrafts[id];locationOrder=lessonTargets[id];selected=target&&locationOrder.includes(target)?target:experimentFor().target;state=initialState(selected);code.value=source??drafts[language];code.scrollTop=0;code.scrollLeft=0;
   lessonUI();languageUI();saveDraft();showState();
   try{localStorage.setItem(`${draftPrefix}.lesson`,lesson);}catch{}
-  feedback('Your draft and challenge are ready.','');
+  feedback(locked()?'Read-only preview':'Your draft and challenge are ready.',locked()?access().message:'');
+  if(locked())el('preview-title').focus({preventScroll:true});
 }
-el<HTMLSelectElement>('lesson').onchange=e=>{const id=(e.target as HTMLSelectElement).value as LessonId;if(lessonIds.includes(id))selectLesson(id);};
+el('return-mission').onclick=()=>{const required=access().required;if(required)selectLesson(required);};
 const family=attachFamily({
+  checking:active=>{checkActive=active;renderAccess();},
+  canEdit:(id=lesson)=>!access(id).required,
+  progress:(completed,authenticated)=>{const wasComplete=access().complete;checked=authenticated?completed:[];signedIn=authenticated;updatePractice();if(!wasComplete&&access().complete)document.querySelector('.practice-nav')!.scrollIntoView({block:'center'});},
   draft:()=>({source:code.value,language,target:selected,lesson}),
   lesson:()=>lesson,
   openLesson:(id,target)=>selectLesson(id,target),
   draftFor:(lang,id=lesson)=>id===lesson&&lang===language?code.value:lessonDrafts[id][lang],
   targetFor:(lang,id=lesson)=>id===lesson&&lang===language?selected:experimentFor(lang,id).target,
   stop:()=>runner?.stop(),
-  load:(lang,source,id=lesson,target)=>{selectLesson(id,target,lang,source);experimentFor().prediction='';experimentFor().reflection='';saveDraft();renderCoach();},
-  profile:(id,cloud)=>{
-    saveDraft();reset();completedLocations.clear();
+  load:(lang,source,id=lesson,target)=>{if(access(id).required)return;selectLesson(id,target,lang,source);experimentFor().prediction='';experimentFor().reflection='';saveDraft();renderCoach();},
+  profile:(id,cloud,completed)=>{
+    saveDraft();reset();completedLocations.clear();checked=id?completed:[];signedIn=!!id;
     draftPrefix=id?`robolab.profile.${id}`:'robolab.s01';
     for(const id of lessonIds)for(const lang of ['python','java'] as const){
       let local:string|null=null;try{local=localStorage.getItem(storageKey(lang,id));}catch{}

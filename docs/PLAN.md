@@ -30,6 +30,10 @@ Use “Real life machines / robots” for application examples. Remove ECO mode;
 
 Show the selected “Python · Mission 1” or “Java · Mission 1,” keep separate drafts and a commented starter in each language, and distinguish Mission 1's three practice rescues from three full lessons. Next-rescue navigation preserves code, counts unique locations reached in the current visit, and explains the last available practice. S03H adds a persistent lesson map and experiment history; it must not silently replace source when a student advances. No unreleased lesson may appear playable.
 
+## Guided mission access
+
+Mission 1 is available for guest practice. Sign in and pass all three challenges with **Check & save progress** to unlock Mission 2, then repeat for each following mission. Only the active profile's server-checked milestones unlock work; local successes and practice logs do not. The curriculum opens locked missions as read-only scene/code previews, naming the earliest unfinished prerequisite and offering a return button. A completed mission earns a prominent **Next mission** action in the compact progress strip. Revisit completed missions through the curriculum; there is no mission dropdown. Preserve source, challenge and notes separately for each profile, mission and language. Preview navigation cannot edit, run, restore, save or manipulate the world.
+
 ## The lesson loop
 
 ### Curriculum preview section

@@ -1,4 +1,6 @@
 import {test,expect} from '@playwright/test';
+import {test as workshopTest} from '../workshop-fixture.ts';
+workshopTest.use({checkedMissions:['L01','L02','L03']});
 
 test('all 20 mission previews load, with truthful availability and optional states',async({page})=>{
  await page.goto('/');await page.locator('#curriculum-open').click();
@@ -7,10 +9,10 @@ test('all 20 mission previews load, with truthful availability and optional stat
  await expect(dialog.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(16);
  await expect(dialog.locator('.preview-kind').filter({hasText:'CONCEPT DIAGRAM'})).toHaveCount(16);
  await expect(dialog.locator('#curriculum-optional').locator('..').locator('..').locator('.curriculum-card')).toHaveCount(4);
- // Landed Mission 4 opens practice without bypassing checked prerequisites.
+ // Landed Mission 4 is visible as a read-only preview until prerequisites pass.
  await expect(dialog.locator('[data-curriculum-id="L04"] .preview-kind')).toHaveText('MODEL PREVIEW');
- await expect(dialog.locator('[data-curriculum-id="L04"] button')).toHaveText('Open Mission 4 →');
- await expect(dialog.locator('[data-curriculum-id="L04"] .curriculum-state')).toContainText('checked completion locked');
+ await expect(dialog.locator('[data-curriculum-id="L04"] button')).toHaveText('Preview Mission 4 →');
+ await expect(dialog.locator('[data-curriculum-id="L04"] .curriculum-state')).toContainText('Locked · read-only preview');
  await expect(dialog.locator('[data-curriculum-id="L05"] button')).toHaveCount(0);
  for(const card of await cards.all()){
   await card.scrollIntoViewIfNeeded();const image=card.locator('img');
@@ -34,7 +36,7 @@ test('chapter navigation stays inside the curriculum; Escape and Close return fo
  await page.locator('#curriculum-open').click();await page.getByRole('button',{name:'Close curriculum'}).click();await expect(page.locator('#curriculum-open')).toBeFocused();
 });
 
-test('opening missions through previews preserves all language drafts and selected challenges',async({page})=>{
+workshopTest('opening missions through previews preserves all language drafts and selected challenges',async({page})=>{
  await page.goto('/');
  const targets={L01:'reverse',L02:'sensor-transfer',L03:'patrol-cove',L04:'parcel-return'};
  for(const language of ['python','java'])for(const [lesson,target] of Object.entries(targets)){
@@ -54,7 +56,7 @@ test('image failure leaves the mission brief, fallback and entry usable',async({
  await page.route('**/curriculum/*',route=>route.abort());await page.goto('/');await page.locator('#curriculum-open').click();
  const card=page.locator('[data-curriculum-id="L01"]');await expect(card.locator('.preview-fallback')).toBeVisible();
  await expect(card.locator('.curriculum-job')).toContainText('crew');await expect(card.locator('.curriculum-skill')).toContainText('motor power');
- await card.locator('button').click();await expect(page.locator('#lesson')).toHaveValue('L01');await expect(page.locator('#code')).toBeFocused();
+ await card.locator('button').click();await expect(page.locator('html')).toHaveAttribute('data-current-mission','L01');await expect(page.locator('#code')).toBeFocused();
 });
 
 test('narrow and enlarged layouts keep every row and the persistent close control reachable',async({page})=>{

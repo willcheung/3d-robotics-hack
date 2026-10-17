@@ -18,6 +18,14 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 - Persist the fields in PROGRESS.md: ID/status, base SHA, branch/worktree, PR, last runnable commit, tested SHA, checks/evidence, unmet criteria, exact next action, and blockers. Recheck affected behavior after a changed base or rebase.
 - Before unattended coding, OPS-01 must establish supported durable atomic ownership of a cycle and slice. Prior chat history alone is not a lock. Do not let hourly polls or a manual goal become competing writers.
 
+## UI-03 — Guided mission access
+
+- Status: validated locally on `codex/guided-missions`; owner explicitly selected checked completion with sign-in as the unlock rule. Not landed or deployed.
+- Depends on: landed UI-02, main `442ea6981def5f2122ae400709d114ace5f353a7`.
+- Outcome: preview later missions safely; earn Next mission after all three checked challenges. Remove the mission dropdown and preserve the compact workbench.
+- Acceptance: read-only editing/runtime/world controls; precise unlock/return guidance; server-owned progress; profile/draft recovery; desktop/narrow visual checks. No new lesson, runtime semantics, quota or account settings change.
+- Evidence and remaining gates: [GUIDED-MISSIONS-QA.md](GUIDED-MISSIONS-QA.md).
+
 ## CURRICULUM-01 — Visual mission previews
 
 - Status: done; [PR #7](https://github.com/willcheung/3d-robotics-hack/pull/7) is merged, deployed and verified after explicit owner authorization. Exact-source CI, staging/provider, candidate and public evidence are recorded in [PROGRESS.md](PROGRESS.md).
