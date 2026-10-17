@@ -1,3 +1,4 @@
+import {openNotes,openHints} from '../learning-ui.ts';
 import {fixtureParent} from '../helpers/fixture-parent.ts';
 import {test,expect,type BrowserContext,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
@@ -57,9 +58,9 @@ test('hosted Missions 1–4: both runtimes, checked unlocks, recovery and eight 
    const lesson=getLesson(id);await page.locator('#lesson').selectOption(id);await page.locator('#target').selectOption(lessonTargets[id][0]);
    await page.locator('#find-edit').click();const selected=await page.locator('#code').evaluate((el:HTMLTextAreaElement)=>el.value.slice(el.selectionStart,el.selectionEnd));
    expect(selected).toContain(id==='L01'?'turn_ticks':id==='L02'?'if':id==='L03'?'repeats':'lift_ticks');
-   await page.locator('#prediction').fill(id==='L03'?'One repeat should log one checkpoint.':'The original example should miss; I will compare its stop with the target.');
+   await openNotes(page);await page.locator('#prediction').fill(id==='L03'?'One repeat should log one checkpoint.':'The original example should miss; I will compare its stop with the target.');
    await run(page,lesson.starters[language],false);await expect(page.locator('#prediction-feedback')).toContainText('Result: finished');
-   await page.getByText('Hint 1',{exact:true}).click();await expect(page.getByText('Hint 1',{exact:true}).locator('..').locator('p')).toBeVisible();
+   await openHints(page);await page.getByText('Hint 1',{exact:true}).click();await expect(page.getByText('Hint 1',{exact:true}).locator('..').locator('p')).toBeVisible();
    await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toBeVisible();
    if(id==='L03')await check(page,'patrol-ridge',lesson.starters[language],false);
    if(id==='L04')await check(page,'parcel-across',lesson.starters[language],false);
@@ -69,7 +70,7 @@ test('hosted Missions 1–4: both runtimes, checked unlocks, recovery and eight 
     if(n===2)await page.locator('.world-panel').screenshot({path:test.info().outputPath(`${id}-${language}-completed.png`)});
     await check(page,target,refs[n]);
    }
-   await page.locator('#reflection').fill('The changed case needs different direction, timing or tilt. I will explain which value changed.');
+   await openNotes(page);await page.locator('#reflection').fill('The changed case needs different direction, timing or tilt. I will explain which value changed.');
    await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved with its challenge');
    await page.screenshot({path:test.info().outputPath(`${id}-${language}.png`),fullPage:true});
    console.log(`${language} ${id}: starter miss, three successful practice runs and checked challenges passed.`);
@@ -84,7 +85,7 @@ test('hosted Missions 1–4: both runtimes, checked unlocks, recovery and eight 
   for(const id of ['L01','L02','L03','L04'] as const)for(const lang of ['python','java'] as const){
    await page.locator('#lesson').selectOption(id);await page.locator('#language').selectOption(lang);await page.locator('#target').selectOption(getLesson(id).transferTarget);
    const source=getLesson(id).transferReference[lang]+`\n${lang==='python'?'#':'//'} ${cards[index].name} ${id} ${lang} saved`;
-   saved.set(id+lang,source);await page.locator('#code').fill(source);await page.locator('#prediction').fill('Local prediction');await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved with its challenge');
+   saved.set(id+lang,source);await page.locator('#code').fill(source);await openNotes(page);await page.locator('#prediction').fill('Local prediction');await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved with its challenge');
   }
   await page.reload();await expect(page.locator('#prediction')).toHaveValue('Local prediction');
   await page.locator('#restore').click();await page.locator('#restore').click();await page.reload();await page.locator('#return-draft').click();await expect(page.locator('#code')).toHaveValue(saved.get('L04java')!);await expect(page.locator('#target')).toHaveValue('parcel-return');

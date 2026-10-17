@@ -1,3 +1,4 @@
+import {openNotes} from '../learning-ui.ts';
 import {parentEmail,addStudents,studentCode} from '../helpers/email-ui.ts';
 import {test,expect} from '@playwright/test';
 import {javaStarter} from '../../src/starters.ts';
@@ -42,7 +43,7 @@ test('a student unlocks Missions 2–4 with real checked rescues; saved completi
   await device.locator('#curriculum-open').click();await expect(device.locator('[data-lesson="L02"]').locator('..')).toContainText('checked completion locked');await device.locator('[data-lesson="L02"]').click();await expect(device.locator('#code')).toHaveValue(sensorJava);await device.locator('#lesson').selectOption('L03');await expect(device.locator('#code')).toHaveValue(patrolJava);await expect(device.locator('#target')).toHaveValue('patrol-ridge');await expect(device.locator('#prediction')).toHaveValue('');await device.locator('#verify-cloud').click();await expect(device.locator('#save-help')).toContainText('Check all three Mission 2 rescues');
   // Denied persistence still keeps this profile's newest draft in memory across sign-out/in.
   await device.locator('#family-open').click();await device.locator('#family-logout').click();await device.locator('[data-mode=student]').click();await device.locator('#access-code').fill(codes[0]);await device.getByRole('button',{name:'Sign in',exact:true}).click();await expect(device.locator('#profile-label')).toContainText('Pilot A');await device.getByRole('button',{name:'Close family progress'}).click();
-  await device.locator('#lesson').selectOption('L03');await device.evaluate(()=>{Storage.prototype.setItem=()=>{throw Error('quota');};});await device.locator('#code').fill('// latest in-memory cove experiment');await device.locator('#prediction').fill('memory note');
+  await device.locator('#lesson').selectOption('L03');await device.evaluate(()=>{Storage.prototype.setItem=()=>{throw Error('quota');};});await device.locator('#code').fill('// latest in-memory cove experiment');await openNotes(device);await device.locator('#prediction').fill('memory note');
   await device.locator('#family-open').click();await device.locator('#family-logout').click();await device.locator('[data-mode=student]').click();await device.locator('#access-code').fill(codes[0]);await device.getByRole('button',{name:'Sign in',exact:true}).click();await expect(device.locator('#profile-label')).toContainText('Pilot A');await device.getByRole('button',{name:'Close family progress'}).click();await device.locator('#lesson').selectOption('L03');await expect(device.locator('#code')).toHaveValue('// latest in-memory cove experiment');await expect(device.locator('#prediction')).toHaveValue('memory note');await expect(device.locator('#target')).toHaveValue('patrol-cove');
  }finally{await other.close();}
 });

@@ -20,7 +20,7 @@ export function attachFamily(hooks:Hooks){
  readRecoveryLink();
  const shell=document.createElement('div');shell.innerHTML=`
  <nav class="learning-nav" aria-label="Learning and family"><button id="curriculum-open" aria-haspopup="dialog" aria-controls="curriculum-dialog">Curriculum & unlocks</button><button id="family-open" aria-haspopup="dialog" aria-controls="family-dialog">Family & progress</button><span id="profile-label">Guest practice</span></nav>
- <dialog id="curriculum-dialog" class="learning-dialog" aria-labelledby="curriculum-title">${curriculumHeader()}<p class="build-status">Real Python and Java · separate drafts · free retries and hints.</p></dialog>
+ <dialog id="curriculum-dialog" class="learning-dialog" aria-labelledby="curriculum-title">${curriculumHeader()}<p class="build-status">Run real Python or Java. Separate drafts; free retries and hints.</p></dialog>
  <dialog id="family-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Family & progress</h2><button data-close aria-label="Close family progress">Close ✕</button></div><p>Take separate turns on the same missions and share family progress. Experiment freely: retries and help never cost points.</p><section id="email-verification-notice" class="verification-notice" role="status" aria-live="polite" aria-atomic="true" hidden></section><p id="family-message" role="status" aria-live="polite"></p><div id="student-link-flow"></div><div id="recovery-flow"></div><div id="setup-receipt"></div><div id="family-content"></div></dialog>`;
  document.body.append(shell);
  document.querySelector('#language-badge')!.before(shell.querySelector('.learning-nav')!);
@@ -32,7 +32,7 @@ export function attachFamily(hooks:Hooks){
  q('family-open').onclick=()=>{render();dialog('family-dialog').showModal();};
  const toolbar=document.createElement('section');toolbar.className='family-tools';toolbar.hidden=!hosted;
  toolbar.innerHTML='<div><strong>Keep your progress</strong><p id="save-help" role="status" aria-live="polite">Sign in to save drafts and share checked progress.</p></div><button id="save-cloud">Save draft</button><button id="verify-cloud">Check & save progress</button><button id="stop-check" hidden>Stop check</button><button id="resolve-conflict" hidden>Compare saved versions</button>';
- document.querySelector('.practice-nav')!.after(toolbar);
+ document.querySelector('.workbench')!.after(toolbar);
  let checkAbort:AbortController|undefined,checkId='',cancelPromise:Promise<unknown>|undefined;
  async function stopCheck(){if(!checking||!checkAbort)return;checkAbort.abort();cancelPromise=request('/cancel',{id:checkId});const result=await cancelPromise as {completed:boolean};say(result.completed?'The check had already finished. Refresh progress to see its result.':'Check stopped. No completion was awarded.');}
  const say=(text:string)=>{q('family-message').textContent=text;q('save-help').textContent=text;};
