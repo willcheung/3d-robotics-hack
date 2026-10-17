@@ -1,6 +1,6 @@
 # Compact workshop review
 
-Status: review candidate, October 17, 2026. The owner requested top-level curriculum/family navigation, a higher simulator/editor and less crowded copy. Base: `2cd78c972539d736fc7219006d04ab7f8e298318`; branch: `codex/compact-workshop`; application and regression-test commit: `755f1ad8890f7ccea720aaad8afc865bb975b41a`. The PR records its final head and CI result. No merge or deployment is included.
+Status: validated locally, October 17, 2026. The owner requested top-level curriculum/family navigation, a higher simulator/editor and less crowded copy. Base: `2cd78c972539d736fc7219006d04ab7f8e298318`; branch: `codex/compact-workshop`; application and regression-test commit: `755f1ad8890f7ccea720aaad8afc865bb975b41a`. Subsequent commits update evidence only. The branch has not been published; no PR, exact-head CI, merge or deployment is included.
 
 ## Changes and evidence
 
@@ -23,13 +23,14 @@ Local macOS checks used Node 26.7.0, Playwright Chromium, real Pyodide and the e
 | `npm run test:family` | 49 passed with local port access. |
 | `DOCKER_HOST=unix://…/robolab/docker.sock npm run test:family-ui` | 14 passed, including real checked Java, all mission prerequisites, separate drafts, resume, sibling isolation and parent/student entry. |
 | `npx playwright test tests/browser/workspace.spec.ts` | 3 passed: dialog/draft behavior, all mission/language laptop layouts and responsive navigation. |
+| Full workshop browser batch | 64 passed in 11.4 minutes: real Python/Java across all four missions, drafts, errors/Stop/recovery, teaching, runtime isolation, keyboard and responsive behavior. |
 | Final paired-origin run of workspace checks plus the station diagram test | 4 passed after restoring the existing camera-button sizes; actual motor/servo behavior, camera views and narrow callouts included. |
 | `npm run check:publication` and `git diff --check` | Passed; independent secret scanning remains a CI check. |
 
-The full workshop browser batch and exact-head CI are recorded in the PR. Its batch started before the camera-size restoration; executable behavior was unchanged, and the final camera/layout checks above used the committed source. The final preview uses matched app/runtime origins and snapshots its build assets.
+The full workshop browser batch started before the camera-size restoration; executable behavior was unchanged, and the final camera/layout checks above used the committed source. Exact-head CI remains pending publication. The final preview uses matched app/runtime origins and snapshots its build assets.
 
 ## Review boundaries
 
 Used the RoboLab builder and QA lenses, the curriculum critic's preservation checks, an informed student walkthrough and gstack's visual hierarchy/contrast review. An independent in-host source review found no remaining required fixes. Specific prompts and units remain available; no model, runtime, account authority, lesson prerequisite or saved-draft contract changed. This is synthetic UI and software evidence, not observed learner comprehension, classroom pacing or a live-provider qualification. The separate curriculum-preview branch/PR was preserved.
 
-Next action: inspect the review candidate and exact-head CI. Acceptance/merge and hosted release need their ordinary authorization; no later lesson is started.
+Next action: inspect the local preview and authorize publishing this branch to the existing GitHub repository before opening a draft PR and checking exact-head CI. Acceptance/merge and hosted release remain separate actions; no later lesson is started.

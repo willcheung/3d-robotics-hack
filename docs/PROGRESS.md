@@ -2,10 +2,10 @@
 
 ## UI-01 — Compact workshop and readable progress
 
-- Status: review candidate on `codex/compact-workshop`, based on `2cd78c972539d736fc7219006d04ab7f8e298318`. Owner-authorized navigation/layout cleanup; exclusive ownership claimed before source writes. Application/tested source: `755f1ad8890f7ccea720aaad8afc865bb975b41a`; the PR identifies its final head and exact-head checks.
+- Status: validated locally on `codex/compact-workshop`, based on `2cd78c972539d736fc7219006d04ab7f8e298318`. Owner-authorized navigation/layout cleanup; exclusive ownership claimed before source writes. Application/tested source: `755f1ad8890f7ccea720aaad8afc865bb975b41a`; subsequent commits update evidence only. The branch is not published and no PR or exact-head CI is claimed.
 - Curriculum and Family actions moved to the header. Mission/challenge selectors share a compact heading; redundant introduction/prediction text was removed while purpose, targets, first edit, free help and range guidance remain. At 1366×900, the workbench starts about 302 pixels higher and editable code about 325 pixels higher. The progress-toolbar heading now has 13.66:1 contrast.
-- [Workspace UI QA](WORKSPACE-UI-QA.md) records checks, inspected synthetic screenshots and evidence limits. Build, 30 model/preview checks, 49 account checks, 14 family UI journeys and final navigation/layout/diagram checks passed locally. Broad browser and exact-head CI results are recorded in the PR. Existing drafts/accounts and the separate curriculum-preview work were preserved.
-- Next action: review and acceptance. This branch is not landed or deployed; provider and actual learner checks are not claimed.
+- [Workspace UI QA](WORKSPACE-UI-QA.md) records checks, inspected synthetic screenshots and evidence limits. Build, 30 model/preview checks, 49 account checks, 14 family UI journeys, 64 workshop browser checks and final navigation/layout/diagram checks passed locally. The broad browser batch predates the final camera-size restoration, which the final focused checks cover. Exact-head CI remains pending publication. Existing drafts/accounts and the separate curriculum-preview work were preserved.
+- Next action: inspect the local preview and authorize GitHub publication before opening a draft PR and checking exact-head CI. This branch is not landed or deployed; provider and actual learner checks are not claimed.
 
 ## S04 — Mission 4 landed and deployed; public runtime follow-up pending
 
