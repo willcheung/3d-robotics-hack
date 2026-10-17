@@ -28,7 +28,7 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 
 ## UI-04 — Explain successful runs and simplify hints
 
-- Status: in_progress; owner-authorized shared teaching/UI refinement on `codex/lesson-feedback`, isolated from the concurrent mission-lock release.
+- Status: validated_local; owner-authorized shared teaching/UI refinement on `codex/lesson-feedback`, isolated from the concurrent mission-lock release. Implementation/tested source: `6b76194f01128743e9a370ff829abf33177efea2`. No PR, CI, merge or deployment is claimed.
 - Scope: Missions 1–4 in both languages; clear completion, actual outcome and causal explanation beside Run; one progressive three-level hint card and optional worked example. Future authoring gates use the same pattern.
 - Acceptance: alternate valid solutions, misses/forged output, stale-result clearing, all hints, preserved drafts and navigation, desktop/narrow screenshots and real Python/Java journeys. No changes to model, runtime isolation, scoring, accounts, data, mission scope or automation.
 - Evidence and remaining gates: [LESSON-FEEDBACK-QA.md](LESSON-FEEDBACK-QA.md). Merge and deployment require separate authorization.

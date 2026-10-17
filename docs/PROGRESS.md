@@ -10,6 +10,14 @@
 - Next action: review the local preview, then qualify GitHub/CI and hosting for this slice. No new hosted, production or learner observation is claimed.
 
 
+## UI-04 — Explain successful runs and simplify hints
+
+- Status: validated_local on `codex/lesson-feedback`, based on released `442ea6981def5f2122ae400709d114ace5f353a7`. Exclusive ownership was claimed before shared writes; the managed `lesson-feedback` worktree isolates this slice from PR #9's mission-lock release. Application/tested source: `6b76194f01128743e9a370ff829abf33177efea2`; later commits update evidence only.
+- Missions 1–4 now show clear challenge completion, actual observed results and a short “Why it worked” explanation beside Run. Three hints and the worked explanation share one progressive card. All help stays free and preserves code. The explanatory copy uses trusted state, accepts alternative valid programs and does not claim physical success proves branch/loop understanding. Future mission acceptance requires the same pattern.
+- [Lesson feedback QA](LESSON-FEEDBACK-QA.md) records design/critique, informed student/teacher walkthroughs, native adversarial source review and actual software evidence. Build, 34 model/language/preview checks and 14 family UI checks pass. All 75 workshop journeys are covered by 72 broad-batch passes plus final affected revalidation: two obsolete Mission 2 copy assertions were replaced, and a reproduced keyboard-focus defect was repaired. The final five-test batch passes on the implementation commit. The broad batch used an earlier frozen preview; no single all-green final broad run is claimed.
+- Desktop/narrow result cards and hints were inspected; saved drafts, checked progress/unlocks, second-device resume and sibling separation pass locally. Publication hygiene passes for 219 tracked files. Actual learner comprehension, remote providers and exact-head CI are not claimed.
+- Next action: owner QA in the local preview. Reconcile any newly landed PR #9 navigation changes before publication and rerun affected checks; then prepare a review PR and CI under the delivery workflow. This candidate is not published, merged or deployed. No model, sandbox, account data, scoring, later mission or automation changes were made.
+
 ## UI-02 — Compact practice and help
 
 Release update: [PR #8](https://github.com/willcheung/3d-robotics-hack/pull/8) subsequently merged and deployed as `442ea6981def5f2122ae400709d114ace5f353a7` after owner authorization. The local checkpoint below is historical; UI-03 builds on that release.
