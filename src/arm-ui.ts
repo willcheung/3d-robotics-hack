@@ -8,8 +8,7 @@ export const armMissions={
 };
 export function armUI(selected:string){
  el<HTMLSelectElement>('lesson').value='L04';
- document.querySelector('.intro')!.innerHTML='<div><div class="eyebrow">MISSION 04 / GRASP → LIFT → TURN → RELEASE</div><h1>Parcel Port<span>.</span></h1><p>Three moving parts. One parcel a worker needs.</p></div><div class="mission-stamp"><span>YOUR CODE HAS A JOB</span><strong>Carry it. Clear the guard.</strong></div>';
- document.querySelector('.mission-number')!.textContent='04';
+ document.querySelector('.intro')!.innerHTML='<div><div class="eyebrow">MISSION 04 / GRASP → LIFT → TURN → RELEASE</div><h1>Parcel Port<span>.</span></h1></div>';
  document.querySelector('.mission-copy h2')!.textContent='Hand the parcel to the dispatch worker';
  document.querySelector('.mission-instruction')!.innerHTML='Receiving pose: shoulder <strong id="goal-angle"></strong> · elbow <strong id="goal-scanner">0°</strong> · Open the gripper after arrival. First, test whether <code>lift_ticks</code> lets the elbow finish lifting before you turn.';
  el('target-label').textContent='CHOOSE YOUR DELIVERY';

@@ -9,8 +9,7 @@ export const patrolMissions = {
 export function patrolUI(selected:string){
   const info=patrolLesson;
   el<HTMLSelectElement>('lesson').value='L03';
-  document.querySelector('.intro')!.innerHTML='<div><div class="eyebrow">MISSION 03 / MOVE → STOP → HOLD → REPEAT</div><h1>Ranger patrol<span>.</span></h1><p>One light. Several checkpoints. A route your code can prepare.</p></div><div class="mission-stamp"><span>YOUR CODE HAS A JOB</span><strong>Light every stop.</strong></div>';
-  document.querySelector('.mission-number')!.textContent='03';
+  document.querySelector('.intro')!.innerHTML='<div><div class="eyebrow">MISSION 03 / MOVE → STOP → HOLD → REPEAT</div><h1>Ranger patrol<span>.</span></h1></div>';
   document.querySelector('.mission-copy h2')!.textContent='Get the ranger route ready';
   document.querySelector('.mission-instruction')!.innerHTML='Log each numbered checkpoint in order · Finish at <strong id="goal-angle"></strong> · Tilt <strong id="goal-scanner"></strong> · Hold 25 ticks at each stop.';
   el<HTMLSelectElement>('target').innerHTML=Object.entries(patrolMissions).map(([id,m],i)=>`<option value="${id}">${i+1} · ${m.location}</option>`).join('');
