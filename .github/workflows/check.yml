@@ -23,11 +23,13 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run setup:java
+      - run: npm run setup:checks
       - run: npm run check
       - name: Package both Vercel sites without deployment
         run: |
           VERCEL_TARGET=app APP_ORIGIN=https://app.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
           VITE_HOSTED=1 VERCEL_TARGET=app APP_ORIGIN=https://app.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
+          WEEKLY_SUMMARY_ENABLED=1 VITE_HOSTED=1 VERCEL_TARGET=app APP_ORIGIN=https://app.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
           VERCEL_TARGET=runtime APP_ORIGIN=https://app.example.test APP_ALTERNATE_ORIGIN=https://robolab.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
       - uses: actions/upload-artifact@v4
         if: always()

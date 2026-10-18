@@ -28,6 +28,8 @@ if(target==='runtime') {
     assert.ok(config.routes.some(r=>r.src==='/api/(.*)'&&r.dest==='/api?endpoint=$1'));
     for(const file of ['server/sandbox-relay.mjs','server/hosted-run.sh','server/python-run.py','java/Robot.java'])assert.ok((await stat(`${root}/${file}`)).isFile());
     assert.equal(typeof (await import(pathToFileURL(resolve(root,fn.handler)).href)).default,'function');
+    const weeklyRoot='.vercel/output/functions/weekly-summary.func';assert.equal(typeof (await import(pathToFileURL(resolve(weeklyRoot,'handler.mjs')).href)).default,'function');
+    assert.deepEqual(config.crons??[],process.env.WEEKLY_SUMMARY_ENABLED==='1'?[{path:'/api/weekly-summary',schedule:'0 16 * * *'}]:[]);
     const mailRoot='.vercel/output/functions/onboarding-mail.func',mailConfig=JSON.parse(await readFile(`${mailRoot}/.vc-config.json`,'utf8'));
     assert.deepEqual(mailConfig.experimentalTriggers,[{type:'queue/v2beta',topic:'robolab-onboarding-v1',consumer:'onboarding-mail'}]);
     assert.equal(mailConfig.shouldAddHelpers,true,'Queue SDK needs parsed req.body and res.status/json helpers.');

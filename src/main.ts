@@ -1,4 +1,6 @@
 import './style.css';
+import {runValues} from './run-values.ts';
+import {chooseDraft,readDraftBase} from './draft-sync.ts';
 import { initialState, reached, targets, lessonIds, lessonTargets, targetLesson, draftKey, type LessonId, type State } from './model.ts';
 import {missionAccess} from './progression.ts';
 import { Runner, type RunStatus } from './runner.ts';
@@ -17,6 +19,8 @@ type Language = 'python' | 'java';
 let lesson: LessonId = 'L01';
 let checked:readonly string[] = [];
 let signedIn = false, checkActive = false;
+let pendingTargets:readonly string[]=[];
+let draftChanged=()=>{};
 const access=(id=lesson)=>missionAccess(id,checked);
 const locked=()=>!!access().required;
 let starters = getLesson(lesson).starters;
@@ -51,14 +55,13 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <svg class="component-lines" aria-hidden="true"><g data-part="motor"><line/><circle r="5"/></g><g data-part="servo"><line/><circle r="5"/></g><g data-part="gripper"><line/><circle r="5" cx="0" cy="0"/></g></svg>
 <div class="component-label motor-label" id="motor-label"><strong>1 · MOTOR</strong><span>Base turns left / right</span><code>motor(power)</code></div>
 <div class="component-label servo-label" id="servo-label"><strong>2 · SERVO</strong><span>Joint tilts lamp up / down</span><code>servo(degrees)</code></div><div class="component-label gripper-label" id="gripper-label" hidden><strong>3 · GRIPPER</strong><span>Opens / closes the jaws</span><code>grip(millimetres)</code></div><div class="camera-tools"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="top-view" aria-label="Top view">${icons.cube}</button><button id="view-reset" aria-label="Reset camera">${icons.reset}</button></div><div class="scene-caption">DRAG TO ORBIT <span>·</span> SCROLL TO ZOOM <span>·</span> RIGHT-DRAG TO PAN</div></div><p class="motion-key"><code>motor</code> turns the tower + pointer. <code>servo</code> tilts the lamp.<br><code>wait(ticks)</code> lets both movements advance. <code>motor(0)</code> stops the turn.</p><div id="crew-status" class="crew-status" role="status" aria-live="polite">${missions.beacon.waiting}</div><section id="patrol-progress" class="patrol-progress" aria-label="Route checkpoint progress" hidden></section><section id="arm-progress" class="arm-progress" aria-label="Parcel and joint state" hidden></section><div class="telemetry"><div><span>LIGHT DIRECTION</span><strong id="pointer-value">0.0<em>°</em></strong><small id="pointer-target">target 60°</small></div><div><span>TILT SERVO</span><strong id="scanner-value">90.0<em>°</em></strong><small id="scanner-target">target 120°</small></div><div><span>SIMULATED TIME</span><strong id="time-value">0.00<em>s</em></strong><small>50 ticks / second</small></div></div></section>
-<section id="code-panel" class="code-panel" aria-label="Python editor"><div class="panel-heading"><span id="file-name" class="file-name"><i>Py</i> signal.py</span><label class="language-control">LANGUAGE <select id="language" aria-label="Programming language"><option value="python">Python</option><option value="java">Java</option></select></label></div><p class="editor-help" id="editor-help"># lines are notes. <code>await</code> waits for a robot call to return. <a href="#commands-help" data-help="commands-help">Commands & numbers</a></p><div class="experiment-tools"><div class="first-edit"><button id="find-edit">Find first edit</button><p id="next-edit"></p><a href="#hints-help" data-help="hints-help">Hints</a></div><p class="predict-line"><strong>Before Run</strong> <span id="predict-prompt"></span> <button class="text-action" data-note="prediction">Add note</button></p></div><div class="editor-wrap"><pre id="line-numbers" aria-hidden="true"></pre><div class="editor-surface"><pre class="code-highlight" aria-hidden="true"><code id="highlighted-code"></code></pre><textarea id="code" aria-label="Python code" aria-describedby="editor-shortcuts" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div><p id="editor-shortcuts" class="editor-shortcuts">Tab: indent · Shift+Tab: unindent · Esc, then Tab: leave editor</p><div class="editor-footer"><span id="draft-status">Draft saved on this device</span><button id="restore">${icons.reset} Restore example</button><button id="return-draft" hidden>Return to my draft</button></div><div class="run-bar"><button id="run" class="primary">${icons.play} Run code <kbd>⌘ ↵</kbd></button><button id="stop" disabled>${icons.stop} Stop</button><button id="reset" aria-label="Reset robot">${icons.reset} Reset</button></div><details id="output-panel"><summary class="console-heading"><span>Output</span><span id="runtime-label">Messages from your code</span><b>+</b></summary><pre id="console" tabindex="0" aria-label="Python console">Your print() output will appear here.</pre></details></section>
+<section id="code-panel" class="code-panel" aria-label="Python editor"><div class="panel-heading"><span id="file-name" class="file-name"><i>Py</i> signal.py</span><label class="language-control">LANGUAGE <select id="language" aria-label="Programming language"><option value="python">Python</option><option value="java">Java</option></select></label></div><p class="editor-help" id="editor-help"># lines are notes. <code>await</code> waits for a robot call to return. <a href="#commands-help" data-help="commands-help">Commands & numbers</a></p><div class="experiment-tools"><div class="first-edit"><button id="find-edit">Find first edit</button><p id="next-edit"></p><a href="#hints-help" data-help="hints-help">Hints</a></div><p class="predict-line"><strong>Before Run</strong> <span id="predict-prompt"></span></p></div><div class="editor-wrap"><pre id="line-numbers" aria-hidden="true"></pre><div class="editor-surface"><pre class="code-highlight" aria-hidden="true"><code id="highlighted-code"></code></pre><textarea id="code" aria-label="Python code" aria-describedby="editor-shortcuts" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div><p id="editor-shortcuts" class="editor-shortcuts">Tab: indent · Shift+Tab: unindent · Esc, then Tab: leave editor</p><div class="editor-footer"><span id="draft-status">Draft saved on this device</span><button id="restore">${icons.reset} Restore example</button><button id="return-draft" hidden>Return to my draft</button></div><div class="run-bar"><button id="run" class="primary">${icons.play} Run code <kbd>⌘ ↵</kbd></button><button id="stop" disabled>${icons.stop} Stop</button><button id="reset" aria-label="Reset robot">${icons.reset} Reset</button></div><details id="output-panel"><summary class="console-heading"><span>Console output</span><span id="runtime-label">Printed messages and errors</span><b>+</b></summary><pre id="console" tabindex="0" aria-label="Python console">Your print() output will appear here.</pre></details></section>
 </div>
 <section id="feedback" class="feedback" role="status" aria-live="polite"><div class="feedback-icon">↗</div><div class="feedback-copy"><p id="result-label" hidden>✓ Challenge complete</p><h2 id="feedback-title">Ready to run</h2><p id="feedback-text"></p><div id="run-explanation" hidden><p id="run-observation"></p><h3>Why it worked</h3><p id="run-reason"></p><small>From the last run · editing your draft does not change this result.</small></div></div><span id="status-pill">READY</span></section>
-<div id="run-followup" hidden><p id="reflect-prompt"></p><button class="text-action" data-note="reflection">Add reflection</button><div class="next-actions"><p id="next-help"></p><button id="next-rescue" disabled>Next rescue →</button></div></div>
-<details id="experiment-notes" class="support-section"><summary>Experiment notes <span>Optional · saved on this device</span><b>+</b></summary><section id="lesson-coach" class="lesson-coach" aria-label="Experiment notes"></section></details>
+<div id="run-followup" hidden><p id="reflect-prompt"></p><div class="next-actions"><p id="next-help"></p><button id="next-rescue" disabled>Next rescue →</button></div></div>
 <section id="play-guide" class="help-hub" aria-labelledby="help-title"><h2 id="help-title">Help when you need it</h2><details id="hints-help" class="support-section"><summary>Hints <span>Find your next edit</span><b>+</b></summary><div id="hints-content"></div></details><details id="commands-help" class="support-section"><summary>Commands & numbers <span>Understand the code</span><b>+</b></summary>
 <section id="value-guide" class="value-guide" aria-labelledby="value-title"><h3 id="value-title">What does each value do?</h3><div class="value-cards"><article><h3><code>motor(0.5)</code> · turning power</h3><p><strong>Allowed: −1 to 1, including both ends.</strong> Decimals work. Positive turns right; negative turns left; 0 stops.</p><p>0.5 means half power: 30° each simulated second. 1 means full power: 60° each second. Power chooses speed and direction, not a destination angle.</p></article><article><h3><code>servo(120)</code> · tilt position</h3><p><strong>Allowed: 0° to 180°, including both ends.</strong> Decimals work. 90° is level, 120° points 30° up, and 60° points 30° down.</p><p>This sets the angle to move toward. The head moves as time advances with <code>wait</code>.</p></article><article><h3><code>wait(turn_ticks)</code> · movement time</h3><p><strong>Allowed: 1 to 600 whole ticks per call.</strong> A tick is one small step of the simulation: 0.02 seconds.</p><p>50 ticks = 1 second. 100 = 2 seconds. 600 = 12 seconds. <code>turn_ticks = 50</code> stores that count in a variable; <code>wait(turn_ticks)</code> uses it.</p></article></div><div class="range-notes"><p><strong>Outside the range?</strong> <code>motor(2)</code>, <code>servo(200)</code> or <code>wait(0)</code> stops the run with an error. A fraction such as <code>wait(2.5)</code> also fails. Your draft stays; fix the value and Run again. The robot checks ranges when you call a command. Python also checks types at runtime; Java checks declared types during compilation. In Java, waitTicks takes an int (a whole number).</p><p><strong>Valid numbers can still miss.</strong> That is an experiment, not a code error. The direction dial has travel stops at −150° and 150°; reaching a stop clamps movement instead of raising a range error. Stop the motor with <code>motor(0)</code>. A run also stops if it exceeds 30 simulated seconds or its runtime limits.</p><p><strong>Reading and printing:</strong> <code>angle()</code> reads the light’s current direction. <code>round</code> rounds that reading to a whole degree for display; <code>print</code> writes it in the console. These do not move the robot.</p></div></section>
-<div id="robot-help"><h3>Robot calls</h3><div class="api-table"><code>await motor(0.5)</code><span>Power −1 to 1. Negative turns left; 0 stops.</span><code>await servo(120)</code><span>Tilt the light: 90° is level; 120° points 30° up; 60° points 30° down.</span><code>await wait(50)</code><span>Advance 50 ticks, or 1 simulated second.</span><code>await angle()</code><span>Read the direction dial: where the light faces.</span><code>await scanner()</code><span>Read the tilt servo’s angle (the API calls it scanner).</span></div><p id="await-guide"><strong>What does await mean?</strong> Pause this program until the robot call returns; the page can still respond. <code>await motor(0.5)</code> and <code>await servo(120)</code> return when the setting is accepted, before movement. They do not wait for a part to reach its goal. <code>await wait(50)</code> lets both parts move for 50 ticks (1 simulated second), then continues. <code>await angle()</code> gets the current sensor reading. Calculations, <code>round</code> and <code>print</code> do not need await.</p><p>Time advances only when you wait. A short wait may leave the servo still moving toward its goal. The motor travels from −150° to 150°.</p></div></details><details id="recovery-help" class="support-section"><summary>Reset & recovery <span>Keep your work safe</span><b>+</b></summary><dl class="recovery-guide"><dt>Run / Reset</dt><dd>Start this challenge again. Your code stays.</dd><dt>Stop</dt><dd>End the run. Edit your code, then try again.</dd><dt>Restore example</dt><dd>Load the starter and keep one return copy. Use “Return to my draft” to recover your code and challenge.</dd><dt>Code error?</dt><dd>Read the error in Output, fix the line, then Run. Your draft stays.</dd><dt>Save</dt><dd>Drafts and notes stay on this device. Sign in to save code and challenges to your profile; notes stay here.</dd></dl></details></section>
+<div id="robot-help"><h3>Robot calls</h3><div class="api-table"><code>await motor(0.5)</code><span>Power −1 to 1. Negative turns left; 0 stops.</span><code>await servo(120)</code><span>Tilt the light: 90° is level; 120° points 30° up; 60° points 30° down.</span><code>await wait(50)</code><span>Advance 50 ticks, or 1 simulated second.</span><code>await angle()</code><span>Read the direction dial: where the light faces.</span><code>await scanner()</code><span>Read the tilt servo’s angle (the API calls it scanner).</span></div><p id="await-guide"><strong>What does await mean?</strong> Pause this program until the robot call returns; the page can still respond. <code>await motor(0.5)</code> and <code>await servo(120)</code> return when the setting is accepted, before movement. They do not wait for a part to reach its goal. <code>await wait(50)</code> lets both parts move for 50 ticks (1 simulated second), then continues. <code>await angle()</code> gets the current sensor reading. Calculations, <code>round</code> and <code>print</code> do not need await.</p><p>Time advances only when you wait. A short wait may leave the servo still moving toward its goal. The motor travels from −150° to 150°.</p></div></details><details id="recovery-help" class="support-section"><summary>Reset & recovery <span>Keep your work safe</span><b>+</b></summary><dl class="recovery-guide"><dt>Run / Reset</dt><dd>Start this challenge again. Your code stays.</dd><dt>Stop</dt><dd>End the run. Edit your code, then try again.</dd><dt>Restore example</dt><dd>Load the starter and keep one return copy. Use “Return to my draft” to recover your code and challenge.</dd><dt>Code error?</dt><dd>Read the error in Console output, fix the line, then Run. Your draft stays.</dd><dt>Save</dt><dd>Drafts save on this device immediately. Signed-in code and challenges save to your account automatically. Compare versions if another device has newer work.</dd></dl></details></section>
 <details class="support-section real-world-help"><summary>Real life machines / robots <span>Use this idea beyond the mission</span><b>+</b></summary><section class="real-world" aria-labelledby="real-world-title"><div><span class="eyebrow">WHY THIS MATTERS</span><h2 id="real-world-title">You’re programming where a machine looks.</h2><p>The pointer is the searchlight’s direction dial. Turning it moves the whole light. Tilting the head changes how high it looks. When you aim both and stop, the crew’s pickup point lights up.</p></div><div class="real-world-example"><span class="eyebrow">REAL LIFE MACHINES / ROBOTS</span><h3>Point a camera at a doorway.</h3><p>A camera on a pan-and-tilt mount uses the same two movements: turn toward the door, then tilt to see who is there. Your code would give a real controller those movement instructions.</p><a href="https://learn.adafruit.com/mini-pan-tilt-kit-assembly?view=all" target="_blank" rel="noopener noreferrer">See a real pan-and-tilt mechanism ↗</a><p class="model-note">This game uses a simplified motor. Real hardware needs its own driver code, measured speeds and position checks; these programs run in the game.</p></div></section></details>
 <footer><span>RoboLab <i>/</i> Small experiments. Real understanding.</span><span>Python + Java · Private family progress</span></footer>
 </main>`;
@@ -70,12 +73,11 @@ el('code-panel').insertBefore(runBar,document.querySelector('.editor-wrap'));
 runBar.after(el('feedback'),el('run-followup'));
 // Links open the relevant disclosure and move keyboard focus to its destination.
 document.addEventListener('click',event=>{
-  const link=(event.target as Element).closest<HTMLElement>('[data-help],[data-note]');if(!link)return;
+  const link=(event.target as Element).closest<HTMLElement>('[data-help]');if(!link)return;
   event.preventDefault();
-  if(locked()&&link.dataset.note)return;
-  const note=link.dataset.note, destination=note?'experiment-notes':link.dataset.help!;
+  const destination=link.dataset.help!;
   el<HTMLDetailsElement>(destination).open=true;
-  if(note)el(note).focus();else el(destination).querySelector('summary')!.focus();
+  el(destination).querySelector('summary')!.focus();
 });
 const experiments=new Map<string,Experiment>();
 function experimentFor(lang=language,id=lesson):Experiment {
@@ -83,7 +85,7 @@ function experimentFor(lang=language,id=lesson):Experiment {
   if(!experiments.has(key)){let raw=null;try{raw=localStorage.getItem(key+'.experiment');}catch{}experiments.set(key,readExperiment(raw,source,id));}
   return experiments.get(key)!;
 }
-function renderCoach(){renderTeaching(lesson,language,selected,experimentFor(),saveDraft);el('return-draft').hidden=!experimentFor().previous;renderAccess();}
+function renderCoach(){renderTeaching(lesson,language);el('return-draft').hidden=!experimentFor().previous;renderAccess();}
 
 let language: Language = 'python';
 let draftPrefix = 'robolab.s01';
@@ -144,24 +146,24 @@ function updatePractice() {
   const kind=lesson==='L04'?'Delivery':lesson==='L03'?'Patrol':'Rescue';
   el('practice-current').textContent=access().complete?`Mission ${missionNumber()} complete`:`Practice · ${kind} ${index+1} of 3`;
   const badges=el('practice-badges');
-  const content=locationOrder.map((target,i)=>{const done=access().complete||completedLocations.has(target),current=target===selected,label=`${missions[target].location}: ${done?'completed':'not completed'}${current?', current':''}`;return `<span class="${done?'earned':''}" ${current?'aria-current="step"':''} aria-label="${label}" title="${label}">${done?'✓':i+1}</span>`;}).join('');
+  const content=locationOrder.map((target,i)=>{const done=signedIn?checked.includes(target):completedLocations.has(target),pending=signedIn&&pendingTargets.includes(target)&&!done,current=target===selected,label=`${missions[target].location}: ${done?'completed':pending?'saving progress':'not completed'}${current?', current':''}`;return `<span class="${done?'earned':pending?'pending':''}" ${current?'aria-current="step"':''} aria-label="${label}" title="${label}">${done?'✓':pending?'…':i+1}</span>`;}).join('');
   if(badges.innerHTML!==content)badges.innerHTML=content;
-  el('practice-progress').textContent = access().complete?'3 of 3 checked!':`${locationOrder.filter(t=>completedLocations.has(t)).length} of 3 completed this visit`;
-  el('checked-progress').hidden=!signedIn||access().complete;
+  el('practice-progress').textContent=signedIn?`${locationOrder.filter(t=>checked.includes(t)).length} of 3 challenges complete${pendingTargets.some(t=>locationOrder.includes(t))?' · saving progress…':''}`:`${locationOrder.filter(t=>completedLocations.has(t)).length} of 3 passed in this practice visit`;
+  el('checked-progress').hidden=true;
   el('checked-progress').textContent=`Checked: ${locationOrder.filter(t=>checked.includes(t)).length}/3`;
+  if(success)el('result-label').textContent=signedIn?(checked.includes(selected)?'✓ Challenge complete':pendingTargets.includes(selected)?'Challenge passed · saving progress…':'Practice passed · progress not confirmed'):'✓ Practice passed · this device';
   const next = el<HTMLButtonElement>('next-rescue');
-  next.hidden = index === locationOrder.length - 1 || !completedLocations.has(selected);
-  next.disabled = !completedLocations.has(selected) || status === 'loading' || status === 'running';
+  next.hidden = index === locationOrder.length - 1 || !(completedLocations.has(selected)||checked.includes(selected));
+  next.disabled = !(completedLocations.has(selected)||checked.includes(selected)) || status === 'loading' || status === 'running';
   next.textContent = `${lesson==='L04'?'Next delivery':lesson==='L03'?'Next patrol':'Next rescue'}: ${missions[locationOrder[index + 1] ?? selected].location} →`;
   const practiced=locationOrder.every(t=>completedLocations.has(t));
   const complete=access().complete;
   const nextLesson=el<HTMLButtonElement>('next-lesson');if(nextLesson){const nextId=getLesson(lesson).next;nextLesson.hidden=!nextId||!complete;nextLesson.textContent=nextId?`Next mission: ${getLesson(nextId).title} →`:'';nextLesson.disabled=!complete;}
-  el('run-followup').hidden=locked()||status==='loading'||status==='running'||(status!=='finished'&&!completedLocations.has(selected));
+  el('run-followup').hidden=locked()||status==='loading'||status==='running'||(status!=='finished'&&!(completedLocations.has(selected)||checked.includes(selected)));
   el('reflect-prompt').hidden=status!=='finished';
-  document.querySelector<HTMLButtonElement>('[data-note="reflection"]')!.hidden=status!=='finished';
   el('next-help').textContent = complete
     ? `Mission ${missionNumber()} complete · 3 of 3 checked!${getLesson(lesson).next?'':' Mission 5 is coming soon.'}`
-    : practiced ? `${signedIn?'Use':'Sign in and use'} Check & save progress on all 3 challenges to finish this mission.`
+    : practiced ? signedIn?'Progress confirms automatically after each successful Run.':'Sign in as a student to keep progress and unlock the next mission.'
     : completedLocations.has(selected)
       ? (index===locationOrder.length-1?'Choose an unfinished challenge above.':'Keep your code and adapt it to the next challenge.')
       : '';
@@ -180,13 +182,11 @@ function renderAccess() {
   el('editor-shortcuts').textContent=preview?'Preview · editing and running unlock after the previous mission.':'Tab: indent · Shift+Tab: unindent · Esc, then Tab: leave editor';
   el('graphics-label').textContent=preview?'3D PREVIEW':'LIVE 3D';
   el('scene').inert=preview;scene?.setInteractive(!preview);
-  for(const id of ['language','target','restore','return-draft','find-edit','reset','view-reset','top-view','zoom-in','zoom-out','save-cloud','verify-cloud','resolve-conflict']){
-    const control=document.getElementById(id) as HTMLButtonElement|null;if(control)control.disabled=preview||(id==='verify-cloud'&&checkActive);
+  for(const id of ['language','target','restore','return-draft','find-edit','reset','view-reset','top-view','zoom-in','zoom-out','resolve-conflict']){
+    const control=document.getElementById(id) as HTMLButtonElement|null;if(control)control.disabled=preview;
   }
-  el<HTMLButtonElement>('run').disabled=preview||status==='loading'||status==='running';
-  for(const control of document.querySelectorAll<HTMLButtonElement|HTMLTextAreaElement>('#lesson-coach textarea,[data-note]'))control.disabled=preview;
+  el<HTMLButtonElement>('run').disabled=preview||checkActive||status==='loading'||status==='running';
   if(preview)for(const control of document.querySelectorAll<HTMLButtonElement>('#lesson-coach button,#hints-content button'))control.disabled=true;
-  el('experiment-notes').inert=preview;
 }
 function feedback(title: string, text: string, kind = '') {
   el('result-label').hidden = kind !== 'success';
@@ -202,16 +202,16 @@ function saveDraft() {
   try { localStorage.setItem(storageKey(language), code.value);localStorage.setItem(storageKey(language)+'.experiment',JSON.stringify(experiment));el('draft-status').textContent = 'Draft & challenge saved on this device'; }
   catch { el('draft-status').textContent = 'Latest work is in this tab only'; }
   el('return-draft').hidden=!experiment.previous;
+  draftChanged();
 }
 code.addEventListener('input', saveDraft);
 code.addEventListener('scroll', () => { el('line-numbers').scrollTop = code.scrollTop; });
 attachEditor(code, saveDraft, run);
-let attemptPrediction='';
-let attempt: {id:string;source:string;language:Language;target:string} | undefined;
+let attempt: {id:string;source:string;language:Language;target:string;owner:string|null} | undefined;
 function recordAttempt(outcome:string, detail?:string) {
   if(!attempt)return;
   const finished=attempt;attempt=undefined;
-  void family.record({...finished,outcome,seconds:state.ticks*.02,error:detail});
+  void family.record({...finished,outcome,seconds:state.ticks*.02,error:detail,values:runValues(state),output:el('console').textContent?.slice(0,4000)});
 }
 function setStatus(next: RunStatus, detail?: string) {
   status = next;
@@ -220,7 +220,7 @@ function setStatus(next: RunStatus, detail?: string) {
   el<HTMLButtonElement>('stop').disabled = !active;
   el('status-pill').textContent = next === 'finished' ? 'FINISHED' : next.toUpperCase();
   const name = language==='java'?'Java':'Python';
-  el('runtime-label').textContent = ({ loading: language==='java'?'Compiling real Java…':'Loading real Python…', running: `${name} is running`, finished: 'Program finished', stopped: language==='java'?'Program stopped':'Worker stopped', error: 'Program stopped' })[next];
+  el('runtime-label').textContent = ({ loading: language==='java'?'Compiling real Java…':'Loading real Python…', running: `${name} is running`, finished: 'Code finished running', stopped: language==='java'?'Program stopped':'Worker stopped', error: 'Program stopped' })[next];
   if (next === 'loading') feedback(language==='java'?'Compiling Java…':'Loading Python…', 'You can Stop at any time.');
   if (next === 'running') feedback('Running your code…', lesson==='L04'?'Watch the actual joints and parcel.':lesson==='L03'?'Watch each stop and steady hold.':'Watch where the beam stops.');
   if (next === 'finished') {
@@ -248,7 +248,6 @@ function setStatus(next: RunStatus, detail?: string) {
     feedback('Let’s fix that and try again.', hint, 'error');
     el('console').textContent += `\n${error}`;
   }
-  if(!active && attempt){const observation=state.arm?`shoulder ${state.arm.shoulder.toFixed(1)}°, elbow ${state.arm.elbow.toFixed(1)}°, parcel ${state.arm.payload}${state.arm.collision?', guard contact':''}`:`direction ${state.angle.toFixed(1)}°, tilt ${state.scanner.toFixed(1)}°${state.patrol?`, ${state.patrol.visited} checkpoints logged`:''}`;el('prediction-feedback').textContent=`Prediction: ${attemptPrediction || 'No prediction recorded.'} Result: ${next}; ${observation}. Compare this run with your prediction before the next edit.`;}
   if(!active) recordAttempt(next==='finished'?(success?'reached':'missed'):next==='stopped'?'stopped':detail?.includes('unavailable')?'unavailable':'error',detail);
   showState();
 }
@@ -256,8 +255,8 @@ function run() {
   if (locked() || status === 'loading' || status === 'running' || family.isChecking()) return;
   const current = ++generation;
   runner?.stop(); state = initialState(selected); success = false; showState(); el('console').textContent = '';
-  saveDraft();attemptPrediction=experimentFor().prediction;el<HTMLDetailsElement>('output-panel').open=false;
-  attempt={id:crypto.randomUUID(),source:code.value,language,target:selected};
+  saveDraft();el<HTMLDetailsElement>('output-panel').open=false;
+  attempt={id:crypto.randomUUID(),source:code.value,language,target:selected,owner:family.profileId()};
   try { runner = new Runner(code.value, {
     snapshot: value => { if (generation === current) { state = value; showState(); } },
     status: (value, detail) => { if (generation === current) setStatus(value, detail); },
@@ -273,7 +272,6 @@ function reset() {
 }
 el<HTMLSelectElement>('language').onchange = event => {
   if(locked()){el<HTMLSelectElement>('language').value=language;return;}
-  if(family.isChecking()){el<HTMLSelectElement>('language').value=language;feedback('Wait for the progress check.','Stop the check before switching languages.');return;}
   saveDraft(); reset();
   language=(event.target as HTMLSelectElement).value==='java'?'java':'python';
   selected=experimentFor().target;state=initialState(selected);code.value=drafts[language]; code.scrollTop=0; code.scrollLeft=0;lessonUI(); languageUI();renderCoach();saveDraft();showState();
@@ -284,17 +282,17 @@ el('run').onclick = run;
 el('stop').onclick = () => runner?.stop();
 el('reset').onclick = () => {if(!locked())reset();};
 el('restore').onclick = () => {
-  if(locked()||family.isChecking())return;
+  if(locked())return;
   const experiment=experimentFor();
   // Repeated Restore clicks must not overwrite the student's return copy.
   if(!experiment.previous)experiment.previous={source:code.value,target:selected};
-  reset();code.value=starters[language];experiment.prediction='';experiment.reflection='';saveDraft();renderCoach();
+  reset();code.value=starters[language];saveDraft();renderCoach();
   feedback('Example restored. Your draft has a return copy.', 'The example was written for the first challenge. Your selected challenge stays; compare the two before running. Return to my draft restores your saved code and challenge.');
 };
 el('return-draft').onclick=()=>{
-  if(locked()||family.isChecking())return;
+  if(locked())return;
   const experiment=experimentFor(),previous=experiment.previous;if(!previous)return;
-  reset();selected=previous.target;state=initialState(selected);code.value=previous.source;delete experiment.previous;experiment.prediction='';experiment.reflection='';saveDraft();lessonUI();languageUI();renderCoach();showState();
+  reset();selected=previous.target;state=initialState(selected);code.value=previous.source;delete experiment.previous;saveDraft();lessonUI();languageUI();renderCoach();showState();
   feedback('Your draft and challenge are back.', 'Predict from this code before running again.');
 };
 el('find-edit').onclick=()=>{
@@ -306,20 +304,19 @@ el('find-edit').onclick=()=>{
 };
 function selectLocation(value: string) {
   if(locked()){el<HTMLSelectElement>('target').value=selected;return;}
-  if(family.isChecking()){el<HTMLSelectElement>('target').value=selected;feedback('Wait for the progress check.','Stop the check before changing rescues.');return;}
   if(!locationOrder.includes(value))return;
   reset(); selected = value;state=initialState(selected);
   el<HTMLSelectElement>('target').value = value;
   el('mission-job').textContent = missions[selected].job;
   el('goal-angle').textContent = `${targets[selected].angle}°`; el('goal-scanner').textContent = `${targets[selected].scanner}°`;
   el('pointer-target').textContent = `target ${targets[selected].angle}°`; el('scanner-target').textContent = `target ${targets[selected].scanner}°`;
-  experimentFor().prediction='';experimentFor().reflection='';saveDraft();renderCoach();
+  saveDraft();renderCoach();
   feedback(lesson==='L02'&&selected!=='sensor-transfer'?'New starting side. Keep the same code.':'New challenge. Your code stays.',''); showState();
 }
 el<HTMLSelectElement>('target').onchange = event => selectLocation((event.target as HTMLSelectElement).value);
 el('next-rescue').onclick = () => {
   const next = locationOrder[locationOrder.indexOf(selected) + 1];
-  if (next && completedLocations.has(selected) && status !== 'loading' && status !== 'running') selectLocation(next);
+  if (next && (completedLocations.has(selected)||checked.includes(selected)) && status !== 'loading' && status !== 'running') selectLocation(next);
 };
 el('view-reset').onclick = () => !locked() && scene?.reset(); el('top-view').onclick = () => !locked() && scene?.top();
 el('zoom-in').onclick = () => !locked() && scene?.zoom(.85); el('zoom-out').onclick = () => !locked() && scene?.zoom(1.18);
@@ -362,7 +359,6 @@ function lessonUI(){
   renderCoach();
 }
 function selectLesson(id:LessonId,target?:string,lang:Language=language,source?:string){
-  if(family.isChecking()){feedback('Wait for the progress check.','Stop the check before changing missions.');return;}
   if(source!==undefined&&access(id).required)return;
   saveDraft();reset();language=lang;lesson=id;starters=getLesson(id).starters;drafts=lessonDrafts[id];locationOrder=lessonTargets[id];selected=target&&locationOrder.includes(target)?target:experimentFor().target;state=initialState(selected);code.value=source??drafts[language];code.scrollTop=0;code.scrollLeft=0;
   lessonUI();languageUI();saveDraft();showState();
@@ -372,24 +368,28 @@ function selectLesson(id:LessonId,target?:string,lang:Language=language,source?:
 }
 el('return-mission').onclick=()=>{const required=access().required;if(required)selectLesson(required);};
 const family=attachFamily({
+  running:()=>status==='loading'||status==='running',
   checking:active=>{checkActive=active;renderAccess();},
   canEdit:(id=lesson)=>!access(id).required,
-  progress:(completed,authenticated)=>{const wasComplete=access().complete;checked=authenticated?completed:[];signedIn=authenticated;updatePractice();if(!wasComplete&&access().complete)document.querySelector('.practice-nav')!.scrollIntoView({block:'center'});},
+  progress:(completed,authenticated,pending=[])=>{pendingTargets=pending;const wasComplete=access().complete;checked=authenticated?completed:[];signedIn=authenticated;updatePractice();if(!wasComplete&&access().complete)el('next-help').textContent=`Mission ${missionNumber()} complete · all three challenges confirmed!`;},
   draft:()=>({source:code.value,language,target:selected,lesson}),
   lesson:()=>lesson,
   openLesson:(id,target)=>selectLesson(id,target),
   draftFor:(lang,id=lesson)=>id===lesson&&lang===language?code.value:lessonDrafts[id][lang],
   targetFor:(lang,id=lesson)=>id===lesson&&lang===language?selected:experimentFor(lang,id).target,
   stop:()=>runner?.stop(),
-  load:(lang,source,id=lesson,target)=>{if(access(id).required)return;selectLesson(id,target,lang,source);experimentFor().prediction='';experimentFor().reflection='';saveDraft();renderCoach();},
+  load:(lang,source,id=lesson,target)=>{if(access(id).required)return;const experiment=experimentFor(lang,id);if(!experiment.previous)experiment.previous={source:lessonDrafts[id][lang],target:experiment.target};selectLesson(id,target,lang,source);saveDraft();renderCoach();},
   profile:(id,cloud,completed)=>{
     saveDraft();reset();completedLocations.clear();checked=id?completed:[];signedIn=!!id;
     draftPrefix=id?`robolab.profile.${id}`:'robolab.s01';
     for(const id of lessonIds)for(const lang of ['python','java'] as const){
       let local:string|null=null;try{local=localStorage.getItem(storageKey(lang,id));}catch{}
-      const saved=cloud[draftKey(id,lang)];
-      lessonDrafts[id][lang]=experiments.get(storageKey(lang,id))?.source??local??saved?.source??getLesson(id).starters[lang];
-      const key=storageKey(lang,id);if(!experiments.has(key)){let raw=null;try{raw=localStorage.getItem(key+'.experiment');}catch{}experiments.set(key,readExperiment(raw,lessonDrafts[id][lang],id,saved?.source===lessonDrafts[id][lang]?saved?.target:undefined));}
+      const saved=cloud[draftKey(id,lang)],key=storageKey(lang,id);let raw=null;try{raw=localStorage.getItem(key+'.experiment');}catch{}
+      const prior=experiments.get(key)??readExperiment(raw,local??getLesson(id).starters[lang],id);
+      const localDraft=local!==null||experiments.has(key)?{source:experiments.get(key)?.source??local!,target:prior.target}:undefined;
+      const chosen=chooseDraft(localDraft,saved,readDraftBase(draftPrefix.replace('robolab.profile.',''),draftKey(id,lang)));
+      lessonDrafts[id][lang]=chosen?.source??getLesson(id).starters[lang];
+      prior.source=lessonDrafts[id][lang];prior.target=chosen?.target&&(lessonTargets[id] as readonly string[]).includes(chosen.target)?chosen.target:prior.target;experiments.set(key,prior);
     }
     let savedLesson:LessonId='L01';try{const saved=localStorage.getItem(`${draftPrefix}.lesson`) as LessonId;if(lessonIds.includes(saved))savedLesson=saved;}catch{}
     // Change identity before loading; never save the outgoing draft under the incoming profile.
@@ -397,6 +397,7 @@ const family=attachFamily({
     code.value=drafts[language];languageUI();saveDraft();showState();
   },
 });
+draftChanged=family.draftChanged;
 if(import.meta.env.VITE_HOSTED==='1') {
   document.querySelector('.build-status')!.textContent='Four missions in Python and Java. Sign in for Java, saved drafts and checked family progress.';
   document.querySelector('footer span:last-child')!.textContent='Python + Java · Private family progress';

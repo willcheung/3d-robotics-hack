@@ -11,11 +11,9 @@ An open-source robotics workshop for teens. Edit real Python or Java and control
 
 ## What works today
 
-Three missions are live in real Python and Java: Mission 1 aims a rescue searchlight; Mission 2 uses a direction reading and an if/else decision to recover it from either side; Mission 3 repeats a move, stop and hold sequence to illuminate every ranger checkpoint. Each offers explained values and syntax, current-code predictions, free hints, changed-case challenges and recoverable drafts. Profile saves synchronize code and challenge; prediction/reflection notes stay on the device. The hosted version also provides parent email sign-in, individual student codes, experiment history, server-checked progress and shared family results.
+Four missions run real Python and Java: aim a rescue searchlight, choose movement from a sensor reading, repeat a checkpoint patrol, and coordinate an arm and gripper to deliver a parcel. Each has explained values and syntax, free hints, changed-case challenges and separate language drafts. The latest code adds automatic profile saves and server confirmation after a successful Run, a parent dashboard, and opt-in weekly summaries. See [implementation and release status](docs/FAMILY-EXPERIENCE.md); this branch's changes are not deployed yet.
 
-Family play means separate attempts with shared results. All three server-checked Mission 1 challenges unlock checking in Mission 2; Mission 2's three checked challenges unlock checking in Mission 3. Practice is open in Missions 1–3; later lessons stay marked coming soon. The plan contains 16 core outlines and four optional extensions, including arms, rovers, light/color sensors and simplified flight. Badges record successful programs, not demonstrated understanding. Simultaneous co-control, official competition rankings and an AI coach are future work.
-
-**Mission 4, Parcel Port is deployed**: coordinate a shoulder, elbow and gripper to carry a parcel safely into a tray. It includes three delivery cases and separate Python/Java drafts. [The contract](docs/MISSION-04.md), [QA record](docs/MISSION-04-QA.md) and [release status](docs/PROGRESS.md) record staging acceptance and the remaining public runtime check after the hosted allowance resets.
+Family play uses independent student attempts with shared progress. All three confirmed challenges finish a mission and unlock the next playable mission. Guests can try Mission 1 in Python; locked missions have read-only previews. The curriculum contains sixteen core outlines and four optional extensions; unreleased lessons stay marked coming soon. Completion records a successful program, while explaining and adapting it demonstrates understanding. Simultaneous control, competitive rankings, streaks and new badges remain future work.
 
 ## Run locally
 
@@ -39,11 +37,12 @@ Local practice keeps drafts in this browser. Cross-device accounts, hosted Java 
 ```sh
 npm ci
 npm run setup:java
+npm run setup:checks
 npx playwright install chromium
 npm run check
 ```
 
-Checks also require Python 3 for the server API conformance fixtures. The suite covers the model, account/recovery flows, browser UI, real sandboxed Java, real Python/WASM and builds. CI also packages the app and isolated runtime. Live storage, Sandbox and email tests require explicitly configured staging services and are separate from ordinary CI. See [validation](docs/VALIDATION.md).
+Checks also require Python 3 for the server API conformance fixtures. The suite covers the model, account/recovery flows, browser UI, real sandboxed Java and CPython progress checks, real Python/WASM practice and builds. CI also packages the app and isolated runtime. Live storage, Sandbox and email tests require explicitly configured staging services and are separate from ordinary CI. See [validation](docs/VALIDATION.md).
 
 ## Contribute
 

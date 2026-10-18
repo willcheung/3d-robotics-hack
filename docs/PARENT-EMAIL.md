@@ -2,7 +2,11 @@
 
 The owner requested retirement of reusable parent access codes. Parents sign in with an email and short-lived email code. Students keep their private login codes, and anonymous Python practice remains available. This is a focused account transition; no mission or runtime behavior changes.
 
-## Transition contract
+## Current entry contract
+
+FE-01 supersedes the historical connection workflow below. Parent sign-in is visible in the header and uses email on every device. Existing-account messaging appears after email proof. The public old-parent-code and unfinished-setup connection routes are retired; no legacy connection form remains. Existing verified emails, sessions, student codes and saved work are preserved. Unlinked code-only families require a separately authorized support/migration decision; removing the public flow does not invent ownership or discard data.
+
+## Historical FAMILY-03 transition contract
 
 - Remove code-only family signup and parent codes from the Student form. The server rejects parent codes on the ordinary code-login route, including old clients. Retired signup/recovery routes return guidance without creating an account, changing credentials or setting a session.
 - An existing code-only family connects once using fresh email proof plus its existing parent code. A student code cannot connect email. A different already-verified email cannot be overwritten by a code. Existing verified recovery addresses can use ordinary email sign-in directly.
@@ -13,10 +17,12 @@ The owner requested retirement of reusable parent access codes. Parents sign in 
 - The same browser challenge can retry an interrupted connection during its existing ten-minute lifetime. UI retries finish the verified connection instead of repeating email verification after a session was set. Parent codes stay out of persistent client storage, URLs, receipts and logs.
 - Old recovery links show a retirement notice and do not mutate authentication. Existing parent sessions remain valid. Mail unavailability preserves student access, active sessions and guest practice; it does not enable another parent-login method.
 
-## Acceptance and evidence
+## Historical acceptance and evidence
 
 `tests/parent-email.test.mjs` covers preserved records, wrong role/proof/family/email, races, interrupted writes, old setup credentials, expiry, retired HTTP routes, student-only code login and existing-session boundaries. The account UI suite covers email entry, one-time connection, missing responses, reload, six saved experiments on a fresh device, parent-only verified-email visibility and narrow layout. Existing onboarding/card/notification and real Java mission-progress checks remain in the suite.
 
 Hosted runtime/authorization fixtures now pre-provision their disposable parent session rather than logging in with a retired parent code. They are not evidence of email delivery or parent authentication. Local inbox fixtures test application behavior only. A production release still needs an authorized real-inbox transition on protected staging, private-store acceptance, exact-head CI and public saved-progress checks. No existing production family is migrated by the build or by a bulk script.
 
 FAMILY-03 is released through PR #5. [PROGRESS.md](PROGRESS.md) records exact-head CI, actual protected-staging inbox transitions, real Blob/Sandbox checks, production-candidate acceptance and public both-language saved-progress checks. No classroom pilot is claimed; that observation remains deferred.
+
+See [FAMILY-EXPERIENCE.md](FAMILY-EXPERIENCE.md) for current automatic saves/progress, parent dashboard and weekly summary acceptance.

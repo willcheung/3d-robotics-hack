@@ -218,3 +218,22 @@ test('Mission 4 uses additive draft keys, L03 prerequisite and its own trusted r
  assert.deepEqual((await current(store,b)).profile.drafts,{});await assert.rejects(recordAttempt(store,b,attempt({target:'parcel-across'}),true),e=>e.status===403);
  assert.equal(draftKey('L01','java'),'java');
 });
+
+test('lost checked replies replay without another reservation after visible history is pruned',async()=>{
+ const {store,a,b}=await fixtures(),run=attempt();await reserveRun(store,a,run.id,run);await recordAttempt(store,a,run);await recordAttempt(store,a,{...run,values:{direction:60,tilt:120,ticks:100},output:'finished'},true);await releaseRun(store,a,run.id);
+ for(let i=0;i<15;i++)await recordAttempt(store,a,attempt({outcome:'missed'}));
+ const before=(await current(store,a)).family.daily.count,receipt=await reserveRun(store,a,run.id,run);assert.equal(receipt.replayed,true);assert.deepEqual(receipt.completed,['beacon']);assert.equal((await current(store,a)).family.daily.count,before);
+ await assert.rejects(reserveRun(store,a,run.id,{...run,source:'changed'}),e=>e.status===409);assert.equal(await reserveRun(store,b,run.id,run),null);
+ const p=(await current(store,a)).profile;assert.equal(p.experiments,16);assert.ok(p.challengeCompleted.beacon);assert.equal(p.missionCompleted?.L01,undefined);
+});
+test('draft acknowledgement replay is harmless and mission dates survive repeat attempts',async()=>{
+ const {store,a}=await fixtures(),d={language:'python',target:'beacon',source:'saved once',revision:0};assert.equal((await saveDraft(store,a,d)).revision,1);assert.equal((await saveDraft(store,a,d)).revision,1);
+ for(const target of ['beacon','farther','reverse'])await recordAttempt(store,a,attempt({target}),true);
+ const first=(await current(store,a)).profile.missionCompleted.L01;await recordAttempt(store,a,attempt(),true);assert.equal((await current(store,a)).profile.missionCompleted.L01,first);
+ const {family,profile}=await current(store,a),parent=family.profiles.find(p=>p.role==='parent');assert.equal(view(family,profile).students[0].recent,undefined);assert.equal(view(family,parent).students[0].recent.length,3);assert.ok(!JSON.stringify(view(family,parent).students).includes('print(1)'));
+});
+
+test('finished cancellation receipts include missed and error checks without awarding completion',async()=>{
+ const {cancelRun}=await import('../server/family-store.mjs');
+ for(const outcome of ['reached','missed','error']){const {store,a}=await fixtures(),item=attempt({outcome});await recordAttempt(store,a,item,true);assert.equal((await cancelRun(store,a,item.id)).completed,true);assert.deepEqual((await current(store,a)).profile.completed,outcome==='reached'?['beacon']:[]);}
+});

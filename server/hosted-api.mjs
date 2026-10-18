@@ -1,3 +1,4 @@
+import {runValues} from '../src/run-values.ts';
 import {getIronSession,sealData,unsealData} from 'iron-session';
 import {appOrigins} from './app-origins.mjs';
 import {resendMailer} from './recovery.mjs';
@@ -68,8 +69,8 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
     if(verify&&(typeof data.target!=='string'||!Object.hasOwn(targets,data.target)))throw new HttpError(400,'Unknown rescue target.');
     const missing=verify&&missingPrerequisite(targetLesson(data.target),profile.completed);
     if(missing)throw new HttpError(403,`Check all three Mission ${Number(missing.slice(1))} rescues to unlock checked Mission ${Number(targetLesson(data.target).slice(1))} progress. You can preview this mission until it unlocks.`);
-    const id=verify?data.id:randomUUID();await reserveRun(store,session,id);
-    let run,state=initialState(verify?data.target:'beacon'),outcome='error',error='',done=false,terminal,released=false,serviceReserved=false;
+    const id=verify?data.id:randomUUID(),receipt=await reserveRun(store,session,id,verify?data:undefined);if(receipt){json(res,200,receipt);return true;}
+    let run,state=initialState(verify?data.target:'beacon'),outcome='error',error='',output='',done=false,terminal,released=false,serviceReserved=false;
     const release=async()=>{const results=await Promise.allSettled([releaseRun(store,session,id),...(serviceReserved?[releaseServiceRun(store,session,id)]:[])]);const failed=results.find(r=>r.status==='rejected');if(failed)throw failed.reason;released=true;};
     try {
      await reserveServiceRun(store,session,id);serviceReserved=true;
@@ -79,7 +80,8 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
        if(message.type==='command'){
         let value=null;
         try{if(message.command.op==='wait')for(let i=0;i<message.command.value;i++)state=tick(state);else {const next=command(state,message.command);state=next.state;value=next.value;}await run.reply(message.id,value);}catch(e){run.fail(e.message);}
-       } else if(message.type==='error')error=message.text;
+       } else if(message.type==='output')output=(output+message.text).slice(0,4000);
+       else if(message.type==='error')error=message.text;
        else if(message.type==='done'){done=true;outcome=reached(state,targets[data.target])?'reached':'missed';}
       } else if(message.type==='done'||message.type==='error')terminal=message;
       else if(!res.destroyed&&!res.write(JSON.stringify(message)+'\n'))run.stop();
@@ -89,12 +91,13 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
      }});
      res.once('close',()=>run.stop());
      await run.finished;
-     await release();
+     if(!verify)await release();
      if(!verify&&terminal&&!res.destroyed)res.write(JSON.stringify(terminal)+'\n');
      if(verify&&!res.destroyed){
       if(!done&& !error)error='Check was interrupted. Your source is safe; try again.';
-      const result={...data,outcome,seconds:state.ticks*.02,error};
+      const result={...data,outcome,seconds:state.ticks*.02,error,values:runValues(state),output};
       await recordAttempt(store,session,result,true);
+      await release();
       json(res,200,{outcome,seconds:result.seconds,error,completed:(await current(store,session)).profile.completed});
      }
     } finally {if(!released)await release();if(!verify&&res.headersSent&&!res.destroyed)res.end();}

@@ -1,4 +1,4 @@
-import {openMission,openNotes,openHints,readHints} from '../learning-ui.ts';
+import {openMission,readHints} from '../learning-ui.ts';
 import {fixtureParent} from '../helpers/fixture-parent.ts';
 import {test,expect,type BrowserContext,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
@@ -30,10 +30,8 @@ async function run(page:Page,source:string,passed:boolean){
  await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:70000});
  if(passed)await expect(page.locator('#feedback')).toHaveClass(/success/);else await expect(page.locator('#feedback')).not.toHaveClass(/success/);
 }
-async function check(page:Page,target:string,source:string,passed=true){
- await page.locator('#target').selectOption(target);await page.locator('#code').fill(source);await page.locator('#verify-cloud').click();
- await expect(page.locator('#save-help')).toContainText(passed?'Rescue checked and saved':'checked program missed',{timeout:80000});
- await expect(page.locator('#stop-check')).toBeHidden();
+async function confirmed(page:Page,target:string){
+ await expect.poll(async()=>(await (await page.request.get(origin+'/api/family',{headers})).json()).completed,{timeout:80000}).toContain(target);await expect(page.locator('#stop-check')).toBeHidden();
 }
 test.afterAll(async()=>{if(paths.size)await del([...paths]);});
 test('hosted Missions 1–4: both runtimes, checked unlocks, recovery and eight saved experiments on a new device',async({browser})=>{
@@ -52,26 +50,22 @@ test('hosted Missions 1–4: both runtimes, checked unlocks, recovery and eight 
   await signIn(page,cards[index].code,cards[index].name);await page.locator('#language').selectOption(language);
   const family=async()=>{const r=await page.request.get(origin+'/api/family',{headers});expect(r.status()).toBe(200);return r.json();};
   expect((await family()).completed).toEqual([]);expect((await family()).drafts).toEqual({});
-  await openMission(page,'L03');await expect(page.locator('#verify-cloud')).toBeDisabled();await expect(page.locator('#code')).not.toBeEditable();await expect(page.locator('#unlock-help')).toContainText('Mission 1');
-  await openMission(page,'L04');await expect(page.locator('#verify-cloud')).toBeDisabled();await expect(page.locator('#code')).not.toBeEditable();
+  await openMission(page,'L03');await expect(page.locator('#run')).toBeDisabled();await expect(page.locator('#code')).not.toBeEditable();await expect(page.locator('#unlock-help')).toContainText('Mission 1');
+  await openMission(page,'L04');await expect(page.locator('#run')).toBeDisabled();await expect(page.locator('#code')).not.toBeEditable();
   for(const id of ['L01','L02','L03','L04'] as const){
    const lesson=getLesson(id);await openMission(page,id);await page.locator('#target').selectOption(lessonTargets[id][0]);
    await page.locator('#find-edit').click();const selected=await page.locator('#code').evaluate((el:HTMLTextAreaElement)=>el.value.slice(el.selectionStart,el.selectionEnd));
    expect(selected).toContain(id==='L01'?'turn_ticks':id==='L02'?'if':id==='L03'?'repeats':'lift_ticks');
-   await openNotes(page);await page.locator('#prediction').fill(id==='L03'?'One repeat should log one checkpoint.':'The original example should miss; I will compare its stop with the target.');
-   await run(page,lesson.starters[language],false);await expect(page.locator('#prediction-feedback')).toContainText('Result: finished');
+   await run(page,lesson.starters[language],false);await expect(page.locator('#experiment-notes')).toHaveCount(0);
    await readHints(page);
    await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toBeVisible();
-   if(id==='L03')await check(page,'patrol-ridge',lesson.starters[language],false);
-   if(id==='L04')await check(page,'parcel-across',lesson.starters[language],false);
    const refs=id==='L01'?[lesson.reference[language],lesson.reference[language].replace('turn_ticks = 100','turn_ticks = 150'),lesson.transferReference[language]]:id==='L02'?[sensorReference[language],sensorReference[language],sensorTransfer[language]]:id==='L03'?[patrolReference[language],patrolExtra[language],patrolTransfer[language]]:[armReference[language],armMoved[language],armTransfer[language]];
    for(const [n,target] of lessonTargets[id].entries()){
     await page.locator('#target').selectOption(target);await run(page,refs[n],true);
     if(n===2)await page.locator('.world-panel').screenshot({path:test.info().outputPath(`${id}-${language}-completed.png`)});
-    await check(page,target,refs[n]);
+    await confirmed(page,target);
    }
-   await openNotes(page);await page.locator('#reflection').fill('The changed case needs different direction, timing or tilt. I will explain which value changed.');
-   await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved with its challenge');
+   await expect(page.locator('#save-help')).toContainText('Saved to your account');
    await page.screenshot({path:test.info().outputPath(`${id}-${language}.png`),fullPage:true});
    console.log(`${language} ${id}: starter miss, three successful practice runs and checked challenges passed.`);
   }
@@ -85,20 +79,20 @@ test('hosted Missions 1–4: both runtimes, checked unlocks, recovery and eight 
   for(const id of ['L01','L02','L03','L04'] as const)for(const lang of ['python','java'] as const){
    await openMission(page,id);await page.locator('#language').selectOption(lang);await page.locator('#target').selectOption(getLesson(id).transferTarget);
    const source=getLesson(id).transferReference[lang]+`\n${lang==='python'?'#':'//'} ${cards[index].name} ${id} ${lang} saved`;
-   saved.set(id+lang,source);await page.locator('#code').fill(source);await openNotes(page);await page.locator('#prediction').fill('Local prediction');await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved with its challenge');
+   saved.set(id+lang,source);await page.locator('#code').fill(source);await expect(page.locator('#save-help')).toContainText('Saved to your account');
   }
-  await page.reload();await expect(page.locator('#prediction')).toHaveValue('Local prediction');
-  await page.locator('#restore').click();await page.locator('#restore').click();await page.reload();await page.locator('#return-draft').click();await expect(page.locator('#code')).toHaveValue(saved.get('L04java')!);await expect(page.locator('#target')).toHaveValue('parcel-return');
+  await page.reload();await expect(page.locator('#code')).toHaveValue(saved.get('L04java')!);
+  await page.locator('#restore').click();await page.locator('#restore').click();await page.reload();await page.locator('#return-draft').click();await expect(page.locator('#code')).toHaveValue(saved.get('L04java')!);await expect(page.locator('#target')).toHaveValue('parcel-return');await expect(page.locator('#save-help')).toContainText('Saved to your account');
   const fresh=await browser.newContext();await protect(fresh);const resume=await fresh.newPage();await signIn(resume,cards[index].code,cards[index].name);
   for(const id of ['L01','L02','L03','L04'] as const)for(const lang of ['python','java'] as const){
-   await openMission(resume,id);await resume.locator('#language').selectOption(lang);await expect(resume.locator('#code')).toHaveValue(saved.get(id+lang)!);await expect(resume.locator('#target')).toHaveValue(getLesson(id).transferTarget);await expect(resume.locator('#prediction')).toHaveValue('');
+   await openMission(resume,id);await resume.locator('#language').selectOption(lang);await expect(resume.locator('#code')).toHaveValue(saved.get(id+lang)!);await expect(resume.locator('#target')).toHaveValue(getLesson(id).transferTarget);await expect(resume.locator('#experiment-notes')).toHaveCount(0);
   }
-  await resume.locator('#family-open').click();await expect(resume.locator('#family-content')).toContainText('Mission 4 complete');await resume.getByRole('button',{name:'Close family progress'}).click();
+  await resume.locator('#family-open').click();await expect(resume.locator('#family-content > .mission-progress').last()).toContainText('✓ Complete');await resume.getByRole('button',{name:'Close family progress'}).click();
   await resume.setViewportSize({width:390,height:844});expect(await resume.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);await resume.screenshot({path:test.info().outputPath(`${language}-resume-narrow.png`),fullPage:true});
   await fresh.close();await context.close();
   console.log(`${language}: errors, Stop/retry, all eight saved code/challenge pairs, restore and fresh-device resume passed.`);
  }
  await parentPage.locator('#family-refresh').click();await expect(parentPage.locator('.family-results article')).toHaveCount(2);
- for(const card of cards)await expect(parentPage.locator('.family-results article').filter({hasText:card.name})).toContainText('Mission 4: 3/3 deliveries');
+ for(const card of cards)await expect(parentPage.locator('.family-results article').filter({hasText:card.name})).toContainText('4 of 4 missions complete');
  await parentContext.close();
 });

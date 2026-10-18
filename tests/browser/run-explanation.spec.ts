@@ -1,4 +1,5 @@
-import {test, expect, type Page} from '@playwright/test';
+import {openMission} from '../learning-ui.ts';
+import {test, expect, type Page} from '../workshop-fixture.ts';
 import {patrolReference} from '../../src/patrol-lesson.ts';
 import {armReference} from '../../src/arm-lesson.ts';
 import {openHints, readHints} from '../learning-ui.ts';
@@ -31,19 +32,19 @@ for(const language of ['python','java'] as const)test(`${language}: success teac
   await page.setViewportSize({width:1440,height:1000});
   await finished(page,java?'public class Main {public static void main(String[] args){System.out.println("Challenge complete: 60 degrees");}}':'print("Challenge complete: 60 degrees")');
   await expect(page.locator('#run-explanation')).toBeHidden();await expect(page.locator('#result-label')).toBeHidden();
-  await page.locator('#lesson').selectOption('L02');
+  await openMission(page,'L02');
   // No sensor or condition: feedback must describe the motion without inventing a decision.
   await finished(page,station(java,25));
   await expect(page.locator('#run-observation')).toContainText('30° → 60°');
   await expect(page.locator('#run-reason')).toContainText('Passing this start alone');
   await page.locator('#next-rescue').click();await expect(page.locator('#run-explanation')).toBeHidden();
   await finished(page,station(java,25));await expect(page.locator('#run-explanation')).toBeHidden();
-  await page.locator('#lesson').selectOption('L03');
+  await openMission(page,'L03');
   await finished(page,patrolReference[language]);
   await expect(page.locator('#run-observation')).toContainText('3 of 3 checkpoints logged in order');
   await expect(page.locator('#run-reason')).toContainText('25 consecutive ticks (0.5 seconds)');
   await page.locator('#reset').click();await expect(page.locator('#run-explanation')).toBeHidden();
-  await page.locator('#lesson').selectOption('L04');
+  await openMission(page,'L04');
   await finished(page,armReference[language]);
   await expect(page.locator('#run-observation')).toContainText('Parcel in the tray');
   await expect(page.locator('#run-reason')).toContainText('waiting gives the joints time');
@@ -76,3 +77,5 @@ test('hints progressively reveal help without revealing the worked example or ed
   await expect(page.locator('#code')).toHaveValue(draft);
   await page.locator('#hints-help').screenshot({path:'test-results/feedback-hints.png'});
 });
+
+test.use({checkedMissions:['L01','L02','L03']});

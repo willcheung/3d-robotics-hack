@@ -1,5 +1,5 @@
 import {createHmac,randomBytes,randomInt,createCipheriv,createDecipheriv,timingSafeEqual,hkdfSync} from 'node:crypto';
-import {HttpError,update,current,profileIn,familyPath,hashCode,createFamily,setupIdentity,validAttempt,login} from './family-store.mjs';
+import {HttpError,update,current,profileIn,familyPath,hashCode,createFamily,setupIdentity,validAttempt,login,weekStart} from './family-store.mjs';
 import {normalizeEmail,recoveryIndex,EMAIL_LIMIT_PATH} from './recovery.mjs';
 
 export const AUTH_TTL=10*60*1000;
@@ -37,14 +37,14 @@ async function emailAllowance(store,password,{email,ip='unknown',id,kind,now}){
   q.events??={};if(q.events[id])return {value:q};
   const address=hmac(password,'onboarding-email:'+email),source=hmac(password,'ip:'+ip);
   q.onboarding??={};const row=q.onboarding[address]??{auth:0,setup:0,first:0,lastAuth:0};
-  if(q.count>=60||kind==='first'&&q.count>=48||row[kind]>=(kind==='first'?6:5))throw new HttpError(429,'Email limit reached. Your existing login and saved work are safe. Please try again later.');
+  if(q.count>=60||['first','weekly'].includes(kind)&&q.count>=48||(row[kind]??0)>=(kind==='first'?6:kind==='weekly'?5:5))throw new HttpError(429,'Email limit reached. Your existing login and saved work are safe. Please try again later.');
   if(kind==='auth'&&(now-row.lastAuth<60000||(q.ips[source]??0)>=20))throw new HttpError(429,'Please wait a minute before requesting another code.');
-  q.count++;row[kind]++;if(kind==='auth'){row.lastAuth=now;q.ips[source]=(q.ips[source]??0)+1;}
+  q.count++;row[kind]=(row[kind]??0)+1;if(kind==='auth'){row.lastAuth=now;q.ips[source]=(q.ips[source]??0)+1;}
   q.onboarding[address]=row;q.events[id]=true;return {value:q};
  });
 }
 
-export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=>Date.now()}){
+export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=>Date.now(),weeklyEnabled=process.env.WEEKLY_SUMMARY_ENABLED==='1'}){
  const ready=()=>{if(!mail?.enabled)throw new HttpError(503,'Email sign-in is unavailable right now. Please retry later. Existing sessions and student codes still work.');};
  const proof=async key=>{
   requireKey(key);const row=(await store.read(authPath(password,key)))?.value;
@@ -242,9 +242,33 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
    const queued=event?await publish(session.familyId,id):false;
    await update(store,familyPath(session.familyId),f=>{const p=profileIn(f,session);if(p.firstSignedInAt)return {value:f};p.firstSignedInAt=new Date(now()).toISOString();if(event){f.onboarding??={events:{},batches:{},notifyFirst:true};event.status=queued?'pending':'retry';f.onboarding.events[id]=event;}return {value:f};});
   },
-  async preferences(session,{notifyFirst}){
-   if(typeof notifyFirst!=='boolean')throw new HttpError(400,'Choose whether to receive first-sign-in confirmations.');
-   await update(store,familyPath(session.familyId),f=>{if(profileIn(f,session).role!=='parent')throw new HttpError(403,'Only parents manage notifications.');f.onboarding??={events:{},batches:{},notifyFirst:true};f.onboarding.notifyFirst=notifyFirst;return {value:f};});return {ok:true};
+  async preferences(session,{notifyFirst,notifyWeekly}){
+   if(notifyFirst===undefined&&notifyWeekly===undefined||notifyFirst!==undefined&&typeof notifyFirst!=='boolean'||notifyWeekly!==undefined&&typeof notifyWeekly!=='boolean')throw new HttpError(400,'Choose a valid email preference.');
+   await update(store,familyPath(session.familyId),f=>{if(profileIn(f,session).role!=='parent')throw new HttpError(403,'Only parents manage notifications.');f.onboarding??={events:{},batches:{},notifyFirst:true};if(notifyFirst!==undefined)f.onboarding.notifyFirst=notifyFirst;
+    if(notifyWeekly!==undefined){if(notifyWeekly&&!f.onboarding.notifyWeekly)f.onboarding.weeklySince=now();f.onboarding.notifyWeekly=notifyWeekly;}
+    return {value:f};});return {ok:true};
+  },
+  async weekly(familyId,week){
+   if(!weeklyEnabled)return {queued:false};
+   const start=Date.parse(week+'T00:00:00Z'),end=start+7*86400000;
+   if(!Number.isFinite(start)||weekStart(start)!==week||end>now()||now()-end>=7*86400000)throw new Error('Invalid summary week');
+   const path=familyPath(familyId);
+   const id=await update(store,path,f=>{
+    if(!f)return {value:f,result:null};scrub(f);const parent=parentIn(f),settings=f.onboarding;
+    if(!settings?.notifyWeekly||!parent?.recovery||!settings.weeklySince||settings.weeklySince>=end)return {value:f,result:null};
+    const eventId='weekly-'+week+'-'+parent.recovery.index.split('/').at(-1).slice(0,32),old=settings.events?.[eventId];
+    if(old)return {value:f,result:['pending','retry'].includes(old.status)&&old.until>now()?eventId:null};
+    const students=f.profiles.filter(p=>p.active&&p.role==='student'),active=students.filter(p=>(p.activity?.[week]??0)>0||Object.values(p.missionCompleted??{}).some(at=>Date.parse(at)>=start&&Date.parse(at)<end));
+    if(!active.length)return {value:f,result:null};
+    const rows=active.map(p=>{const newly=Object.entries(p.missionCompleted??{}).filter(([,at])=>Date.parse(at)>=start&&Date.parse(at)<end).map(([lesson])=>'Mission '+Number(lesson.slice(1)));return `${p.name.replace(/[\r\n]/g,' ')}: ${p.activity?.[week]??0} runs this week. ${newly.length?'Completed '+newly.join(', ')+'.':'Kept experimenting.'} Ask: what did you change, and what did the robot do?`;});
+    const event=newEvent(f,eventId,'weekly',{subject:'Your RoboLab weekly family summary',text:`RoboLab family progress · ${week} to ${new Date(end-1).toISOString().slice(0,10)} (UTC)\n\n${rows.join('\n\n')}\n\nOpen your parent dashboard for each child’s current mission and next challenge: ${appOrigin}/\n\nSuccessful runs earn progress automatically. Completion shows the robot met its objective; ask your child to explain why. No activity means no weekly email. Manage weekly emails in Parent dashboard.`},active.map(p=>({id:p.id})));
+    settings.events??={};settings.events[eventId]=event;
+    // Receipt metadata stays for eight weeks; sensitive mail payload expires in 23h.
+    for(const [key,e] of Object.entries(settings.events))if(e.kind==='weekly'&&e.created<now()-56*86400000)delete settings.events[key];
+    return {value:f,result:eventId};
+   });
+   if(id&&!await publish(familyId,id))throw new Error('Weekly summary is waiting for the queue');
+   return {queued:!!id};
   },
   retry,
   async cleanupExpired(session,family){
@@ -265,7 +289,7 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
     if(cleanup||['sent','cancelled','expired'].includes(e.status))return {value:f,result:null};
     if(e.leaseUntil>now())throw new Error('Mail is already being delivered');
     const p=parentIn(f),valid=p?.id===e.parentId&&p.recovery?.index===e.emailIndex&&e.profiles.every(binding=>f.profiles.some(s=>s.id===binding.id&&s.active&&(!binding.hash||s.accessHash===binding.hash)));
-    if(!valid||e.kind==='first'&&f.onboarding.notifyFirst===false){e.status='cancelled';delete e.payload;return {value:f,result:null};}
+    if(!valid||e.kind==='first'&&f.onboarding.notifyFirst===false||e.kind==='weekly'&&(!weeklyEnabled||f.onboarding.notifyWeekly!==true)){e.status='cancelled';delete e.payload;return {value:f,result:null};}
     e.status='sending';e.lease=lease;e.leaseUntil=now()+30000;return {value:f,result:e};
    });
    if(!event)return;
@@ -273,6 +297,10 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
     if(enqueue&&!await publish(familyId,eventId,true,Math.max(1,Math.ceil((event.until-now())/1000))))throw new Error('Cleanup queue unavailable');
     const payload=open(password,eventId,event.payload);
     await emailAllowance(store,password,{email:payload.to,id:familyId+':'+eventId,kind:event.kind,now:now()});
+    const latest=(await store.read(path))?.value,recipient=parentIn(latest);
+    if(!recipient||recipient.id!==event.parentId||recipient.recovery?.index!==event.emailIndex||event.kind==='weekly'&&(!weeklyEnabled||latest.onboarding?.notifyWeekly!==true)||event.kind==='first'&&latest.onboarding?.notifyFirst===false||!event.profiles.every(binding=>latest.profiles.some(p=>p.id===binding.id&&p.active&&(!binding.hash||p.accessHash===binding.hash)))){
+     await update(store,path,f=>{const e=f.onboarding.events[eventId];if(e.lease===lease){e.status='cancelled';delete e.payload;delete e.lease;delete e.leaseUntil;}return {value:f};});return;
+    }
     const sent=await mail.send({to:payload.to,subject:payload.subject,text:payload.text,id:'onboarding-'+familyId+'-'+eventId});
     await update(store,path,f=>{const e=f.onboarding.events[eventId];if(e.lease===lease){e.status='sent';e.providerId=sent.id;delete e.payload;delete e.lease;delete e.leaseUntil;}return {value:f};});
 
@@ -286,5 +314,5 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
 
 export function onboardingView(family,profile){
  if(profile.role!=='parent')return {};
- const o=family.onboarding;return {emailLogin:!!profile.emailLogin,notifyFirst:o?.notifyFirst!==false,onboardingMail:Object.values(o?.events??{}).slice(-12).map(e=>({id:e.id,kind:e.kind,status:e.until<=Date.now()&&!['sent','cancelled'].includes(e.status)?'expired':e.status})),studentSignIns:Object.fromEntries(family.profiles.filter(p=>p.role==='student').map(p=>[p.id,p.onboardingStudent?(p.firstSignedInAt?'ready':'waiting'):'existing']))};
+ const o=family.onboarding;return {emailLogin:!!profile.emailLogin,notifyWeekly:o?.notifyWeekly===true,weeklyDeliveryReady:process.env.WEEKLY_SUMMARY_ENABLED==='1',notifyFirst:o?.notifyFirst!==false,onboardingMail:Object.values(o?.events??{}).slice(-12).map(e=>({id:e.id,kind:e.kind,status:e.until<=Date.now()&&!['sent','cancelled'].includes(e.status)?'expired':e.status})),studentSignIns:Object.fromEntries(family.profiles.filter(p=>p.role==='student').map(p=>[p.id,p.onboardingStudent?(p.firstSignedInAt?'ready':'waiting'):'existing']))};
 }

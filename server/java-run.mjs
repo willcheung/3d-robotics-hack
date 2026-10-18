@@ -4,21 +4,21 @@ import { StringDecoder } from 'node:string_decoder';
 
 export const JAVA_IMAGE = 'robolab-java:s02';
 export const JAVA_LIMITS = Object.freeze({ source:16000, output:8192, line:8192, compileMs:45000, runMs:20000, commands:2000 });
-export function containerArgs(name) {
+export function containerArgs(name,image=JAVA_IMAGE) {
   return ['create','--name',name,'--interactive','--network','none','--read-only','--cap-drop','ALL',
     '--security-opt','no-new-privileges','--memory','256m','--memory-swap','256m','--cpus','1','--pids-limit','64',
     '--ulimit','nofile=128:128','--ulimit','core=0:0','--log-driver','none',
     '--tmpfs','/work:rw,noexec,nosuid,nodev,size=64m,uid=10001,gid=10001,mode=700',
-    '--tmpfs','/tmp:rw,noexec,nosuid,nodev,size=8m,uid=10001,gid=10001,mode=700',JAVA_IMAGE];
+    '--tmpfs','/tmp:rw,noexec,nosuid,nodev,size=8m,uid=10001,gid=10001,mode=700',image];
 }
 function docker(args) {
   return new Promise((resolve,reject) => execFile('docker',args,{timeout:15000,maxBuffer:65536},(error,stdout) => error ? reject(new Error('Java sandbox is unavailable. Your draft is safe; try Python or ask the workshop owner to start Java.')) : resolve(stdout.trim())));
 }
 /** One disposable container, including compilation. No source ever executes on the host. */
 export class JavaRun {
-  constructor(source, onMessage, onClosed = () => {}) {
+  constructor(source, onMessage, onClosed = () => {}, {image=JAVA_IMAGE} = {}) {
     if (typeof source !== 'string' || source.length > JAVA_LIMITS.source) throw new Error('Program is too long (16,000 character limit).');
-    this.source=source; this.onMessage=onMessage; this.onClosed=onClosed;
+    this.image=image;this.source=source; this.onMessage=onMessage; this.onClosed=onClosed;
     this.name=`robolab-java-${randomUUID()}`; this.dead=false; this.compiled=false;
     this.pending=null; this.nextId=1; this.output=0; this.buffers={out:'',err:''}; this.decoders={out:new StringDecoder('utf8'),err:new StringDecoder('utf8')}; this.child=null;
     this.timer=setTimeout(()=>this.fail('Java compilation exceeded 45 seconds. Simplify the program and try again.'),JAVA_LIMITS.compileMs);
@@ -27,7 +27,7 @@ export class JavaRun {
   emit(message) { if (!this.dead) this.onMessage(message); }
   async start() {
     try {
-      await docker(containerArgs(this.name));
+      await docker(containerArgs(this.name,this.image));
       this.created=true;
       if (this.dead) return;
       await new Promise(resolve => {

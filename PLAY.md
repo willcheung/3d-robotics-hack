@@ -51,11 +51,11 @@ Selecting a crew resets the robot and keeps your code. Reaching a target is prac
 
 ## What comes next?
 
-The **Next rescue** button becomes available after reaching a location. It keeps your code so you can adapt it for the next crew. Unique locations count once in “3 crew locations reached”; retries do not lose points. This count lasts for the current visit and resets on page reload; your saved code remains.
+The **Next rescue** button becomes available after reaching a location. It keeps your code so you can adapt it for the next crew. Each confirmed challenge counts once; retries do not lose progress. Guest practice markers last for this visit. Signed-in challenges save automatically after server confirmation and persist on other devices.
 
-These are three practice rescues within Mission 1. After the lower cove, use the location selector to revisit unfinished rescues. After all three, the Next Mission button opens Mission 2. You can also use the mission selector or Curriculum & unlocks to practice either lesson. Choose Python or Java above the editor; each mission keeps a separate draft in each language.
+These are three practice rescues within Mission 1. After the lower cove, use the location selector to revisit unfinished rescues. After all three are confirmed for your signed-in profile, Next mission opens Mission 2. Curriculum & unlocks opens available missions and read-only previews. Choose Python or Java above the editor; each mission keeps a separate draft in each language.
 
-Future family mode uses separate attempts on the same challenge and shared results. Experiment history will help compare code changes without penalizing retries; official results will rank reliability, then simulated completion time. The hosted family app already saves a private history and checked progress; official competition scores remain planned.
+Family progress shows each student’s own confirmed challenges. Run history keeps the latest twelve code snapshots, selected challenges, outcomes, final robot measurements and printed output. Console output means your printed messages and errors; “Code finished running” means execution ended. The result beside Run explains whether the objective was met and why. Official competition scores remain planned.
 
 ## Controls
 
@@ -118,6 +118,10 @@ Choose **2 · Read, then choose**. The light was moved while its station was off
 
 Every case starts exactly 30° from its destination. Half power for 50 ticks moves that distance; stopping holds the beam steady. This is one read and one decision, not a continuous tracking controller. A real camera or arm uses calibrated sensor measurements, hardware drivers and repeated feedback.
 
-Mission/language changes keep separate drafts. The hosted **Save draft** stores the selected mission/language; history restoration first saves the work it would replace and never runs code automatically. Checked Mission 2 badges unlock after all three checked Mission 1 rescues. Local badges last for the visit; server-checked badges persist. Mission 3 remains coming soon.
+Mission/language changes keep separate drafts. Signed-in code and challenge changes save automatically. Successful unfinished challenges are confirmed automatically after Run; there is no separate submission step. History restoration preserves a return copy and never runs code automatically. Three confirmed challenges unlock the next playable mission. Missions 1–4 are available; future missions remain coming soon.
 
 Use **Reset** for the declared starting pose, **Restore example** to replace only the active draft, and the mission selector to revisit Mission 1. Suggested one-hour activities and teacher acceptance are in [Mission 2's guide](docs/MISSION-02.md). Actual teen feedback remains pending.
+
+## Parents and returning students
+
+Use **Parent sign in** in the header on any computer, then enter the emailed code. An existing email resumes its family after verification. The parent dashboard shows each child's progress and next mission, manages student logins and stores the optional weekly-summary preference. Students use their private student codes to resume their own drafts and progress. Weekly delivery availability is shown in the dashboard.

@@ -14,9 +14,9 @@ test('guest previews block edits, keyboard runs and world controls while preserv
   for(const id of ['L02','L03','L04']){
     await openMission(page,id);
     await expect(page.locator('#mission-access')).toContainText('Finish all 3 challenges in Mission 1');
-    await expect(page.locator('#mission-access')).toContainText('Check & save progress');
+    await expect(page.locator('#mission-access')).toContainText('save progress automatically');
     await expect(page.locator('#code')).not.toBeEditable();
-    for(const control of ['run','restore','return-draft','language','target','verify-cloud','save-cloud','reset'])await expect(page.locator('#'+control)).toBeDisabled();
+    for(const control of ['run','restore','return-draft','language','target','reset'])await expect(page.locator('#'+control)).toBeDisabled();
     await expect(page.locator('#scene')).toHaveJSProperty('inert',true);
     await expect(page.locator('#next-lesson')).toBeHidden();
     const source=await page.locator('#code').inputValue();
@@ -43,7 +43,7 @@ for(const failure of [401,409])test(`${failure}: an expired or changed session r
   await page.route('**/api/family**',route=>route.fulfill(expired?{status:failure,json:{error:failure===401?'Sign in again.':'The signed-in profile changed in another tab. Sign in again before saving or running.'}}:{json:{profile:{id:'returning-pilot',name:'Returning pilot',role:'student'},drafts:{},history:[],students:[],completed:[...lessonTargets.L01]}}));
   await page.goto('/');await expect(page.locator('html')).toHaveAttribute('data-profile','returning-pilot');
   await openMission(page,'L02');await page.locator('#code').fill('# private mission two draft');
-  expired=true;await page.locator('#family-open').click();await page.locator('#family-refresh').click();
+  expired=true;await page.locator('#family-open').click();
   await expect(page.locator('#profile-label')).toHaveText('Guest practice');
   await page.getByRole('button',{name:'Close family progress'}).click();
   await openMission(page,'L02');await expect(page.locator('#code')).not.toBeEditable();
@@ -56,7 +56,9 @@ test('a delayed pre-check refresh cannot take away the newly unlocked mission',a
   const gate=new Promise<void>(resolve=>{release=resolve;});
   await page.route('**/api/family**',async route=>{
     const path=new URL(route.request().url()).pathname;
-    if(path.endsWith('/verify')){completed=[...lessonTargets.L01];await route.fulfill({json:{outcome:'reached'}});return;}
+    if(path.endsWith('/verify')){completed=[...lessonTargets.L01];await route.fulfill({json:{outcome:'reached',completed}});return;}
+    if(path.endsWith('/draft')){const d=route.request().postDataJSON();await route.fulfill({json:{...d,revision:d.revision+1}});return;}
+    if(path.endsWith('/attempt')){await route.fulfill({json:{ok:true}});return;}
     const snapshot={profile:{id:'pilot',name:'Pilot',role:'student'},drafts:{},history:[],students:[],completed:[...completed]};
     if(hold){hold=false;await gate;}
     await route.fulfill({json:snapshot});
@@ -65,7 +67,7 @@ test('a delayed pre-check refresh cannot take away the newly unlocked mission',a
   try{
     await page.locator('#family-open').click();hold=true;await page.locator('#family-refresh').click();
     await page.getByRole('button',{name:'Close family progress'}).click();
-    await page.locator('#verify-cloud').click();await expect(page.locator('#next-lesson')).toBeVisible();
+    await page.locator('#target').selectOption('reverse');await page.locator('#code').fill('from robot import motor, servo, wait\nawait servo(60)\nawait motor(-.5)\nawait wait(100)\nawait motor(0)');await page.locator('#run').click();await expect(page.locator('#next-lesson')).toBeVisible();
     const older=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/family');
     release();await older;
     await page.locator('#next-lesson').click();await expect(page.locator('#code')).toBeEditable();

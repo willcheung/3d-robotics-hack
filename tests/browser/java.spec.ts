@@ -3,7 +3,7 @@ const main=(body:string)=>`public class Main {\n    public static void main(Stri
 const good=main('Robot.servo(120); Robot.motor(.5); Robot.waitTicks(100); Robot.motor(0); System.out.println("ANGLE " + Math.round(Robot.angle()));');
 async function java(page:Page) {await page.getByLabel('Programming language').selectOption('java');}
 async function run(page:Page,source:string) {await page.getByLabel('Java code',{exact:true}).fill(source);await page.getByRole('button',{name:'Run code'}).click();}
-async function done(page:Page) {await expect(page.locator('#runtime-label')).toHaveText('Program finished');}
+async function done(page:Page) {await expect(page.locator('#runtime-label')).toHaveText('Code finished running');}
 test.beforeEach(async({page})=>{await page.goto('/');await java(page);});
 test('Java starter teaches syntax, editable real code misses then rescues; progress survives language switch',async({page})=>{
   const editor=page.getByLabel('Java code',{exact:true}), source=await editor.inputValue();

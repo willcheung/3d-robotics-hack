@@ -1,5 +1,7 @@
 # Foundation contract and future acceptance gates
 
+Current family/workbench contract: [FAMILY-EXPERIENCE.md](FAMILY-EXPERIENCE.md) supersedes older manual Save/Check and note-form descriptions below. Four playable missions have eight separate language drafts; signed-in edits auto-save and successful unfinished challenges check automatically. The parent dashboard uses the same confirmed targets. Experiment notes are preserved as legacy data without forms. Release status remains explicit in PROGRESS.md.
+
 Updated from early play-test feedback. Missions 1–3 run online in Python and Java with private student accounts and shared family results; the full curriculum and unattended scheduler remain planned. TASKS.md controls slice readiness; this contract applies to every future slice. Preserve an executable student experience at every checkpoint.
 
 ## What exists and what remains planned
