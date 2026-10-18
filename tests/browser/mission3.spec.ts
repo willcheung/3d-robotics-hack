@@ -7,6 +7,8 @@ async function run(page:Page,source?:string){
  // Startup and execution have separate product deadlines.
  await expect(page.locator('#status-pill')).not.toHaveText('LOADING',{timeout:47000});
  await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:22000});
+ // Explicit fixture check after successful practice; real server scoring is covered by family-ui.
+ if((await page.locator('#feedback').getAttribute('class'))?.split(' ').includes('success')){await page.locator('#verify-cloud').click();await expect(page.locator('#stop-check')).toBeHidden();}
 }
 for(const lang of ['python','java'] as const){
  test(`Mission 3 ${lang}: starter to all patrols, hints, actual stops, camera and reset`,async({page})=>{

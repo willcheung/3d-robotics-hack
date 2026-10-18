@@ -1,7 +1,9 @@
 import {openMission,openHints,readHints} from '../learning-ui.ts';
 import {test,expect,type Page} from '../workshop-fixture.ts';
 import {sensorReference,sensorTransfer} from '../../src/lessons.ts';
-async function run(page:Page,source?:string){if(source!==undefined)await page.locator('#code').fill(source);await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED');}
+async function run(page:Page,source?:string){if(source!==undefined)await page.locator('#code').fill(source);await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED');
+ // Explicit fixture check after successful practice; real server scoring is covered by family-ui.
+ if((await page.locator('#feedback').getAttribute('class'))?.split(' ').includes('success')){await page.locator('#verify-cloud').click();await expect(page.locator('#stop-check')).toBeHidden();}}
 for(const language of ['python','java'] as const){
  test(`Mission 2 ${language}: real starter, prediction, both branches, transfer, badges and reset`,async({page})=>{
   await page.goto('/');await openMission(page,'L02');await page.locator('#language').selectOption(language);
