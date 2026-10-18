@@ -1,3 +1,4 @@
+import {openSignIn} from '../learning-ui.ts';
 import {fixtureParent} from '../helpers/fixture-parent.ts';
 import {test as baseTest,expect,type BrowserContext,type Page} from '@playwright/test';
 import {BlobStore,provision,login,addStudent,hashCode} from '../../server/family-store.mjs';
@@ -18,8 +19,7 @@ async function signIn(context:BrowserContext,code:string){await protect(context)
 test.beforeAll(async()=>{const f=await provision(store);parentCode=f.code;const p=await login(store,parentCode);codeA=(await addStudent(store,p,'Nova')).code;codeB=(await addStudent(store,p,'Orion')).code;});
 test.afterAll(async()=>{if(paths.size)await del([...paths]);});
 test('family sign-in, curriculum availability, real hosted Java and saved cross-device drafts',async({browser,page})=>{
- await page.goto('/');await page.getByRole('button',{name:'Family & progress',exact:true}).click();
- await page.locator('[data-mode=student]').click();await page.locator('#access-code').fill(codeA);await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.locator('#profile-label')).toContainText('Nova');
+ await page.goto('/');await openSignIn(page,'student');await page.locator('#access-code').fill(codeA);await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.locator('#profile-label')).toContainText('Nova');
  await page.getByRole('button',{name:'Close family progress'}).click();
  await page.locator('#language').selectOption('java');await page.locator('#code').fill(main());
  await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});await expect(page.locator('#feedback-title')).toContainText('Crew located');
@@ -32,7 +32,7 @@ test('server-checked Python progress is shared; practice claims cannot unlock; s
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');await page.locator('#code').fill(python);
  await confirmedRun(page);
  const b=await browser.newContext();await signIn(b,codeB);const other=await b.newPage();await other.goto('/');await expect(other.locator('#profile-label')).toContainText('Orion');await other.locator('#family-open').click();
- await expect(other.locator('.family-results')).toContainText('Nova');await expect(other.locator('.family-results')).toContainText('1/3 challenges complete');await expect(other.locator('.rescue-checklist').first()).toContainText('○ North ridge');await expect(other.locator('#family-content')).not.toContainText('from robot import');
+ await expect(other.locator('.arena-board tbody tr').filter({hasText:'Nova'})).toContainText('1/12 challenges');await expect(other.locator('.arena-you')).toContainText('0/12 challenges');await expect(other.locator('#family-content')).not.toContainText('from robot import');
  await other.locator('#family-dialog').screenshot({path:'test-results-hosted/family-results.png'});await b.close();
 });
 test('Java compiler error, infinite-loop Stop and recovery preserve editable source',async({page})=>{
@@ -53,7 +53,7 @@ test('parent sees provisioned student aliases and revokes a signed-in child',asy
  const generated=(await addStudent(store,await login(store,parentCode),'Comet')).code;paths.add(`invites/${hashCode(generated)}.json`);
  await signIn(page.context(),parentCode);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Parent');await page.locator('#family-open').click();await expect(page.locator('.family-results')).toContainText('Comet');
  const child=await browser.newContext();await signIn(child,codeB);const other=await child.newPage();await other.goto('/');await expect(other.locator('#profile-label')).toContainText('Orion');
- await page.locator('.family-results article').filter({hasText:'Orion'}).getByText('Manage student login',{exact:true}).click();page.once('dialog',d=>d.accept());await page.locator('.family-results article').filter({hasText:'Orion'}).getByRole('button',{name:'Revoke access'}).click();await expect(page.locator('#family-message')).toContainText('revoked');
+ await page.locator('.arena-admin>summary').click();await page.locator('.family-results article').filter({hasText:'Orion'}).getByText('Manage student login',{exact:true}).click();page.once('dialog',d=>d.accept());await page.locator('.family-results article').filter({hasText:'Orion'}).getByRole('button',{name:'Revoke access'}).click();await expect(page.locator('#family-message')).toContainText('revoked');
  await other.locator('#code').fill('# revoked account edit');await expect(other.locator('#profile-label')).toHaveText('Guest practice');await child.close();
 });
 test('conflicting devices compare versions and keep the chosen source',async({browser,page})=>{
