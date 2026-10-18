@@ -20,7 +20,7 @@ async function fixture(){
 test('weekly digest uses durable activity and first-completion dates, all children and one receipt',async()=>{
  const f=await fixture();await f.activity();f.advance(28*3600000);
  await Promise.all([f.service.weekly(f.parent.familyId,week),f.service.weekly(f.parent.familyId,week)]);const job=f.jobs.find(j=>j.message.eventId)?.message;await f.service.deliver(job);await f.service.deliver(job);await f.service.weekly(f.parent.familyId,week);
- assert.equal(f.messages.length,1);const message=f.messages[0];assert.match(message.text,/Pilot A: 18 runs/);assert.match(message.text,/Pilot B: 2 runs/);assert.match(message.text,/Completed Mission 1/);assert.ok(!message.text.includes('PRIVATE STUDENT SOURCE'));assert.ok(!message.text.includes('Student code:'));assert.equal((await current(f.store,f.children[0])).profile.history.length,0);
+ assert.equal(f.messages.length,1);const message=f.messages[0];assert.match(message.text,/Pilot A ran code 18 times/);assert.match(message.text,/Pilot B ran code 2 times/);assert.match(message.text,/Pilot A completed Mission 1/);assert.ok(!message.text.includes('PRIVATE STUDENT SOURCE'));assert.ok(!message.text.includes('Student code:'));assert.equal((await current(f.store,f.children[0])).profile.history.length,0);
  const {family,profile}=await current(f.store,f.parent);assert.equal(onboardingView(family,profile).notifyWeekly,true);assert.equal(onboardingView(family,family.profiles[1]).notifyWeekly,undefined);
  await assert.rejects(f.service.preferences(f.children[0],{notifyWeekly:false}),e=>e.status===403);
 });
