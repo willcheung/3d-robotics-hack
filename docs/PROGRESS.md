@@ -1,5 +1,12 @@
 # Public progress
 
+## Site identity — Favicon and mission tab titles
+
+- Status: validated locally on `codex/site-identity`, based on `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`; not published or deployed.
+- Added an SVG favicon using the existing lime cube mark. Tab titles use `RoboLab · [mission title]` on initial load, mission navigation and profile restoration.
+- Checks: TypeScript, Vite/app-runtime build, publication check and diff whitespace check passed. Browser checks confirmed all four mission titles and reload restoration; the favicon returns HTTP 200 with SVG content type and its 32px rendering was inspected. Runtime/account behavior is unchanged; no hosted regression or learner pilot is claimed.
+- Local preview: `http://127.0.0.1:4273/`. Exact checkpoint and visual evidence are retained in the private site-identity receipt. Next action: review, then separately authorize publication and deployment.
+
 ## UI-03 — Guided mission access
 
 - Status: validated locally on `codex/guided-missions`, base `442ea6981def5f2122ae400709d114ace5f353a7`. The owner explicitly requested actual mission locks, visible read-only previews and an earned Next mission button, then chose all three server-checked challenges with sign-in required. Exclusive ownership was acquired before source writes.

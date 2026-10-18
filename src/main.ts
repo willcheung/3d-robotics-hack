@@ -323,6 +323,7 @@ const firstInstruction=document.querySelector('.mission-instruction')!.innerHTML
 const nextMission=document.createElement('button');nextMission.id='next-lesson';nextMission.textContent='Mission 2: Read, then choose →';nextMission.disabled=true;document.querySelector('.practice-nav')!.append(nextMission);nextMission.onclick=()=>{const next=getLesson(lesson).next;if(next&&access().complete)selectLesson(next);};
 function lessonUI(){
   const info=getLesson(lesson),sensor=lesson==='L02';
+  document.title=`RoboLab · ${info.title}`;
   const arm=lesson==='L04';
   el('scene').dataset.world=arm?'arm':'station';
   el('gripper-label').hidden=!arm;
