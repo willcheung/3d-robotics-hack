@@ -38,10 +38,10 @@ for(const lang of ['python','java'] as const){
   await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('RUNNING',{timeout:47000});await page.locator('#reset').click();await expect(page.locator('#status-pill')).toHaveText('READY');await expect(page.locator('#arm-progress')).toContainText('WAITING');await expect(page.locator('#code')).toHaveValue(armReference[lang]);
  });
 }
-test('Parcel Port narrow layout, keyboard camera, eight local contexts and WebGL fallback',async({page})=>{
+test('Parcel Port narrow layout, keyboard camera, measured feedback and WebGL fallback',async({page})=>{
  await page.goto('/');await openMission(page,'L04');await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);await page.locator('#scene canvas').focus();await page.keyboard.press('ArrowLeft');await page.keyboard.press('Home');await expect(page.locator('#pointer-value')).toHaveText('30.0°');
- await page.locator('.world-panel').screenshot({path:'test-results/mission-04-narrow-scene.png'});await page.locator('#code-panel').screenshot({path:'test-results/mission-04-narrow-code.png'});await page.locator('#feedback').screenshot({path:'test-results/mission-04-narrow-feedback.png'});
+ await page.locator('.world-panel').screenshot({path:'test-results/mission-04-narrow-scene.png'});await page.locator('#code-panel').screenshot({path:'test-results/mission-04-narrow-code.png'});await expect(page.locator('#feedback')).toBeHidden();await run(page,armReference.python);await expect(page.locator('#run-explanation')).toBeVisible();await page.locator('#feedback').screenshot({path:'test-results/mission-04-narrow-feedback.png'});
  await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type:string,...args:unknown[]){if(type.includes('webgl'))return null;return (original as Function).apply(this,[type,...args]);} as typeof original;});
  await page.reload();await expect(page.locator('.webgl-warning')).toBeVisible();await expect(page.locator('#arm-progress')).toContainText('WAITING');await expect(page.locator('#value-guide')).toContainText('0..100 millimetres');
 });
