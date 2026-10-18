@@ -1,3 +1,5 @@
+import {arenaSummary,type ArenaSummary,type ArenaParticipant} from './arena.ts';
+import {arenaMarkup} from './arena-view.ts';
 import {draftSync,readDraftBase,type DraftSnapshot} from './draft-sync.ts';
 import {getLesson} from './lessons.ts';
 import {progressRows,challengeLabels} from './progress-view.ts';
@@ -8,7 +10,7 @@ import {lessonIds,lessonTargets,targetLesson,draftKey,type LessonId} from './mod
 type Language='python'|'java';
 type Draft={source:string;revision:number;target?:string};
 type Attempt={id:string;source:string;language:Language;target:string;outcome:string;seconds:number|null;error?:string;verified?:boolean;at?:string;values?:Partial<RunValues>;output?:string;owner?:string|null};
-type Family=Omit<OnboardingFamily,'students'> & {recoveryEmail?:string|null;profile:{id:string;name:string;role:string};drafts:Partial<Record<string,Draft>>;history:Attempt[];students:{id:string;name:string;completed:string[];experiments:number;lastActivity?:string|null;missionCompleted?:Record<string,string>;recent?:{target:string;outcome:string;verified:boolean;at:string}[]}[];completed:string[]};
+type Family=Omit<OnboardingFamily,'students'> & {recoveryEmail?:string|null;profile:{id:string;name:string;role:string};drafts:Partial<Record<string,Draft>>;history:Attempt[];students:{id:string;name:string;completed:string[];experiments:number;lastActivity?:string|null;missionCompleted?:Record<string,string>;recent?:{target:string;outcome:string;verified:boolean;at:string}[]}[];completed:string[];arena?:ArenaSummary;checkRevision?:number;participants?:ArenaParticipant[]};
 type Hooks={draft:()=>{source:string;language:Language;target:string;lesson:LessonId};lesson:()=>LessonId;openLesson:(lesson:LessonId,target?:string)=>void;draftFor:(language:Language,lesson?:LessonId)=>string;targetFor:(language:Language,lesson?:LessonId)=>string;load:(language:Language,source:string,lesson?:LessonId,target?:string)=>void;profile:(id:string|null,drafts:Family['drafts'],completed:string[])=>void;progress:(completed:string[],signedIn:boolean,pending?:string[])=>void;running:()=>boolean;checking:(active:boolean)=>void;canEdit:(lesson?:LessonId)=>boolean;stop:()=>void};
 const hosted=import.meta.env.VITE_HOSTED==='1';
 const escape=(v:string)=>v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -30,7 +32,7 @@ export function attachFamily(hooks:Hooks){
  const shell=document.createElement('div');shell.innerHTML=`
  <nav class="learning-nav" aria-label="Learning and family"><button id="curriculum-open" aria-haspopup="dialog" aria-controls="curriculum-dialog">Curriculum & unlocks</button><div class="account-nav"><button id="family-open" aria-haspopup="dialog" aria-controls="family-dialog">Sign in / Sign up</button><div id="signin-options" class="signin-options" hidden><button id="student-signin-open">Student sign in</button><button id="parent-signin-open">Parent sign in</button><button id="parent-signup-open">Create a family account</button></div></div><span id="profile-label">Guest practice</span></nav>
  <dialog id="curriculum-dialog" class="learning-dialog" aria-labelledby="curriculum-title">${curriculumHeader()}<p class="build-status">Run real Python or Java. Separate drafts; free retries and hints.</p></dialog>
- <dialog id="family-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Family & progress</h2><button data-close aria-label="Close family progress">Close ✕</button></div><p>Take separate turns on the same missions and share family progress. Experiment freely: retries and help never cost points.</p><section id="email-verification-notice" class="verification-notice" role="status" aria-live="polite" aria-atomic="true" hidden></section><p id="family-message" role="status" aria-live="polite"></p><div id="student-link-flow"></div><div id="recovery-flow"></div><div id="setup-receipt"></div><div id="family-content"></div></dialog>`;
+ <dialog id="family-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Family & progress</h2><button data-close aria-label="Close family progress">Close ✕</button></div><p>Parents and students compete on the same missions. Run is free practice; scored checks earn points. Hints and help are free.</p><section id="email-verification-notice" class="verification-notice" role="status" aria-live="polite" aria-atomic="true" hidden></section><p id="family-message" role="status" aria-live="polite"></p><div id="student-link-flow"></div><div id="recovery-flow"></div><div id="setup-receipt"></div><div id="family-content"></div></dialog>`;
  document.body.append(shell);
  document.querySelector('#language-badge')!.before(shell.querySelector('.learning-nav')!);
  const q=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
@@ -68,22 +70,23 @@ export function attachFamily(hooks:Hooks){
  for(const mode of ['parent','student'] as const)q(mode+'-signin-open').onclick=()=>openAccount(mode);
  q('parent-signup-open').onclick=()=>openAccount('parent');
  const toolbar=document.createElement('section');toolbar.className='family-tools';toolbar.hidden=!hosted;
- toolbar.innerHTML='<div><strong>Code & progress</strong><p id="save-help" role="status" aria-live="polite">Guest drafts stay on this device. Sign in to keep progress.</p><p id="progress-sync" role="status" aria-live="polite"></p></div><button id="history-open">Run history</button><button id="stop-check" hidden>Stop check</button><button id="retry-sync" hidden>Retry sync</button><button id="resolve-conflict" hidden>Compare saved versions</button>';
+ toolbar.innerHTML='<div><strong>Code & progress</strong><p id="save-help" role="status" aria-live="polite">Guest drafts stay on this device. Sign in to keep progress.</p><p id="progress-sync" role="status" aria-live="polite"></p></div><button id="verify-cloud" class="primary">Check &amp; save progress</button><button id="history-open">Run history</button><button id="stop-check" hidden>Stop check</button><button id="retry-sync" hidden>Retry sync</button><button id="resolve-conflict" hidden>Compare saved versions</button>';
  toolbar.hidden=false;document.querySelector('.workbench')!.after(toolbar);
  const historyDialog=document.createElement('dialog');historyDialog.id='run-history';historyDialog.className='learning-dialog';historyDialog.setAttribute('aria-label','Run history');document.body.append(historyDialog);
  function clearPrivateViews(){historyDialog.close();historyDialog.replaceChildren();document.querySelectorAll('[data-draft-comparison]').forEach(node=>node.remove());}
  q('history-open').onclick=()=>{renderHistory();historyDialog.showModal();};
- let checkAbort:AbortController|undefined,checkId='',cancelPromise:Promise<unknown>|undefined;
+ let checkAbort:AbortController|undefined,checkId='',checkRevision=0,cancelPromise:Promise<unknown>|undefined;
  const say=(text:string)=>{q('family-message').textContent=text;};
  const progressMessage=(text:string)=>{q('progress-sync').textContent=text;};
  const saves=draftSync({request:draft=>request('/draft',draft),status:(text,conflicts)=>{q('save-help').textContent=text;draftRetry=text.includes('waiting to sync');q('retry-sync').hidden=!draftRetry&&!pending.length;q('resolve-conflict').hidden=!conflicts.length;if(conflicts[0]){conflictLanguage=conflicts[0].language;conflictLesson=conflicts[0].lesson;}}});
- function notifyProgress(){hooks.progress(family?.completed??[],!!family,pending.filter(a=>a.outcome==='reached'&&!family?.completed.includes(a.target)).map(a=>a.target));}
+ function notifyProgress(){hooks.progress(family?.completed??[],!!family,[]);}
  function retainPending(){if(family)persist(`robolab.profile.${family.profile.id}.pending`,pending);notifyProgress();q('retry-sync').hidden=!draftRetry&&!pending.length;}
- async function stopCheck(){if(!checking||!checkAbort)return;const id=checkId;checkAbort.abort();pending=pending.filter(a=>a.id!==id);retainPending();cancelPromise=request('/cancel',{id});const result=await cancelPromise as {completed:boolean};if(result.completed)await refresh();progressMessage(result.completed?'The check already finished. Progress refreshed.':'Progress check stopped. Run again when you are ready.');}
+ function retireCheck(){checkAbort?.abort();checkAbort=undefined;checkId='';checking=false;hooks.checking(false);q('stop-check').hidden=true;}
+ async function stopCheck(){if(!checking||!checkAbort)return;const id=checkId;checkAbort.abort();pending=pending.filter(a=>a.id!==id);retainPending();cancelPromise=(async()=>{const result=await request('/cancel',{id,checkRevision}) as {completed:boolean;stale?:boolean};if(!result.stale)await refresh();progressMessage(result.completed?'The check already finished. Progress refreshed.':result.stale?'Result not confirmed. Refresh progress.':'Check not counted. Practice with Run, then check when ready.');})();await cancelPromise;}
  async function request(path:string,data?:unknown,signal?:AbortSignal,profileHeader=true){
   const requestedIdentity=identity;
   const response=await fetch('/api/family'+path,{method:data===undefined?'GET':'POST',headers:{...(data===undefined?{}:{'Content-Type':'application/json'}),...(profileHeader&&family&&path!=='/login'?{'X-RoboLab-Profile':family.profile.id}:{})},credentials:'same-origin',body:data===undefined?undefined:JSON.stringify(data),signal});
-  const result=await response.json();if(!response.ok){if(requestedIdentity===identity&&family&&path!=='/login'&&!path.startsWith('/auth')&&(response.status===401||response.status===409&&result.error==='The signed-in profile changed in another tab. Sign in again before saving or running.')){identity++;switching=true;hooks.stop();family=null;pending=[];localHistory=readList('robolab.guest.history');clearPrivateViews();saves.profile('',{},[]);onboarding.clear();hooks.profile(null,{},[]);switching=false;notifyProgress();render();renderCurriculum();}if(response.status===409&&path==='/draft')q('resolve-conflict').hidden=false;throw Object.assign(Error(result.error||'Family service unavailable. Your code stays in the editor.'),{status:response.status,code:result.code});}return result;
+  const result=await response.json();if(!response.ok){if(requestedIdentity===identity&&family&&path!=='/login'&&!path.startsWith('/auth')&&(response.status===401||response.status===409&&result.error==='The signed-in profile changed in another tab. Sign in again before saving or running.')){identity++;retireCheck();progressMessage('Sign in again to check progress. Your code is kept on this device.');switching=true;hooks.stop();family=null;pending=[];localHistory=readList('robolab.guest.history');clearPrivateViews();saves.profile('',{},[]);onboarding.clear();hooks.profile(null,{},[]);switching=false;notifyProgress();render();renderCurriculum();}if(response.status===409&&path==='/draft')q('resolve-conflict').hidden=false;throw Object.assign(Error(result.error||'Family service unavailable. Your code stays in the editor.'),{status:response.status,code:result.code});}return result;
  }
  const onboarding=attachOnboarding({request,refresh:()=>refresh(),say,render,close:()=>dialog('family-dialog').close(),signIn:async code=>{
   await stopCheck();hooks.stop();if(family)await saves.flush().catch(()=>{});
@@ -135,6 +138,7 @@ export function attachFamily(hooks:Hooks){
   else{q('family-open').removeAttribute('aria-expanded');q('family-open').setAttribute('aria-haspopup','dialog');}
   q('family-dialog').querySelector('h2')!.textContent=family?.profile.role==='parent'?'Parent dashboard':family?'My progress':hosted?'Sign in / Sign up':'Family & progress';
   q('profile-label').textContent=family?`${family.profile.name} · private family`:'Guest practice';
+  updateCheckButton();
   if(!hosted){q('family-content').innerHTML='<p>Family accounts are available on the hosted release. This local workshop keeps anonymous practice drafts on this device.</p>';return;}
   if(!family){
    q('family-content').innerHTML='<div id="onboarding-entry"></div><div class="family-entry" id="student-entry"><section><h3>Student sign-in</h3><p>Enter the code your parent gave you to continue your saved work on any device. Lost your student code? Ask your parent for a replacement; your progress is kept.</p><form id="family-login"><label>Student code<input id="access-code" type="password" autocomplete="off" maxlength="32" required></label><button class="primary">Sign in</button></form></section></div><p>Try Mission 1 in Python without signing in. Sign in to check progress and unlock the next mission.</p><button id="guest-practice">Try Python without an account</button>';
@@ -144,11 +148,14 @@ export function attachFamily(hooks:Hooks){
 
   q('family-content').innerHTML=`<div class="family-heading"><h3>${escape(family.profile.name)}</h3><button id="family-refresh">Refresh progress</button><button id="family-logout">Sign out</button></div>
   <div id="parent-onboarding"></div>
-  ${family.profile.role==='student'?`<h3>Your progress</h3>${progressMarkup(family.completed)}`:''}
-  <h3>${family.profile.role==='parent'?"Your children's progress":'Shared family results'}</h3><p>Three completed challenges finish a mission. Progress updates automatically after a successful Run is confirmed. Each child keeps their own work.</p>
-  <div class="family-results">${family.students.map(p=>{const rows=progressRows(p.completed),next=rows.find(r=>!r.complete);return `<article><strong>${escape(p.name)}</strong><span>${rows.filter(r=>r.complete).length} of ${rows.length} missions complete · ${p.experiments} runs</span><p>${next?`Next: ${escape(next.title)} · ${next.count}/3 challenges complete`:'All four missions complete. Try a changed case or revisit a favorite.'}</p>${family!.profile.role==='parent'?`<small>${p.lastActivity?'Last activity: '+escape(new Date(p.lastActivity).toLocaleString()):'No recorded activity yet'}</small><details><summary>View ${escape(p.name)}’s progress</summary>${progressMarkup(p.completed)}<p>Completion shows the robot met the objective. Ask your child to explain what changed and why.</p>${p.recent?.length?`<h4>Recent activity</h4><ul>${p.recent.map(a=>`<li>${escape(challengeLabels[a.target]??a.target)} · ${a.verified&&a.outcome==='reached'?'Completed':a.outcome==='reached'?'Practice passed':a.outcome==='missed'?'Tried again':escape(a.outcome)} · ${escape(new Date(a.at).toLocaleDateString())}</li>`).join('')}</ul>`:''}</details><details><summary>Manage student login</summary><small>${({waiting:'Waiting for first sign-in',ready:'Ready · student has signed in',existing:'Existing student'} as Record<string,string>)[family!.studentSignIns?.[p.id]??'existing']}</small>${family!.emailLogin?`<button data-code="${p.id}">New access code</button><button data-revoke="${p.id}">Revoke access</button>`:''}</details>`:''}</article>`;}).join('')||'<p>Add a student below to see their progress here.</p>'}</div>`;
+  ${arenaMarkup(family.participants??[{...family.profile,role:family.profile.role==='parent'?'parent':'student',rank:null,arena:arenaSummary(family.completed)}],family.profile.id,family.arena??arenaSummary(family.completed))}
+  ${family.profile.role==='parent'?'<details class="arena-admin"><summary>Parent controls & student details</summary>':''}
+  ${family.profile.role==='parent'?'<h3>Student details & login management</h3><p>Each participant keeps their own code and progress. Managing a login never changes points.</p>':''}
+  <div class="family-results" ${family.profile.role==='parent'?'':'hidden'}>${family.students.map(p=>{const rows=progressRows(p.completed),next=rows.find(r=>!r.complete);return `<article><strong>${escape(p.name)}</strong><span>${rows.filter(r=>r.complete).length} of ${rows.length} missions complete · ${p.experiments} runs</span><p>${next?`Next: ${escape(next.title)} · ${next.count}/3 challenges complete`:'All four missions complete. Try a changed case or revisit a favorite.'}</p>${family!.profile.role==='parent'?`<small>${p.lastActivity?'Last activity: '+escape(new Date(p.lastActivity).toLocaleString()):'No recorded activity yet'}</small><details><summary>View ${escape(p.name)}’s progress</summary>${progressMarkup(p.completed)}<p>Completion shows the robot met the objective. Ask your child to explain what changed and why.</p>${p.recent?.length?`<h4>Recent activity</h4><ul>${p.recent.map(a=>`<li>${escape(challengeLabels[a.target]??a.target)} · ${a.verified&&a.outcome==='reached'?'Completed':a.outcome==='reached'?'Practice passed':a.outcome==='missed'?'Tried again':escape(a.outcome)} · ${escape(new Date(a.at).toLocaleDateString())}</li>`).join('')}</ul>`:''}</details><details><summary>Manage student login</summary><small>${({waiting:'Waiting for first sign-in',ready:'Ready · student has signed in',existing:'Existing student'} as Record<string,string>)[family!.studentSignIns?.[p.id]??'existing']}</small>${family!.emailLogin?`<button data-code="${p.id}">New access code</button><button data-revoke="${p.id}">Revoke access</button>`:''}</details>`:''}</article>`;}).join('')||'<p>Add a student below to see their progress here.</p>'}</div>${family.profile.role==='parent'?'</details>':''}`;
   // Keep setup secondary once a family has students.
   if(family.profile.role==='parent'&&family.students.length)q('family-content').append(q('parent-onboarding'));
+  q('arena-continue').onclick=()=>{const button=q('arena-continue');if(button.dataset.arenaLesson){hooks.openLesson(button.dataset.arenaLesson as LessonId,button.dataset.arenaTarget);dialog('family-dialog').close();}else{renderCurriculum();dialog('family-dialog').close();dialog('curriculum-dialog').showModal();}};
+  updateCheckButton();
   q('family-refresh').onclick=()=>void refresh().catch(e=>say(e.message));
   q('family-logout').onclick=async()=>{try{await stopCheck();hooks.stop();const synced=await saves.flush().then(()=>true,()=>false);await request('/logout',{});identity++;switching=true;family=null;pending=[];localHistory=readList('robolab.guest.history');clearPrivateViews();saves.profile('',{},[]);onboarding.clear();hooks.profile(null,{},[]);localHistory=readList('robolab.guest.history');switching=false;notifyProgress();render();renderCurriculum();say(synced?'Signed out. Your drafts and progress are saved.':'Signed out. Unsynced edits are kept in this tab; return here to finish syncing.');}catch(e){say((e as Error).message);}};
   if(family.profile.role==='parent'){
@@ -169,7 +176,7 @@ export function attachFamily(hooks:Hooks){
    }catch(e){progressMessage((e as Error).message);}
   });
  }
- function draftChanged(){if(!switching&&family&&hooks.canEdit())saves.change(hooks.draft());}
+ function draftChanged(){if(!switching&&family&&hooks.canEdit())saves.change(hooks.draft());updateCheckButton();}
  q('resolve-conflict').onclick=async()=>{
   if(!family||!hooks.canEdit(conflictLesson))return;const who=identity,currentDraft=hooks.draft();if(conflictLanguage){currentDraft.language=conflictLanguage;currentDraft.lesson=conflictLesson??currentDraft.lesson;currentDraft.source=hooks.draftFor(conflictLanguage,currentDraft.lesson);currentDraft.target=hooks.targetFor(conflictLanguage,currentDraft.lesson);}
   try{
@@ -185,6 +192,37 @@ export function attachFamily(hooks:Hooks){
    compare.showModal();
   }catch(e){say((e as Error).message);}
  };
+ function updateCheckButton(){
+  const button=q<HTMLButtonElement>('verify-cloud');if(!button)return;
+  button.hidden=!hosted;
+  const target=hooks.draft().target,score=family?.arena?.missions.flatMap(m=>m.challenges).find(c=>c.target===target);
+  button.disabled=checking||!hooks.canEdit()||score?.points!==null&&score?.points!==undefined;
+  button.textContent=score?.points!==null&&score?.points!==undefined?'Challenge checked ✓':'Check & save progress';
+  let guide=document.getElementById('score-guide');if(!guide){guide=document.createElement('p');guide.id='score-guide';q('progress-sync').after(guide);}
+  guide.textContent=family?score?.points!==null&&score?.points!==undefined?'Earned points stay yours. Run is free practice.':`Run is free practice. ${score?.checks??0} scored checks · ${score?.available??100} points available on your next check. Checks 1–10 earn 100, then 10 fewer every ten, down to 50. Help is free.`:'Sign in to score. Run is free practice.';
+ }
+ q('verify-cloud').onclick=async()=>{
+  if(checking||!hooks.canEdit())return;if(!family){openAccount('student');return;}
+  if(hooks.running()){progressMessage('Finish or stop your practice run before checking.');return;}
+  const draft={...hooks.draft()},who=identity,beforeBadges=family.arena?.badges.length??0;
+  checking=true;hooks.checking(true);checkId=crypto.randomUUID();checkRevision=(family.checkRevision??0)+1;cancelPromise=undefined;checkAbort=new AbortController();q('stop-check').hidden=false;updateCheckButton();
+  const submittedId=checkId;
+  progressMessage('Checking this code for points… Your draft is kept.');
+  try{
+   const result=await request('/verify',{...draft,id:checkId,checkRevision:checkRevision-1},checkAbort.signal);if(who!==identity)return;
+   await refresh();if(who!==identity)return;
+   const bonus=(family!.arena?.badges.length??0)>beforeBadges?200:0,earned=result.pointsEarned??0;
+   const score=family!.arena?.missions.flatMap(m=>m.challenges).find(c=>c.target===draft.target);
+   progressMessage(result.outcome==='reached'?earned?`Challenge complete · +${earned-bonus} points.${bonus?' Mission badge earned · +200 bonus.':''}`:'Challenge already recorded. No extra points.':result.outcome==='missed'?`Check counted. ${score?.checks??''} scored checks · ${score?.available??''} points available. Practice with Run and try again.`:`Check not counted. ${result.error||'Fix the code and try again.'}`);
+  }catch(error){
+   if(who!==identity||checkAbort?.signal.aborted)return;
+   const status=(error as {status?:number}).status;
+   progressMessage(status===409?'Scored checks changed. Refresh progress, then submit again.':status&&status<500?`Check not counted. ${(error as Error).message}`:'Result not confirmed. Refresh progress to see whether this check finished. Your code is safe.');
+   if(status===409)await refresh().catch(()=>{});
+  }finally{
+   await Promise.resolve(cancelPromise).catch(()=>{});if(checkId===submittedId){retireCheck();updateCheckButton();}
+  }
+ };
  q('stop-check').onclick=()=>void stopCheck().catch(e=>progressMessage(e.message));
  q('retry-sync').onclick=()=>{saves.retry();attemptRetries=0;scheduleAttempts(0);};
  function scheduleAttempts(delay=500){clearTimeout(attemptTimer);attemptTimer=setTimeout(()=>void syncAttempts(),delay);}
@@ -193,21 +231,15 @@ export function attachFamily(hooks:Hooks){
   const a=pending[0],who=identity;syncing=true;let failed=false;
   try{
    await request('/attempt',a);if(who!==identity)return;
-   if(a.outcome==='reached'&&!family.completed.includes(a.target)){
-    checking=true;hooks.checking(true);checkId=a.id;cancelPromise=undefined;checkAbort=new AbortController();q('stop-check').hidden=false;progressMessage('Challenge passed · saving progress… You can keep editing.');
-    const result=await request('/verify',a,checkAbort.signal);if(who!==identity)return;
-    family.completed=result.completed;notifyProgress();
-    progressMessage(result.outcome==='reached'?'✓ Challenge complete. Progress saved for your family.':result.error||'The server could not confirm this run. Your code and results are safe; try Run again.');
-   }
    pending=pending.filter(row=>row.id!==a.id);retainPending();attemptRetries=0;await refresh();
   }catch(error){
-   if(who===identity&&!checkAbort?.signal.aborted){failed=true;progressMessage('Your run is kept on this device. Progress is waiting to sync. '+(error as Error).message);
+   if(who===identity&&!checkAbort?.signal.aborted){failed=true;progressMessage('Your run is kept on this device. Run history is waiting to sync. '+(error as Error).message);
     const status=(error as {status?:number}).status;
     if(status===400||status===403){pending=pending.filter(row=>row.id!==a.id);retainPending();progressMessage((error as Error).message+' Your code remains in Run history.');}
     else if(status!==429&&status!==401&&attemptRetries<3)scheduleAttempts([2000,8000,30000][attemptRetries++]);
    }
   }finally{
-   await Promise.resolve(cancelPromise).catch(()=>{});syncing=false;checking=false;checkAbort=undefined;hooks.checking(false);q('stop-check').hidden=true;
+   syncing=false;
    if(who===identity)retainPending();if(pending.length&&(!failed||who!==identity))scheduleAttempts();
   }
  }
@@ -215,9 +247,8 @@ export function attachFamily(hooks:Hooks){
   if((a.owner??null)!==(family?.profile.id??null))return;
   a={...a,at:new Date().toISOString(),output:a.output?.slice(0,4000)};
   localHistory=[a,...localHistory.filter(row=>row.id!==a.id)].slice(0,12);persist(family?`robolab.profile.${family.profile.id}.history`:'robolab.guest.history',localHistory);if(historyDialog.open)renderHistory();
+  updateCheckButton();
   if(!family)return;
-  // Keep the first successful snapshot per unfinished challenge while offline.
-  if(a.outcome==='reached'&&pending.some(row=>row.target===a.target&&row.outcome==='reached'))return;
   if(pending.length>=12){progressMessage('Twelve runs are waiting to sync. Reconnect before saving more progress. Your latest code is kept.');return;}
   pending.push(a);retainPending();scheduleAttempts(0);
  }

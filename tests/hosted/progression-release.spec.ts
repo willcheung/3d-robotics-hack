@@ -31,6 +31,7 @@ async function run(page:Page,source:string,passed:boolean){
  if(passed)await expect(page.locator('#feedback')).toHaveClass(/success/);else await expect(page.locator('#feedback')).not.toHaveClass(/success/);
 }
 async function confirmed(page:Page,target:string){
+ await page.locator('#verify-cloud').click();
  await expect.poll(async()=>(await (await page.request.get(origin+'/api/family',{headers})).json()).completed,{timeout:80000}).toContain(target);await expect(page.locator('#stop-check')).toBeHidden();
 }
 test.afterAll(async()=>{if(paths.size)await del([...paths]);});

@@ -164,7 +164,7 @@ function updatePractice() {
   el('reflect-prompt').hidden=status!=='finished';
   el('next-help').textContent = complete
     ? `Mission ${missionNumber()} complete · 3 of 3 checked!${getLesson(lesson).next?'':' Mission 5 is coming soon.'}`
-    : practiced ? signedIn?'Progress confirms automatically after each successful Run.':'Sign in as a student to keep progress and unlock the next mission.'
+    : practiced ? signedIn?'Practice is free. Use Check & save progress when ready.':'Sign in as a student to keep progress and unlock the next mission.'
     : completedLocations.has(selected)
       ? (index===locationOrder.length-1?'Choose an unfinished challenge above.':'Keep your code and adapt it to the next challenge.')
       : '';

@@ -10,7 +10,7 @@ const test=baseTest.extend<{protection:void}>({protection:[async({context},use)=
 const base=process.env.HOSTED_APP_ORIGIN||'http://127.0.0.1:4373';
 const main=(n=100)=>`public class Main { public static void main(String[] args) throws Exception { Robot.servo(120); Robot.motor(.5); Robot.waitTicks(${n}); Robot.motor(0); } }`;
 const python='from robot import motor, servo, wait\nawait servo(120)\nawait motor(.5)\nawait wait(100)\nawait motor(0)';
-async function confirmedRun(page:Page){const target=await page.locator('#target').inputValue();await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});await expect.poll(async()=>(await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json()).completed,{timeout:80000}).toContain(target);await expect(page.locator('#stop-check')).toBeHidden();}
+async function confirmedRun(page:Page){const target=await page.locator('#target').inputValue();await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});await page.locator('#verify-cloud').click();await expect.poll(async()=>(await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json()).completed,{timeout:80000}).toContain(target);await expect(page.locator('#stop-check')).toBeHidden();}
 const paths=new Set<string>();
 const store=new BlobStore();const write=store.write.bind(store);store.write=async(path:string,...args:unknown[])=>{paths.add(path);return write(path,...args);};
 let parentCode:string,codeA:string,codeB:string;
@@ -74,10 +74,10 @@ test('all three checked rescues complete Mission 1 without unlocking unbuilt mis
 test('cancelling a server check does not record an unconfirmed completion',async({page})=>{
  await signIn(page.context(),codeA);const state=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json(),id=crypto.randomUUID();
  const input={id,source:'while True:\n    pass # cancellation fixture',language:'python',target:'beacon'};
- const h={Origin:base,...protectedHeaders,'X-RoboLab-Profile':state.profile.id};const checking=page.request.post(base+'/api/family/verify',{headers:h,data:input,timeout:90000});
+ const h={Origin:base,...protectedHeaders,'X-RoboLab-Profile':state.profile.id};const checking=page.request.post(base+'/api/family/verify',{headers:h,data:{...input,checkRevision:state.checkRevision},timeout:90000});
  await expect.poll(async()=>(await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json()).runBusy,{timeout:30000}).toBe(true);
- expect((await page.request.post(base+'/api/family/cancel',{headers:h,data:{id}})).ok()).toBe(true);await checking;
- const after=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();expect(after.history.some((a:{id:string;verified:boolean;outcome:string})=>a.id===id&&a.verified&&a.outcome==='reached')).toBe(false);
+ const cancelled=await page.request.post(base+'/api/family/cancel',{headers:h,data:{id,checkRevision:state.checkRevision+1}});expect(cancelled.ok()).toBe(true);expect((await cancelled.json()).stale).toBeUndefined();await checking;
+ const after=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();expect(after.arena.missions.flatMap((m:any)=>m.challenges).find((c:any)=>c.target==='beacon').checks).toBe(state.arena.missions.flatMap((m:any)=>m.challenges).find((c:any)=>c.target==='beacon').checks);expect(after.history.some((a:{id:string;verified:boolean;outcome:string})=>a.id===id&&a.verified&&a.outcome==='reached')).toBe(false);
 });
 test('a sign-in change in another tab cannot save old student code to the new profile',async({page})=>{
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');await page.locator('#code').fill('print("belongs only to Nova")');

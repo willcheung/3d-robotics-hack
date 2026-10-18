@@ -197,7 +197,7 @@ test('Missions 2 and 3 authoritative HTTP check uses authored starts, rejects cl
   // The application evaluator, HTTP auth, command bridge and storage remain real.
   class LocalJava extends JavaRun {constructor(source,onMessage,onClosed){super(source,m=>onMessage(parseMessage(m)),onClosed);}}
   api=hostedApi({store,Run:LocalJava,appOrigin:origin,password:'test-only-mission-two-session-password-32-characters'});
-  let cookie='';const post=(path,data)=>fetch(origin+'/api/family'+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Cookie:cookie,'X-RoboLab-Profile':session.profileId},body:JSON.stringify(data)});
+  let cookie='';const post=async(path,data)=>{if(path==='/verify')data={...data,checkRevision:(await current(store,session)).profile.arena?.revision??0};return fetch(origin+'/api/family'+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Cookie:cookie,'X-RoboLab-Profile':session.profileId},body:JSON.stringify(data)});};
   try{
     const entered=await post('/login',{code:seed.code});assert.equal(entered.status,200);cookie=entered.headers.get('set-cookie').split(';')[0];
     for(const [target,source,wanted] of [['sensor-left',sensorJava,'missed'],['sensor-right',sensorJava,'missed'],['sensor-left',sensorReference.java,'reached'],['sensor-right',sensorReference.java,'reached'],['sensor-transfer',sensorReference.java,'missed'],['sensor-transfer',sensorTransfer.java,'reached']]){

@@ -14,7 +14,7 @@ test('guest previews block edits, keyboard runs and world controls while preserv
   for(const id of ['L02','L03','L04']){
     await openMission(page,id);
     await expect(page.locator('#mission-access')).toContainText('Finish all 3 challenges in Mission 1');
-    await expect(page.locator('#mission-access')).toContainText('save progress automatically');
+    await expect(page.locator('#mission-access')).toContainText('Check & save progress');
     await expect(page.locator('#code')).not.toBeEditable();
     for(const control of ['run','restore','return-draft','language','target','reset'])await expect(page.locator('#'+control)).toBeDisabled();
     await expect(page.locator('#scene')).toHaveJSProperty('inert',true);
@@ -67,7 +67,7 @@ test('a delayed pre-check refresh cannot take away the newly unlocked mission',a
   try{
     await page.locator('#family-open').click();hold=true;await page.locator('#family-refresh').click();
     await page.getByRole('button',{name:'Close family progress'}).click();
-    await page.locator('#target').selectOption('reverse');await page.locator('#code').fill('from robot import motor, servo, wait\nawait servo(60)\nawait motor(-.5)\nawait wait(100)\nawait motor(0)');await page.locator('#run').click();await expect(page.locator('#next-lesson')).toBeVisible();
+    await page.locator('#target').selectOption('reverse');await page.locator('#code').fill('from robot import motor, servo, wait\nawait servo(60)\nawait motor(-.5)\nawait wait(100)\nawait motor(0)');await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});await page.locator('#verify-cloud').click();await expect(page.locator('#next-lesson')).toBeVisible();
     const older=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/family');
     release();await older;
     await page.locator('#next-lesson').click();await expect(page.locator('#code')).toBeEditable();

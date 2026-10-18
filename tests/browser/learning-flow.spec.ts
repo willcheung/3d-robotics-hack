@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {readHints,openCommands} from '../learning-ui.ts';
 test('optional help keeps the code and challenge, with no note forms or manual save controls',async({page})=>{
- await page.goto('/');await expect(page.locator('#experiment-notes,#prediction,#reflection,#save-cloud,#verify-cloud,[data-note]')).toHaveCount(0);
+ await page.goto('/');await expect(page.locator('#experiment-notes,#prediction,#reflection,#save-cloud,[data-note]')).toHaveCount(0);
  for(const id of ['hints-help','commands-help','recovery-help','output-panel'])await expect(page.locator('#'+id)).toHaveJSProperty('open',false);
  await page.locator('#code').fill('# my unfinished experiment');await page.locator('#target').selectOption('reverse');await readHints(page,1);await expect(page.locator('#show-solution')).toBeDisabled();await openCommands(page);await expect(page.locator('#value-guide')).toContainText('1 to 600 whole ticks');await page.locator('#recovery-help>summary').click();await expect(page.locator('.recovery-guide')).toContainText('return copy');await page.reload();await expect(page.locator('#code')).toHaveValue('# my unfinished experiment');await expect(page.locator('#target')).toHaveValue('reverse');
 });
