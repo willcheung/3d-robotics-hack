@@ -2,7 +2,7 @@
 
 ## FE-01 — Family access and automatic progress
 
-- Status: review; [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Branch `codex/family-experience`, managed `family-experience` worktree, base `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`. Exclusive slice ownership protected writes. Last runnable and final locally tested application/test source: `5983230a046ee6cf31a3a14e1e329de67b835306`; subsequent changes record evidence and extend only the overall CI job allowance after its 25-minute ceiling interrupted passing tests. PR checks retain exact-head CI.
+- Status: review; [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Branch `codex/family-experience`, managed `family-experience` worktree, base `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`. Exclusive slice ownership protected writes. Family implementation/test checkpoint: `5983230a046ee6cf31a3a14e1e329de67b835306`; subsequent changes record evidence and extend only the overall CI job allowance after its 25-minute ceiling interrupted passing tests. Current main `841f341e2e722b767efceff9b6f47b635baa2775` is integrated, preserving its favicon and mission-title change; only the progress record conflicted. PR checks retain exact-head CI of the combined candidate.
 - Visible parent email sign-in, removable optional student rows and verified returning-account messaging replace the confusing public legacy entry. Parent dashboard shares authoritative child progress and preserves older activity dates. Existing families, drafts and local notes remain preserved.
 - Drafts save automatically and successful unfinished challenges check automatically. Pending, practice and confirmed progress stay distinct; all surfaces share the same three-target completion rule. Lost replies, immutable source, conflicts and identity switches retain recovery and existing quotas.
 - Manual save/submit/note forms are removed. Bounded Run history retains code, challenge, outcome, measurements and console output. The coordinated Mission 1-3 feedback explains actual outcomes beside Run and the 3D scene; saved completion remains visible on return without showing a stale run explanation.
@@ -10,6 +10,13 @@
 - Local coverage: 40 model/autosave/bridge checks, 63 family/email/weekly checks, 17 isolated Java checks, 20 complete family browser journeys and all 83 workshop cases across the full batch and final affected-case reruns. TypeScript/build, four package modes and publication checks pass. Desktop/narrow synthetic screenshots inspected. Initial failures and corrections are preserved in [the contract and QA record](FAMILY-EXPERIENCE.md); no single all-green final broad local run is claimed.
 - All relevant RoboLab persona lenses and native gstack adversarial review were applied; recovery/race/layout findings are fixed with regressions and no remaining actionable finding in the reviewed scope. This is software evidence and synthetic review, not actual learner observation or an external-model review.
 - Unmet release criteria: exact candidate staging/provider/mail/cron qualification, authorized rollout and human parent/learner observation. No merge, deployment, credential/quota changes or gamification. No implementation blocker remains. Next action: review PR #10 and exact-head CI, then obtain separate release authorization before staging/deployment or live summary activation.
+
+## Site identity — Favicon and mission tab titles
+
+- Status: validated locally on `codex/site-identity`, based on `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`; not published or deployed.
+- Added an SVG favicon using the existing lime cube mark. Tab titles use `RoboLab · [mission title]` on initial load, mission navigation and profile restoration.
+- Checks: TypeScript, Vite/app-runtime build, publication check and diff whitespace check passed. Browser checks confirmed all four mission titles and reload restoration; the favicon returns HTTP 200 with SVG content type and its 32px rendering was inspected. Runtime/account behavior is unchanged; no hosted regression or learner pilot is claimed.
+- Local preview: `http://127.0.0.1:4273/`. Exact checkpoint and visual evidence are retained in the private site-identity receipt. Next action: review, then separately authorize publication and deployment.
 
 ## UI-03 — Guided mission access
 
