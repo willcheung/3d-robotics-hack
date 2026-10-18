@@ -1,4 +1,4 @@
-import {openMission,readHints} from '../learning-ui.ts';
+import {openMission,readHints,openSignIn} from '../learning-ui.ts';
 import {fixtureParent} from '../helpers/fixture-parent.ts';
 import {test,expect,type BrowserContext,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
@@ -21,7 +21,7 @@ async function protect(context:BrowserContext){
  if(bypass)await context.route(url=>url.origin===origin,route=>route.continue({headers:{...route.request().headers(),...headers}}));
 }
 async function signIn(page:Page,code:string,name:string){
- await page.goto(origin);await page.locator('#family-open').click();await page.locator('[data-mode=student]').click();
+ await page.goto(origin);await openSignIn(page,'student');
  await page.locator('#access-code').fill(code);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  await expect(page.locator('#profile-label')).toContainText(name);await page.getByRole('button',{name:'Close family progress'}).click();
 }

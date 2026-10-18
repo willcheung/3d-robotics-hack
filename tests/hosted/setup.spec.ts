@@ -1,8 +1,9 @@
+import {openSignIn} from '../learning-ui.ts';
 import {test,expect} from '@playwright/test';
 import {parentEmail,addStudents,studentCode} from '../helpers/email-ui.ts';
 test.skip(!process.env.FAMILY_UI_MEMORY,'Disposable local inbox; real email delivery is a separate hosted gate.');
 test('parents have email entry, students have code entry, and guest Python remains available',async({page})=>{
- await page.goto('/');await page.locator('#family-open').click();await expect(page.locator('#parent-signin-email')).toBeVisible();
+ await page.goto('/');await openSignIn(page,'parent');await expect(page.locator('#parent-signin-email')).toBeVisible();
  await expect(page.locator('#legacy-setup')).toHaveCount(0);await expect(page.locator('#family-create')).toHaveCount(0);await expect(page.locator('#family-forgot')).toHaveCount(0);
  await page.setViewportSize({width:390,height:844});await page.locator('#family-dialog').screenshot({path:'test-results-family-ui/email-only-entry-narrow.png'});
  await page.locator('[data-mode=student]').click();await expect(page.getByLabel('Student code',{exact:true})).toBeVisible();await expect(page.locator('#student-entry')).not.toContainText('parent code');

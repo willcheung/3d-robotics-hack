@@ -1,7 +1,8 @@
+import {openSignIn} from '../learning-ui.ts';
 import {test,expect} from '@playwright/test';
 test.skip(!process.env.FAMILY_UI_MEMORY,'Disposable inbox tests; real staging delivery is a separate gate.');
 async function mail(request:any){return (await request.get('/__test/mail')).json();}
-async function begin(page:any,email:string){await page.goto('/');await page.locator('#family-open').click();await page.locator('#parent-signin-email').fill(email);await page.getByRole('button',{name:'Continue with email',exact:true}).click();await expect(page.locator('#email-code')).toBeVisible();}
+async function begin(page:any,email:string){await page.goto('/');await openSignIn(page,'parent');await page.locator('#parent-signin-email').fill(email);await page.getByRole('button',{name:'Continue with email',exact:true}).click();await expect(page.locator('#email-code')).toBeVisible();}
 test('email onboarding, batch retry, student links, first-only notices and both-language drafts survive new devices',async({page,browser,request})=>{
  test.setTimeout(60000);await request.post('/__test/newday');
  await begin(page,'onboarding-parent@example.test');const otp=(await mail(request)).text.match(/\b\d{6}\b/)[0];
@@ -46,7 +47,7 @@ test('email onboarding, batch retry, student links, first-only notices and both-
  }finally{await other.close();}
 });
 test('parent entry is keyboard usable at narrow width and preserves a failed request for retry',async({page,request})=>{
- await request.post('/__test/advance');await page.setViewportSize({width:390,height:844});await page.goto('/');await page.locator('#family-open').click();await expect(page.locator('#student-entry')).toBeHidden();await page.locator('#parent-signin-email').fill('keyboard-parent@example.test');await page.locator('#parent-signin-email').press('Enter');await expect(page.locator('#email-code')).toBeFocused();
+ await request.post('/__test/advance');await page.setViewportSize({width:390,height:844});await page.goto('/');await openSignIn(page,'parent');await expect(page.locator('#student-entry')).toBeHidden();await page.locator('#parent-signin-email').fill('keyboard-parent@example.test');await page.locator('#parent-signin-email').press('Enter');await expect(page.locator('#email-code')).toBeFocused();
  await page.locator('#family-dialog').screenshot({path:'test-results-family-ui/onboarding-code-narrow.png'});expect(await page.locator('#family-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
  await page.locator('#email-code').fill('bad');await page.locator('#email-code').press('Enter');await expect(page.locator('#email-code')).toBeVisible();
  await page.locator('#email-change').click();await expect(page.locator('#parent-signin-email')).toBeVisible();await page.locator('[data-mode=student]').click();await expect(page.locator('#access-code')).toBeVisible();await expect(page.locator('#parent-entry')).toBeHidden();
@@ -82,5 +83,5 @@ test('late replacement credentials never appear after switching parents',async({
 test('weekly preference persists without claiming delivery and remains parent-only',async({page,request,browser})=>{
  await request.post('/__test/newday');await begin(page,'weekly-choice@example.test');await page.locator('#email-code').fill((await mail(request)).text.match(/\b\d{6}\b/)[0]);await page.locator('#parent-verify button').click();await page.locator('#email-create').click();await page.locator('[data-name="0"]').fill('Weekly pilot');await page.locator('#create-student-logins').click();const code=await page.locator('.student-login-card input').inputValue();
  await expect(page.locator('#weekly-summary-choice')).not.toBeChecked();await page.locator('#weekly-summary-choice').check();await expect(page.locator('#family-message')).toContainText('Weekly email preference saved');await expect(page.locator('.student-onboarding')).toContainText('delivery is currently unavailable');await page.reload();await page.locator('#family-open').click();await expect(page.locator('#weekly-summary-choice')).toBeChecked();await page.locator('#weekly-summary-choice').uncheck();await expect(page.locator('#family-message')).toContainText('Weekly email preference saved');
- const ctx=await browser.newContext();try{const child=await ctx.newPage();await child.goto('/');await child.locator('#student-signin-open').click();await child.locator('#access-code').fill(code);await child.locator('#family-login button').click();await expect(child.locator('#profile-label')).toContainText('Weekly pilot');await expect(child.locator('#weekly-summary-choice')).toHaveCount(0);}finally{await ctx.close();}
+ const ctx=await browser.newContext();try{const child=await ctx.newPage();await child.goto('/');await openSignIn(child,'student');await child.locator('#access-code').fill(code);await child.locator('#family-login button').click();await expect(child.locator('#profile-label')).toContainText('Weekly pilot');await expect(child.locator('#weekly-summary-choice')).toHaveCount(0);}finally{await ctx.close();}
 });
