@@ -28,7 +28,7 @@ export async function current(store,session){if(!session?.familyId)throw new Htt
 export function view(family,profile){return {
  profile:{id:profile.id,name:profile.name,role:profile.role},
  drafts:profile.drafts,history:profile.history,
- students:family.profiles.filter(p=>p.role==='student'&&p.active).map(p=>({id:p.id,name:p.name,completed:p.completed,experiments:p.experiments,...(profile.role==='parent'?{lastActivity:p.lastActivity??null,missionCompleted:p.missionCompleted??{},recent:p.history.slice(0,3).map(a=>({target:a.target,outcome:a.outcome,verified:a.verified,at:a.at}))}:{})})),
+ students:family.profiles.filter(p=>p.role==='student'&&p.active).map(p=>({id:p.id,name:p.name,completed:p.completed,experiments:p.experiments,...(profile.role==='parent'?{lastActivity:p.lastActivity??p.history[0]?.at??null,missionCompleted:p.missionCompleted??{},recent:p.history.slice(0,3).map(a=>({target:a.target,outcome:a.outcome,verified:a.verified,at:a.at}))}:{})})),
  completed:profile.completed,
  ...(profile.role==='parent'?{recoveryEmail:profile.recovery?.email??null}:{}),
  runBusy:family.runs.some(r=>r.profileId===profile.id&&r.until>Date.now()),

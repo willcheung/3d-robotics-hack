@@ -237,3 +237,8 @@ test('finished cancellation receipts include missed and error checks without awa
  const {cancelRun}=await import('../server/family-store.mjs');
  for(const outcome of ['reached','missed','error']){const {store,a}=await fixtures(),item=attempt({outcome});await recordAttempt(store,a,item,true);assert.equal((await cancelRun(store,a,item.id)).completed,true);assert.deepEqual((await current(store,a)).profile.completed,outcome==='reached'?['beacon']:[]);}
 });
+
+test('parent dashboard retains a real activity date from older history without exposing its source',async()=>{
+ const {store,parent,a,b}=await fixtures();await recordAttempt(store,a,attempt({source:'private older code',outcome:'missed'}));const record=await current(store,a),date=record.profile.history[0].at;delete record.profile.lastActivity;await store.write(`families/${a.familyId}.json`,record.family,(await store.read(`families/${a.familyId}.json`)).etag);
+ const f=await current(store,parent),card=view(f.family,f.profile).students.find(p=>p.id===a.profileId);assert.equal(card.lastActivity,date);assert.equal(JSON.stringify(card).includes('private older code'),false);assert.equal(view(f.family,f.family.profiles.find(p=>p.id===b.profileId)).students[0].lastActivity,undefined);
+});
