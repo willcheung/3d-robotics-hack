@@ -159,7 +159,8 @@ function updatePractice() {
   const practiced=locationOrder.every(t=>completedLocations.has(t));
   const complete=access().complete;
   const nextLesson=el<HTMLButtonElement>('next-lesson');if(nextLesson){const nextId=getLesson(lesson).next;nextLesson.hidden=!nextId||!complete;nextLesson.textContent=nextId?`Next mission: ${getLesson(nextId).title} →`:'';nextLesson.disabled=!complete;}
-  el('run-followup').hidden=locked()||status==='loading'||status==='running'||(status!=='finished'&&!(completedLocations.has(selected)||checked.includes(selected)));
+  // Saved completion belongs in the top strip. Explain only this finished run.
+  el('run-followup').hidden=locked()||status!=='finished';
   el('reflect-prompt').hidden=status!=='finished';
   el('next-help').textContent = complete
     ? `Mission ${missionNumber()} complete · 3 of 3 checked!${getLesson(lesson).next?'':' Mission 5 is coming soon.'}`
