@@ -267,7 +267,7 @@ export function onboardingService({store,password,appOrigin,mail,enqueue,now=()=
      return `${name} ran code ${runs} ${runs===1?'time':'times'} this week.\n${progress}\n\nAsk ${name}:\n"What did you change in your code? What did the robot do?"`;
     });
     const dates=new Intl.DateTimeFormat('en-US',{month:'long',day:'numeric',year:'numeric',timeZone:'UTC'}).formatRange(start,end-1);
-    const text=`RoboLab family progress\n${dates}\n\n${rows.join('\n\n')}\n\nSee each child's current mission and next challenge in your parent dashboard:\n${appOrigin}/\n\nRoboLab saves progress automatically when your child passes a challenge. A mission is complete when all three challenges are passed. Ask your child to explain how their code helped the robot.\n\nYou can turn weekly emails on or off in your parent dashboard. We only send a summary for weeks when your family is active.`;
+    const text=`RoboLab family progress\n${dates}\n\n${rows.join('\n\n')}\n\nSee each child's current mission and next challenge in your parent dashboard:\n${appOrigin}/\n\nRoboLab saves progress automatically when your child passes a challenge. A mission is complete when all three challenges are passed. Ask your child to explain how their code helped the robot.\n\nYou can turn weekly emails on or off in your parent dashboard. We only send a summary for weeks when your family is active.\n\nFor questions or feedback, email will@vibecodingdad.com.\n\nRoboLab team`;
     const event=newEvent(f,eventId,'weekly',{subject:'Your RoboLab weekly family summary',text},active.map(p=>({id:p.id})));
     settings.events??={};settings.events[eventId]=event;
     // Receipt metadata stays for eight weeks; sensitive mail payload expires in 23h.
