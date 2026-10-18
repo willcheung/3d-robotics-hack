@@ -6,6 +6,23 @@ async function setup(page:Page,key:string){await page.request.post('/__test/newd
 async function state(page:Page){return (await page.request.get('/api/family')).json();}
 const headers=(profile:string)=>({Origin:'http://127.0.0.1:4473','X-RoboLab-Profile':profile});
 
+test('returning a draft after reload settles an older in-flight example save before fresh-device resume',async({page,browser})=>{
+ const [code]=await setup(page,'reload-return');const source='# My draft must survive a late example save';await page.locator('#code').fill(source);await expect(page.locator('#save-help')).toContainText('Saved to your account');const before=await state(page);
+ let first=true,release!:()=>void,started!:()=>void,delivered!:(status:number)=>void;const held=new Promise<void>(r=>release=r),ready=new Promise<void>(r=>started=r),late=new Promise<number>(r=>delivered=r);
+ await page.route('**/api/family/draft',async route=>{
+  if(!first){await route.continue();return;}first=false;const data=route.request().postDataJSON();started();await held;
+  // Model a request already on the wire when its page is destroyed. It still
+  // reaches the real disposable API after the new page restores the draft.
+  try{await route.abort();}catch{}
+  delivered((await page.request.post('/api/family/draft',{headers:headers(before.profile.id),data})).status());
+ });
+ try{
+  await page.locator('#restore').click();await page.locator('#restore').click();await ready;await page.reload();await page.locator('#return-draft').click();await expect(page.locator('#code')).toHaveValue(source);await expect(page.locator('#save-help')).toContainText('Saved to your account');
+  release();expect(await late).toBe(409);expect((await state(page)).drafts.python.source).toBe(source);
+  const fresh=await browser.newContext();try{const next=await fresh.newPage();await studentCode(next,code);await next.getByRole('button',{name:'Close family progress'}).click();await expect(next.locator('#code')).toHaveValue(source);}finally{await fresh.close();}
+ }finally{release();}
+});
+
 test('an older local-only draft uploads without another edit and resumes on a fresh browser',async({page,browser})=>{
  const [code]=await setup(page,'older-draft');const profile=(await state(page)).profile.id;
  await page.evaluate(id=>localStorage.setItem(`robolab.profile.${id}.python`,'# older local work'),profile);await page.reload();
