@@ -116,6 +116,10 @@
 .header .learning-nav button {min-height:44px;padding:10px 14px;background:transparent;border-color:var(--border);color:var(--ink);}
 .header .learning-nav button:hover {background:#e7ebdf;border-color:#9bab96;}
 .header .learning-nav button:focus-visible {outline:3px solid #80a43c;outline-offset:3px;}
+.account-nav {position:relative;}
+.signin-options {position:absolute;top:calc(100% + 8px);right:0;z-index:20;min-width:200px;padding:6px;background:#f5f5ee;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 20px #152d311f;}
+.header .signin-options button {display:block;width:100%;border:0;text-align:left;white-space:nowrap;}
+.header #family-open span {margin-left:8px;}
 .header #profile-label {font-size:12px;overflow-wrap:anywhere;}
 .header .preview-badge {margin-left:0;white-space:nowrap;}
 .header .help-link {min-height:44px;display:flex;align-items:center;}
@@ -160,7 +164,9 @@ h1 {font-size:30px;line-height:1.2;letter-spacing:-1px;margin:6px 0 0;}
  .header .brand {font-size:21px;}
  .header .learning-nav {display:contents;}
  .header #profile-label {margin-left:auto;width:auto;max-width:55%;}
- .header #curriculum-open,.header #family-open {order:1;flex:1;white-space:nowrap;padding-inline:8px;}
+ .header #curriculum-open,.header .account-nav {order:1;flex:1;white-space:nowrap;}
+ .header #curriculum-open,.header #family-open {padding-inline:8px;}
+ .header .account-nav #family-open {width:100%;}
  .header .help-link {display:none;}
  main {padding:20px 16px 0;}
  .workspace-heading {align-items:stretch;flex-direction:column;gap:16px;}

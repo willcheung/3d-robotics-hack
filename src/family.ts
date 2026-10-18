@@ -28,7 +28,7 @@ export function attachFamily(hooks:Hooks){
  }
  readRecoveryLink();
  const shell=document.createElement('div');shell.innerHTML=`
- <nav class="learning-nav" aria-label="Learning and family"><button id="curriculum-open" aria-haspopup="dialog" aria-controls="curriculum-dialog">Curriculum & unlocks</button><button id="parent-signin-open">Parent sign in</button><button id="student-signin-open">Student sign in</button><button id="family-open" aria-haspopup="dialog" aria-controls="family-dialog">Family & progress</button><span id="profile-label">Guest practice</span></nav>
+ <nav class="learning-nav" aria-label="Learning and family"><button id="curriculum-open" aria-haspopup="dialog" aria-controls="curriculum-dialog">Curriculum & unlocks</button><div class="account-nav"><button id="family-open" aria-haspopup="dialog" aria-controls="family-dialog">Sign in / Sign up</button><div id="signin-options" class="signin-options" hidden><button id="student-signin-open">Student sign in</button><button id="parent-signin-open">Parent sign in</button><button id="parent-signup-open">Create a family account</button></div></div><span id="profile-label">Guest practice</span></nav>
  <dialog id="curriculum-dialog" class="learning-dialog" aria-labelledby="curriculum-title">${curriculumHeader()}<p class="build-status">Run real Python or Java. Separate drafts; free retries and hints.</p></dialog>
  <dialog id="family-dialog" class="learning-dialog"><div class="dialog-heading"><h2>Family & progress</h2><button data-close aria-label="Close family progress">Close ✕</button></div><p>Take separate turns on the same missions and share family progress. Experiment freely: retries and help never cost points.</p><section id="email-verification-notice" class="verification-notice" role="status" aria-live="polite" aria-atomic="true" hidden></section><p id="family-message" role="status" aria-live="polite"></p><div id="student-link-flow"></div><div id="recovery-flow"></div><div id="setup-receipt"></div><div id="family-content"></div></dialog>`;
  document.body.append(shell);
@@ -38,8 +38,35 @@ export function attachFamily(hooks:Hooks){
  shell.querySelectorAll<HTMLButtonElement>('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog')!.close());
  q('curriculum-open').onclick=()=>{renderCurriculum();dialog('curriculum-dialog').showModal();q('curriculum-dialog').scrollTop=0;};
  shell.querySelectorAll<HTMLAnchorElement>('[data-chapter]').forEach(link=>link.onclick=e=>{e.preventDefault();const heading=q('curriculum-'+link.dataset.chapter);heading.scrollIntoView({block:'start',behavior:'instant'});heading.focus({preventScroll:true});});
- q('family-open').onclick=()=>{render();dialog('family-dialog').showModal();if(family)void refresh().catch(e=>say(e.message));};
- for(const mode of ['parent','student'] as const)q(mode+'-signin-open').onclick=()=>{onboarding.open(mode);render();dialog('family-dialog').showModal();q(mode==='parent'?'parent-signin-email':'access-code')?.focus();};
+ const accountNav=q('family-open').parentElement!;
+ function closeSignIn(focus=false){
+  q('signin-options').hidden=true;
+  if(hosted&&!family)q('family-open').setAttribute('aria-expanded','false');
+  if(focus)q('family-open').focus();
+ }
+ function openSignIn(){q('signin-options').hidden=false;q('family-open').setAttribute('aria-expanded','true');}
+ q('family-open').onclick=()=>{
+  if(hosted&&!family){if(q('signin-options').hidden)openSignIn();else closeSignIn();return;}
+  render();dialog('family-dialog').showModal();if(family)void refresh().catch(e=>say(e.message));
+ };
+ // A disclosure keeps ordinary Tab navigation; Escape and outside clicks dismiss it.
+ accountNav.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!q('signin-options').hidden){e.preventDefault();e.stopPropagation();closeSignIn(true);}
+  if(hosted&&!family&&(e.key==='ArrowDown'||e.key==='ArrowUp')){
+   e.preventDefault();openSignIn();
+   const buttons=[q('student-signin-open'),q('parent-signin-open'),q('parent-signup-open')],index=buttons.indexOf(document.activeElement as HTMLElement);
+   const step=e.key==='ArrowDown'?1:-1;
+   buttons[index<0?(step===1?0:buttons.length-1):(index+step+buttons.length)%buttons.length].focus();
+  }
+ });
+ accountNav.addEventListener('focusout',e=>{if(!accountNav.contains(e.relatedTarget as Node|null))closeSignIn();});
+ document.addEventListener('click',e=>{if(!accountNav.contains(e.target as Node))closeSignIn();});
+ function openAccount(mode:'parent'|'student'){
+  // The persistent trigger receives focus back when the modal closes.
+  closeSignIn(true);onboarding.open(mode);render();dialog('family-dialog').showModal();q(mode==='parent'?'parent-signin-email':'access-code')?.focus();
+ }
+ for(const mode of ['parent','student'] as const)q(mode+'-signin-open').onclick=()=>openAccount(mode);
+ q('parent-signup-open').onclick=()=>openAccount('parent');
  const toolbar=document.createElement('section');toolbar.className='family-tools';toolbar.hidden=!hosted;
  toolbar.innerHTML='<div><strong>Code & progress</strong><p id="save-help" role="status" aria-live="polite">Guest drafts stay on this device. Sign in to keep progress.</p><p id="progress-sync" role="status" aria-live="polite"></p></div><button id="history-open">Run history</button><button id="stop-check" hidden>Stop check</button><button id="retry-sync" hidden>Retry sync</button><button id="resolve-conflict" hidden>Compare saved versions</button>';
  toolbar.hidden=false;document.querySelector('.workbench')!.after(toolbar);
@@ -100,9 +127,13 @@ export function attachFamily(hooks:Hooks){
  function render(){
   renderVerificationNotice();renderRecovery();onboarding.link(q('student-link-flow'),family);
   document.documentElement.dataset.profile=family?.profile.id??'';
-  q('parent-signin-open').hidden=!!family||!hosted;q('student-signin-open').hidden=!!family||!hosted;
-  q('family-open').textContent=family?.profile.role==='parent'?'Parent dashboard':family?'My progress':'Family & progress';
-  q('family-dialog').querySelector('h2')!.textContent=family?.profile.role==='parent'?'Parent dashboard':family?'My progress':'Family & progress';
+  const guestEntry=hosted&&!family;
+  closeSignIn();
+  q('family-open').innerHTML=guestEntry?'Sign in / Sign up <span aria-hidden="true">⌄</span>':family?.profile.role==='parent'?'Parent dashboard':family?'My progress':'Family & progress';
+  q('family-open').setAttribute('aria-controls',guestEntry?'signin-options':'family-dialog');
+  if(guestEntry)q('family-open').removeAttribute('aria-haspopup');
+  else{q('family-open').removeAttribute('aria-expanded');q('family-open').setAttribute('aria-haspopup','dialog');}
+  q('family-dialog').querySelector('h2')!.textContent=family?.profile.role==='parent'?'Parent dashboard':family?'My progress':hosted?'Sign in / Sign up':'Family & progress';
   q('profile-label').textContent=family?`${family.profile.name} · private family`:'Guest practice';
   if(!hosted){q('family-content').innerHTML='<p>Family accounts are available on the hosted release. This local workshop keeps anonymous practice drafts on this device.</p>';return;}
   if(!family){

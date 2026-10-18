@@ -1,3 +1,4 @@
+import {openSignIn} from '../learning-ui.ts';
 import {test,expect,type Page} from '@playwright/test';
 import {parentEmail,addStudents,studentCode} from '../helpers/email-ui.ts';
 import {getLesson} from '../../src/lessons.ts';
@@ -61,7 +62,7 @@ for(const sameStudent of [false,true])test(`late conflict responses cannot mutat
  await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED');await attemptReady;await page.locator('#resolve-conflict').click();
  let delay=true;await page.route('**/api/family/draft',async route=>{if(delay){delay=false;const response=await route.fetch();saveStarted();await held;await route.fulfill({response});}else await route.continue();});
  try{await page.locator('#conflict-save').click();await saveReady;expire();await expect(page.locator('#profile-label')).toHaveText('Guest practice');await page.unroute('**/api/family/attempt');
-  await page.locator('#student-signin-open').click();await page.locator('#access-code').fill(codes[sameStudent?0:1]);await page.locator('#family-login button').click();await expect(page.locator('#profile-label')).toContainText(sameStudent?'Recovery A':'Recovery B');await page.getByRole('button',{name:'Close family progress'}).click();await page.locator('#code').fill('# next session work');await expect(page.locator('#save-help')).toContainText('Saved to your account');const next=await state(page),key=`robolab.profile.${next.profile.id}.python.synced`,baseline=await page.evaluate(k=>localStorage.getItem(k),key);
+  await openSignIn(page,'student');await page.locator('#access-code').fill(codes[sameStudent?0:1]);await page.locator('#family-login button').click();await expect(page.locator('#profile-label')).toContainText(sameStudent?'Recovery A':'Recovery B');await page.getByRole('button',{name:'Close family progress'}).click();await page.locator('#code').fill('# next session work');await expect(page.locator('#save-help')).toContainText('Saved to your account');const next=await state(page),key=`robolab.profile.${next.profile.id}.python.synced`,baseline=await page.evaluate(k=>localStorage.getItem(k),key);
   release();await expect.poll(()=>page.evaluate(k=>localStorage.getItem(k),key)).toBe(baseline);await page.locator('#code').fill('# another next session edit');await expect(page.locator('#save-help')).toContainText('Saved to your account');await expect(page.locator('#resolve-conflict')).toBeHidden();expect((await state(page)).drafts.python.source).toBe('# another next session edit');
  }finally{expire();release();}
 });

@@ -48,7 +48,7 @@ export function attachOnboarding(o:Options){
    field(panel,'#email-change').onclick=()=>{clearAuth();o.render();};
    queueMicrotask(()=>panel.isConnected&&field<HTMLInputElement>(panel,'#email-code').focus());return;
   }
-  panel.innerHTML='<h3>Parent sign in</h3><p>New or returning parent? Use your email to manage students and see their progress.</p><form id="parent-signin"><label>Parent email<input id="parent-signin-email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com"></label><button class="primary">Continue with email</button></form><p>We’ll email a short sign-in code. Students use their own login cards.</p>';
+  panel.innerHTML='<h3>Parent sign in or sign up</h3><p>Use your email to create a family account or return to an existing one.</p><form id="parent-signin"><label>Parent email<input id="parent-signin-email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com"></label><button class="primary">Continue with email</button></form><p>We’ll email a short sign-in code. Students use their own login cards.</p>';
   field<HTMLInputElement>(panel,'#parent-signin-email').value=challenge?.email??'';
   field<HTMLFormElement>(panel,'form').onsubmit=e=>{e.preventDefault();void act(field(panel,'form button'),async()=>{const email=field<HTMLInputElement>(panel,'#parent-signin-email').value.trim();if(!challenge||challenge.email!==email)challenge={key:key(),email};keep('robolab-email-challenge',challenge);const r=await o.request('/authstart',challenge);challenge={...challenge!,...r,expiresAt:Date.now()+r.expiresAt-r.serverNow,resendAt:Date.now()+r.resendAt-r.serverNow};keep('robolab-email-challenge',challenge);o.render();o.say('Sign-in email sent.');});};
  }

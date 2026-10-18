@@ -1,5 +1,15 @@
 # Public progress
 
+## Account navigation — review candidate
+
+- Owner requested consolidating the parent sign-in, student sign-in and family-progress header actions and removing the redundant curriculum introduction. Branch `codex/account-navigation`, base `551c92d04c142d842917c78406c8313b32c338ed`; initial tested application source `a5b06c2d6eaad6624a8a2995073111a373d3b7af`; signup follow-up source `677cf57654afa1b86570252e65d5bfb5d00b3060`. Exclusive ownership protected this follow-up.
+- Guests now use one **Sign in / Sign up** disclosure with **Student sign in**, **Parent sign in**, and **Create a family account**. Both parent choices use the existing email verification flow; an existing address returns to its family. Signed-in students retain direct **My progress** and parents retain direct **Parent dashboard**. Keyboard, Escape, outside-click dismissal, focus return and sign-out preserve the active draft. The requested curriculum paragraph is removed; mission previews, availability and unlock rules remain.
+- Initial local validation: 4 new navigation regressions, 3 existing workspace cases, 10 curriculum/guided-access cases and all 21 account journeys passed. Parent email entry, student codes, both-language four-mission progress, parent totals, fresh-browser resume, sign-out, stale-session privacy and save recovery are covered. The first broad account attempt used a missing default Docker socket; the unchanged suite passed using the documented already-running RoboLab engine.
+- TypeScript/build, all four packaging configurations, hosted test discovery and publication hygiene passed. Desktop and narrow navigation/curriculum screenshots were inspected. Builder and QA personas plus native gstack hierarchy/interaction review found no remaining actionable issue in this scope. This is local software and synthetic review evidence, not a live provider or learner pilot.
+- Signup follow-up validation: all 18 affected browser checks passed (7 navigation/workspace and 11 signup/onboarding/recovery), including new-family creation, same-email return from a fresh browser, three-item keyboard wrapping and viewport widths from 320 to 1366 pixels. TypeScript/build and publication checks passed; desktop/narrow menus and the empty parent form were visually inspected. Signup, builder and QA lenses found no remaining issue. These focused checks do not re-claim the earlier broad run on the new source.
+- Status: draft PR #14 updated for review; exact-head CI is recorded on the PR. No merge or deployment of this follow-up is claimed. The live site remains on the completed PR #13 release until separately authorized.
+
+
 ## Weekly email wording — October 18, 2026
 
 - Owner feedback: use simple language, name the student who completed each mission, separate the suggested question, and remove the visible UTC label.
