@@ -12,6 +12,19 @@ October 13, 2026. This design applies the curriculum designer, critic and teache
 
 Evidence: the previous teaching review reproduced misleading patrol feedback, lost case context, original-starter prediction mismatch and destructive example restore in a disposable local browser. Source inspection confirmed M1's authored hints were not rendered in the shared coach. The implementation adds targeted regressions for those paths. Difficulty, motivation and teacher intervention remain learner hypotheses; no classroom pilot is claimed.
 
+## Success that teaches · shared authoring requirement
+
+October 17 owner feedback: students can see a pass but cannot easily tell why it worked. UI-04 addresses this across all four playable missions; [LESSON-FEEDBACK-QA.md](LESSON-FEEDBACK-QA.md) distinguishes implementation/checks from learner observation.
+
+- Put a clear **challenge complete** label, useful-world outcome, measured facts and a short **Why it worked** paragraph together beside Run. Describe this challenge, not whole-mission mastery or server-verified unlocks.
+- Use trusted model observations and completion criteria. Explain power/time/stop, decision versus distance, ordered stopped holds, or grasp/carry/release as appropriate. Never attribute a sensor read, branch, loop or function to arbitrary code merely because its outcome passed. Do not use console output as evidence.
+- Keep the actual numbers, including valid alternatives within tolerance. Do not substitute reference values or reveal the next challenge's edit. Explain the mechanism in familiar words; keep deeper worked steps in help.
+- Label the result as the last run. Clear it on new Run, Reset, errors, Stop and context changes; later draft edits cannot rewrite the observation. Keep one optional reflection and the existing next challenge action. No mandatory essay or retry/hint penalty.
+- Combine the three graduated hints into one progressive card. Preserve each level and a back control. Reveal the worked example explicitly after an attempt, label its original scenario, and preserve the draft. Keyboard focus must stay on a visible enabled control.
+- Future rover, sensor, arm/function and flight lessons must author their own evidence-to-mechanism explanation and test it with reference, alternate valid and wrong programs in Python and Java. A green result remains completion evidence; explanation and transfer are separate learning evidence.
+
+Next learner check: after a successful run, ask a student to explain which command caused the observed motion and predict one changed case. Record whether the result card or a hint helped; do not claim comprehension from software checks or synthetic walkthroughs.
+
 ## Next curriculum decisions
 
 October 13 review of `73c52e063d5894d68e52901ce4340538cb9c0303`, using curriculum designer, critic, teacher and retrospective lenses. This pass inspects source and existing evidence; it is not a new browser walkthrough or student pilot. The new repository skill instructions do not change the app. [PROGRESS.md](PROGRESS.md) remains the release ledger and [TASKS.md](TASKS.md) remains the build queue.

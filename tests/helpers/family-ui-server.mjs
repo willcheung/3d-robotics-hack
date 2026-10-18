@@ -8,6 +8,8 @@ import {hostedApi} from '../../server/hosted-api.mjs';
 import {onboardingService} from '../../server/onboarding.mjs';
 import {MemoryStore} from './memory-store.mjs';
 import {headers} from '../../scripts/build-runtime.mjs';
+import {javaApi} from '../../server/java-api.mjs';
+import {buildRuntime} from '../../scripts/build-runtime.mjs';
 import {JavaRun} from '../../server/java-run.mjs';
 import {lessonTargets} from '../../src/model.ts';
 import {parseMessage} from '../../src/protocol.ts';
@@ -17,13 +19,14 @@ const messages=[],store=new MemoryStore();let time=Date.now();
 // Never fall back to cloud services from this disposable account test server.
 class LocalCheck extends JavaRun {
  constructor(source,onMessage,onClosed,options){
-  if(options.language!=='java'||options.purpose!=='progress-check')throw Error('This local account fixture supports checked Java only.');
-  super(source,message=>onMessage(parseMessage(message)),onClosed);
+  if(options.purpose!=='progress-check')throw Error('Use the local practice endpoint.');
+  super(source,message=>onMessage(parseMessage(message)),onClosed,{image:options.language==='python'?'robolab-python-check:s01':'robolab-java:s02'});
  }
 }
 const jobs=[],mail={enabled:true,send:async message=>{if(!messages.some(m=>m.id===message.id))messages.push(message);return {id:'test-only'};}},password='test-only-family-ui-session-password-32-characters',enqueue=async(message,options)=>{jobs.push({message,options});};
 const onboarding=onboardingService({store,password,appOrigin:origin,mail,enqueue,now:()=>time});
 const api=hostedApi({store,enqueue,Run:LocalCheck,mail,recoveryNow:()=>time,appOrigin:origin,password:'test-only-family-ui-session-password-32-characters'});
+const java=javaApi(origin);
 const server=http.createServer(async(req,res)=>{
  // Test-only persisted prerequisites for draft/navigation fixtures. The real
  // unlock test never calls this endpoint and executes every checked program.
@@ -49,10 +52,16 @@ const server=http.createServer(async(req,res)=>{
  if(req.url==='/__test/mail'){res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(messages.at(-1)??null));return;}
  if(req.url==='/__test/newday'&&req.method==='POST'){time+=86400000;res.end('ok');return;}
  if(req.url==='/__test/advance'&&req.method==='POST'){time+=61000;res.end('ok');return;}
+ if(await java.handle(req,res))return;
  if(await api(req,res))return;
  const pathname=new URL(req.url,origin).pathname,file=path.resolve(root,'.'+(pathname==='/'?'/index.html':pathname));
  if(!file.startsWith(root+path.sep)){res.writeHead(403);res.end();return;}
  try{const content=await readFile(file);res.writeHead(200,{...headers(origin,'http://127.0.0.1:4474').app,'Content-Type':({'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'})[path.extname(file)]||'application/octet-stream'});res.end(content);}catch{res.writeHead(404);res.end();}
 });
-server.listen(4473,'127.0.0.1');
-for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>server.close(()=>process.exit()));
+process.env.APP_ORIGIN=origin;process.env.VITE_RUNTIME_ORIGIN='http://127.0.0.1:4474';process.env.RUNTIME_DIST='work/family-runtime';
+await buildRuntime();
+const runtimeRoot=path.resolve(process.env.RUNTIME_DIST),policy=headers(origin,'http://127.0.0.1:4474');
+const runtime=http.createServer(async(req,res)=>{const pathname=new URL(req.url,origin).pathname,file=path.resolve(runtimeRoot,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(runtimeRoot+path.sep)){res.writeHead(403);res.end();return;}
+ try{const content=await readFile(file);res.writeHead(200,{...(pathname==='/worker.js'?policy.worker:policy.frame),'Content-Type':({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.wasm':'application/wasm','.json':'application/json','.zip':'application/zip'})[path.extname(file)]||'application/octet-stream'});res.end(content);}catch{res.writeHead(404);res.end();}});
+runtime.listen(4474,'127.0.0.1');server.listen(4473,'127.0.0.1');
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,async()=>{await java.stop();runtime.close();server.close(()=>process.exit());});

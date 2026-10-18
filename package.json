@@ -10,18 +10,19 @@
     "dev": "node scripts/serve.mjs --dev",
     "build": "tsc --noEmit && vite build && node scripts/build-runtime.mjs",
     "preview": "node scripts/serve.mjs",
-    "test": "node --experimental-strip-types --test tests/model.test.ts tests/lessons.test.ts tests/patrol.test.ts tests/arm.test.ts tests/python-shim.test.ts tests/preview.test.mjs",
+    "test": "node --experimental-strip-types --test tests/draft-sync.test.ts tests/model.test.ts tests/run-explanation.test.ts tests/lessons.test.ts tests/patrol.test.ts tests/arm.test.ts tests/python-shim.test.ts tests/preview.test.mjs",
     "test:browser": "playwright test",
     "check": "npm run test && npm run test:family && npm run test:family-ui && npm run test:java && npm run build && npm run test:browser",
     "build:vercel": "node scripts/vercel-build.mjs",
     "setup:java": "docker build --network=default -t robolab-java:s02 java",
     "test:java": "node --test tests/java.test.mjs",
-    "test:family": "node --test tests/family.test.mjs tests/recovery.test.mjs tests/onboarding.test.mjs tests/parent-email.test.mjs",
+    "test:family": "node --test tests/family.test.mjs tests/recovery.test.mjs tests/onboarding.test.mjs tests/parent-email.test.mjs tests/weekly-summary.test.mjs",
     "test:provider": "node --test tests/provider.test.mjs",
     "test:storage-provider": "node --test tests/storage-provider.test.mjs tests/recovery-storage.test.mjs tests/onboarding-storage.test.mjs",
     "test:hosted": "playwright test --config playwright.hosted.config.ts",
     "test:family-ui": "playwright test --config playwright.family-ui.config.ts",
-    "check:publication": "node scripts/check-publication.mjs"
+    "check:publication": "node scripts/check-publication.mjs",
+    "setup:checks": "docker build -f tests/helpers/python-check/Dockerfile -t robolab-python-check:s01 ."
   },
   "dependencies": {
     "@vercel/blob": "2.8.1",

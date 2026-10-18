@@ -1,3 +1,4 @@
+import {runValues} from '../src/run-values.ts';
 import {getIronSession,sealData,unsealData} from 'iron-session';
 import {appOrigins} from './app-origins.mjs';
 import {resendMailer} from './recovery.mjs';
@@ -25,17 +26,18 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
    const ip=req.headers['x-vercel-forwarded-for']?.split(',')[0]??req.socket?.remoteAddress??'unknown';
    if(['/api/family/authstart','/api/family/authverify','/api/family/authfinish'].includes(path)&&req.method==='POST'){
     let active;
-    if(session.familyId){try{active=await current(store,session);if(!path.endsWith('authfinish')&&!(active.profile.role==='parent'&&!active.profile.emailLogin&&req.headers['x-robolab-profile']===active.profile.id))throw new HttpError(409,'Sign out before using another parent email. Your saved work will be kept.');}catch(e){if(e.status!==401)throw e;}}
+    if(session.familyId){try{active=await current(store,session);if(!path.endsWith('authfinish'))throw new HttpError(409,'Sign out before using another parent email. Your saved work will be kept.');}catch(e){if(e.status!==401)throw e;}}
     const data=await body(req);
+    if(data.parentCode!==undefined||data.parentSetupKey!==undefined||data.connect)throw new HttpError(410,'Parent-code setup is retired. Sign in with your parent email. Student logins and saved work are kept.');
     if(path.endsWith('authstart'))json(res,200,await onboarding.start(data,ip));
     else if(path.endsWith('authverify'))json(res,200,await onboarding.verify(data,ip));
     else {const result=await onboarding.finish(data,active?session:undefined);if(active&&(result.session.profileId!==session.profileId||result.session.familyId!==session.familyId))throw new HttpError(409,'Sign out before switching families.');Object.assign(session,result.session);await session.save();json(res,200,{ok:true});}
     return true;
    }
-   if(['/api/family/create','/api/family/forgot','/api/family/recover','/api/family/email','/api/family/emailverify'].includes(path))throw new HttpError(410,'Parents now sign in by email. Use Continue with email, or Connect your email if you have an old parent code. Your students and saved work are kept.');
+   if(['/api/family/create','/api/family/forgot','/api/family/recover','/api/family/email','/api/family/emailverify'].includes(path))throw new HttpError(410,'Parents now sign in by email. Use Parent sign in, then Continue with email. Your students and saved work are kept.');
    if(path==='/api/family/login'&&req.method==='POST'){
     const data=await body(req),entered=await login(store,data.code),{profile}=await current(store,entered);
-    if(profile.role!=='student')throw new HttpError(403,'Parents sign in by email. Choose Parent, then Continue with email. For an old code-only family, choose Connect your email.');
+    if(profile.role!=='student')throw new HttpError(403,'Parents sign in by email. Choose Parent, then Continue with email.');
     Object.assign(session,entered);await session.save();try{await onboarding.studentSignedIn(session);}catch{/* A durable login is usable even while notification storage/delivery is down. */}json(res,200,{ok:true});return true;
    }
    if(path==='/api/family/logout'&&req.method==='POST'){session.destroy();json(res,200,{ok:true});return true;}
@@ -67,8 +69,8 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
     if(verify&&(typeof data.target!=='string'||!Object.hasOwn(targets,data.target)))throw new HttpError(400,'Unknown rescue target.');
     const missing=verify&&missingPrerequisite(targetLesson(data.target),profile.completed);
     if(missing)throw new HttpError(403,`Check all three Mission ${Number(missing.slice(1))} rescues to unlock checked Mission ${Number(targetLesson(data.target).slice(1))} progress. You can preview this mission until it unlocks.`);
-    const id=verify?data.id:randomUUID();await reserveRun(store,session,id);
-    let run,state=initialState(verify?data.target:'beacon'),outcome='error',error='',done=false,terminal,released=false,serviceReserved=false;
+    const id=verify?data.id:randomUUID(),receipt=await reserveRun(store,session,id,verify?data:undefined);if(receipt){json(res,200,receipt);return true;}
+    let run,state=initialState(verify?data.target:'beacon'),outcome='error',error='',output='',done=false,terminal,released=false,serviceReserved=false;
     const release=async()=>{const results=await Promise.allSettled([releaseRun(store,session,id),...(serviceReserved?[releaseServiceRun(store,session,id)]:[])]);const failed=results.find(r=>r.status==='rejected');if(failed)throw failed.reason;released=true;};
     try {
      await reserveServiceRun(store,session,id);serviceReserved=true;
@@ -78,7 +80,8 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
        if(message.type==='command'){
         let value=null;
         try{if(message.command.op==='wait')for(let i=0;i<message.command.value;i++)state=tick(state);else {const next=command(state,message.command);state=next.state;value=next.value;}await run.reply(message.id,value);}catch(e){run.fail(e.message);}
-       } else if(message.type==='error')error=message.text;
+       } else if(message.type==='output')output=(output+message.text).slice(0,4000);
+       else if(message.type==='error')error=message.text;
        else if(message.type==='done'){done=true;outcome=reached(state,targets[data.target])?'reached':'missed';}
       } else if(message.type==='done'||message.type==='error')terminal=message;
       else if(!res.destroyed&&!res.write(JSON.stringify(message)+'\n'))run.stop();
@@ -88,19 +91,20 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
      }});
      res.once('close',()=>run.stop());
      await run.finished;
-     await release();
+     if(!verify)await release();
      if(!verify&&terminal&&!res.destroyed)res.write(JSON.stringify(terminal)+'\n');
      if(verify&&!res.destroyed){
       if(!done&& !error)error='Check was interrupted. Your source is safe; try again.';
-      const result={...data,outcome,seconds:state.ticks*.02,error};
+      const result={...data,outcome,seconds:state.ticks*.02,error,values:runValues(state),output};
       await recordAttempt(store,session,result,true);
+      await release();
       json(res,200,{outcome,seconds:result.seconds,error,completed:(await current(store,session)).profile.completed});
      }
     } finally {if(!released)await release();if(!verify&&res.headersSent&&!res.destroyed)res.end();}
     return true;
    }
    throw new HttpError(404,'Unknown family operation.');
-  } catch(e){if(!res.headersSent)json(res,e.status??503,{error:e.status?e.message:'Family service unavailable. Your editor is safe; try again shortly.'});else if(!res.destroyed)res.end();return true;}
+  } catch(e){if(!res.headersSent)json(res,e.status??503,{error:e.status?e.message:'Family service unavailable. Your editor is safe; try again shortly.',...(e.status&&e.code?{code:e.code}:{})});else if(!res.destroyed)res.end();return true;}
  };
 }
 const deployedHandler=hostedApi();

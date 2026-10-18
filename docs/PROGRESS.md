@@ -1,5 +1,16 @@
 # Public progress
 
+## FE-01 — Family access and automatic progress
+
+- Status: review; [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Branch `codex/family-experience`, managed `family-experience` worktree, base `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`. Exclusive slice ownership protected writes. Family implementation/test checkpoint: `5983230a046ee6cf31a3a14e1e329de67b835306`; subsequent changes record evidence and extend only the overall CI job allowance after its 25-minute ceiling interrupted passing tests. Current main `841f341e2e722b767efceff9b6f47b635baa2775` is integrated, preserving its favicon and mission-title change; only the progress record conflicted. PR checks retain exact-head CI of the combined candidate.
+- Visible parent email sign-in, removable optional student rows and verified returning-account messaging replace the confusing public legacy entry. Parent dashboard shares authoritative child progress and preserves older activity dates. Existing families, drafts and local notes remain preserved.
+- Drafts save automatically and successful unfinished challenges check automatically. Pending, practice and confirmed progress stay distinct; all surfaces share the same three-target completion rule. Lost replies, immutable source, conflicts and identity switches retain recovery and existing quotas.
+- Manual save/submit/note forms are removed. Bounded Run history retains code, challenge, outcome, measurements and console output. The coordinated Mission 1-3 feedback explains actual outcomes beside Run and the 3D scene; saved completion remains visible on return without showing a stale run explanation.
+- Weekly family summaries are opt-in and disabled operationally by default. Durable dispatch/receipts, quiet-week suppression, consent/recipient revalidation and authentication capacity are tested locally. No provider configuration or actual mail changed.
+- Local coverage: 40 model/autosave/bridge checks, 63 family/email/weekly checks, 17 isolated Java checks, 20 complete family browser journeys and all 83 workshop cases across the full batch and final affected-case reruns. TypeScript/build, four package modes and publication checks pass. Desktop/narrow synthetic screenshots inspected. Initial failures and corrections are preserved in [the contract and QA record](FAMILY-EXPERIENCE.md); no single all-green final broad local run is claimed.
+- All relevant RoboLab persona lenses and native gstack adversarial review were applied; recovery/race/layout findings are fixed with regressions and no remaining actionable finding in the reviewed scope. This is software evidence and synthetic review, not actual learner observation or an external-model review.
+- Unmet release criteria: exact candidate staging/provider/mail/cron qualification, authorized rollout and human parent/learner observation. No merge, deployment, credential/quota changes or gamification. No implementation blocker remains. Next action: review PR #10 and exact-head CI, then obtain separate release authorization before staging/deployment or live summary activation.
+
 ## Site identity — Favicon and mission tab titles
 
 - Status: validated locally on `codex/site-identity`, based on `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`; not published or deployed.
@@ -16,6 +27,14 @@
 - Local evidence: TypeScript/build, 30 model/Python/preview checks, 49 account/API checks, 17 isolated Java checks, all 14 family journeys and all 77 current workshop browser cases are covered. Browser evidence combines a broad run with final affected-case batches; the QA record preserves initial failures and corrections. Real server checks complete all 12 challenges and exercise the earned Next mission, reload and sibling/draft separation. Final source review found no remaining actionable issue.
 - Next action: review the local preview, then qualify GitHub/CI and hosting for this slice. No new hosted, production or learner observation is claimed.
 
+
+## UI-04 — Explain successful runs and simplify hints
+
+- Status: validated_local on `codex/lesson-feedback`, based on released `442ea6981def5f2122ae400709d114ace5f353a7`. Exclusive ownership was claimed before shared writes; the managed `lesson-feedback` worktree isolates this slice from PR #9's mission-lock release. Application/tested source: `6b76194f01128743e9a370ff829abf33177efea2`; later commits update evidence only.
+- Missions 1–4 now show clear challenge completion, actual observed results and a short “Why it worked” explanation beside Run. Three hints and the worked explanation share one progressive card. All help stays free and preserves code. The explanatory copy uses trusted state, accepts alternative valid programs and does not claim physical success proves branch/loop understanding. Future mission acceptance requires the same pattern.
+- [Lesson feedback QA](LESSON-FEEDBACK-QA.md) records design/critique, informed student/teacher walkthroughs, native adversarial source review and actual software evidence. Build, 34 model/language/preview checks and 14 family UI checks pass. All 75 workshop journeys are covered by 72 broad-batch passes plus final affected revalidation: two obsolete Mission 2 copy assertions were replaced, and a reproduced keyboard-focus defect was repaired. The final five-test batch passes on the implementation commit. The broad batch used an earlier frozen preview; no single all-green final broad run is claimed.
+- Desktop/narrow result cards and hints were inspected; saved drafts, checked progress/unlocks, second-device resume and sibling separation pass locally. Publication hygiene passes for 219 tracked files. Actual learner comprehension, remote providers and exact-head CI are not claimed.
+- Next action: owner QA in the local preview. Reconcile any newly landed PR #9 navigation changes before publication and rerun affected checks; then prepare a review PR and CI under the delivery workflow. This candidate is not published, merged or deployed. No model, sandbox, account data, scoring, later mission or automation changes were made.
 
 ## UI-02 — Compact practice and help
 

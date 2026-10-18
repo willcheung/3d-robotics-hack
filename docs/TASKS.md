@@ -4,6 +4,12 @@ Kickoff is authorized. Each delivered chunk must be a runnable, self-contained a
 
 FOUNDATION.md is the current cross-slice acceptance contract and implemented/planned capability ledger. Detailed engineering coverage is retained in ENGINEERING-CHECKS.md. That document is not the execution queue. Vercel build/hosting requirements and the separately authorized DEPLOY-01 gate are in DEPLOYMENT.md. Every slice retains a deployable web build; no automatic deployment is authorized.
 
+## FE-01 — Family access and automatic progress
+
+- Status: review; implemented and locally validated in [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Family implementation/test checkpoint: `5983230a046ee6cf31a3a14e1e329de67b835306`; exact-head CI is recorded on the PR.
+- Contract and evidence: [FAMILY-EXPERIENCE.md](FAMILY-EXPERIENCE.md).
+- One cumulative runnable slice with internal implementation checkpoints. No later lessons or gamification, merge or deployment.
+
 ## Execution rules
 
 Read BUDGET.md for the temporary owner-authorized exception to the reserve thresholds. The live weekly reset must match; otherwise the defaults below apply.
@@ -25,6 +31,13 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 - Outcome: preview later missions safely; earn Next mission after all three checked challenges. Remove the mission dropdown and preserve the compact workbench.
 - Acceptance: read-only editing/runtime/world controls; precise unlock/return guidance; server-owned progress; profile/draft recovery; desktop/narrow visual checks. No new lesson, runtime semantics, quota or account settings change.
 - Evidence and remaining gates: [GUIDED-MISSIONS-QA.md](GUIDED-MISSIONS-QA.md).
+
+## UI-04 — Explain successful runs and simplify hints
+
+- Status: validated_local; owner-authorized shared teaching/UI refinement on `codex/lesson-feedback`, isolated from the concurrent mission-lock release. Implementation/tested source: `6b76194f01128743e9a370ff829abf33177efea2`. No PR, CI, merge or deployment is claimed.
+- Scope: Missions 1–4 in both languages; clear completion, actual outcome and causal explanation beside Run; one progressive three-level hint card and optional worked example. Future authoring gates use the same pattern.
+- Acceptance: alternate valid solutions, misses/forged output, stale-result clearing, all hints, preserved drafts and navigation, desktop/narrow screenshots and real Python/Java journeys. No changes to model, runtime isolation, scoring, accounts, data, mission scope or automation.
+- Evidence and remaining gates: [LESSON-FEEDBACK-QA.md](LESSON-FEEDBACK-QA.md). Merge and deployment require separate authorization.
 
 ## CURRICULUM-01 — Visual mission previews
 

@@ -1,12 +1,14 @@
-import {get,put,BlobPreconditionFailedError} from '@vercel/blob';
+import {cleanValues} from '../src/run-values.ts';
+import {get,put,list,BlobPreconditionFailedError} from '@vercel/blob';
 import {randomBytes,randomUUID,createHash,createHmac} from 'node:crypto';
 import {targets,lessonTargets,missingPrerequisite,modelVersion,targetLesson,draftKey} from '../src/model.ts';
 export const hashCode=code=>createHash('sha256').update(code).digest('hex');
 export const newCode=()=>randomBytes(24).toString('base64url');
-export class HttpError extends Error {constructor(status,message){super(message);this.status=status;}}
+export class HttpError extends Error {constructor(status,message,code){super(message);this.status=status;if(code)this.code=code;}}
 // Conditional writes need the storage representation's strong ETag. Compression
 // can turn a JSON response into W/"...", which cannot satisfy If-Match.
 export class BlobStore {
+ async listFamilies(cursor){const page=await list({prefix:"families/",limit:20,...(cursor?{cursor}:{})});return {paths:page.blobs.map(b=>b.pathname),cursor:page.hasMore?page.cursor:undefined};}
  async read(path){const r=await get(path,{access:'private',useCache:false,headers:{'Accept-Encoding':'identity'}});if(!r)return null;if(r.statusCode!==200)throw Error('Storage unavailable');return {value:await new Response(r.stream).json(),etag:r.blob.etag};}
  async write(path,value,etag){return put(path,JSON.stringify(value),{access:'private',addRandomSuffix:false,contentType:'application/json',...(etag?{ifMatch:etag}:{allowOverwrite:false})});}
 }
@@ -26,7 +28,7 @@ export async function current(store,session){if(!session?.familyId)throw new Htt
 export function view(family,profile){return {
  profile:{id:profile.id,name:profile.name,role:profile.role},
  drafts:profile.drafts,history:profile.history,
- students:family.profiles.filter(p=>p.role==='student'&&p.active).map(p=>({id:p.id,name:p.name,completed:p.completed,experiments:p.experiments})),
+ students:family.profiles.filter(p=>p.role==='student'&&p.active).map(p=>({id:p.id,name:p.name,completed:p.completed,experiments:p.experiments,...(profile.role==='parent'?{lastActivity:p.lastActivity??p.history[0]?.at??null,missionCompleted:p.missionCompleted??{},recent:p.history.slice(0,3).map(a=>({target:a.target,outcome:a.outcome,verified:a.verified,at:a.at}))}:{})})),
  completed:profile.completed,
  ...(profile.role==='parent'?{recoveryEmail:profile.recovery?.email??null}:{}),
  runBusy:family.runs.some(r=>r.profileId===profile.id&&r.until>Date.now()),
@@ -71,22 +73,31 @@ export async function saveDraft(store,session,data){
  const lesson=data.lesson??'L01';if(typeof lesson!=='string'||!Object.hasOwn(lessonTargets,lesson))throw new HttpError(400,'Unknown lesson.');const key=draftKey(lesson,data.language);
  if(data.target!==undefined && (typeof data.target!=='string'||!lessonTargets[lesson].includes(data.target)))throw new HttpError(400,'Challenge does not belong to this lesson.');
  return update(store,familyPath(session.familyId),f=>{const p=profileIn(f,session),old=p.drafts[key];
+  if(old&&old.source===data.source&&old.target===data.target&&data.revision<=old.revision)return {value:f,result:old};
   if((old?.revision??0)!==data.revision)throw new HttpError(409,'A newer draft is saved in another tab. Your editor is safe. Refresh before replacing it.');
   const draft={source:data.source,revision:data.revision+1,...(data.target!==undefined?{target:data.target}:{})};p.drafts[key]=draft;return {value:f,result:draft};});
 }
 export const validAttempt=id=>typeof id==='string'&&/^[a-f0-9-]{36}$/.test(id);
-export async function reserveRun(store,session,id){
+const signature=data=>hashCode(JSON.stringify([data.source,data.language,data.target]));
+const CHECK_RECEIPT_TTL=7*86400000;
+export async function reserveRun(store,session,id,input){
  if(!validAttempt(id))throw new HttpError(400,'Invalid run identifier.');
  return update(store,familyPath(session.familyId),f=>{
   const p=profileIn(f,session),now=Date.now(),day=new Date(now).toISOString().slice(0,10);
-  if(p.history.some(a=>a.id===id&&a.verified))throw new HttpError(409,'This experiment is already checked.');
+  const receipt=p.checkReceipts?.[id],historical=p.history.find(a=>a.id===id&&a.verified);
+  if(receipt||historical){
+   const matches=receipt?receipt.signature===signature(input??{}):historical.source===input?.source&&historical.language===input?.language&&historical.target===input?.target;
+   if(!input||!matches)throw new HttpError(409,'This experiment is already checked with a different source.');
+   return {value:f,result:{outcome:(receipt??historical).outcome,seconds:(receipt??historical).seconds,error:(receipt??historical).error,completed:p.completed,replayed:true}};
+  }
+  const recorded=p.attemptSeen?.[id]??p.history.find(a=>a.id===id);if(input&&recorded&&(recorded.signature??signature(recorded))!==signature(input))throw new HttpError(409,'That experiment already has a different source.');
   f.runs=f.runs.filter(r=>r.until>now);
   f.cancelled=(f.cancelled??[]).filter(r=>r.until>now);
   if(f.cancelled.some(r=>r.id===id&&r.profileId===p.id))throw new HttpError(409,'This check was cancelled. Start a new check.');
   if(f.runs.some(r=>r.profileId===p.id)||f.runs.length>=2)throw new HttpError(409,'A family run is still active. Stop it or try again shortly.');
   if(f.daily.day!==day)f.daily={day,count:0};
   if(f.daily.count>=60)throw new HttpError(429,'The family’s 60 hosted runs for today are used. Python practice is still available.');
-  f.daily.count++;f.runs.push({id,profileId:p.id,until:now+120000});return {value:f};
+  f.daily.count++;f.runs.push({id,profileId:p.id,until:now+120000,...(input?{signature:signature(input)}:{})});return {value:f,result:null};
  });
 }
 export async function releaseRun(store,session,id){await update(store,familyPath(session.familyId),f=>{if(!f)return {value:f};f.runs=f.runs.filter(r=>r.id!==id||r.profileId!==session.profileId);return {value:f};});}
@@ -94,16 +105,29 @@ export async function recordAttempt(store,session,data,verified=false){
  sourceInput(data);
  if(!validAttempt(data.id)||typeof data.target!=='string'||!Object.hasOwn(targets,data.target)||!['reached','missed','error','stopped','unavailable'].includes(data.outcome))throw new HttpError(400,'Invalid experiment.');
  return update(store,familyPath(session.familyId),f=>{
-  const p=profileIn(f,session),old=p.history.find(a=>a.id===data.id);
+  const p=profileIn(f,session),old=p.history.find(a=>a.id===data.id),time=Date.now(),at=new Date(time).toISOString();
+  p.checkReceipts=Object.fromEntries(Object.entries(p.checkReceipts??{}).filter(([,r])=>r.until>time).slice(-420));
+  p.attemptSeen=Object.fromEntries(Object.entries(p.attemptSeen??{}).filter(([,r])=>r.until>time).slice(-420));
+  const committed=p.checkReceipts[data.id],seen=p.attemptSeen[data.id];
+  if((committed??seen)&& (committed??seen).signature!==signature(data))throw new HttpError(409,'That experiment already has a different source.');
+  if(committed||seen&&!verified)return {value:f,result:{ok:true,completed:p.completed}};
   const missing=verified&&missingPrerequisite(targetLesson(data.target),p.completed);
   if(missing)throw new HttpError(403,`Complete checked Mission ${Number(missing.slice(1))} before checked Mission ${Number(targetLesson(data.target).slice(1))}.`);
   if(verified&&f.cancelled?.some(r=>r.id===data.id&&r.profileId===p.id))throw new HttpError(409,'Check stopped. No completion was awarded.');
   if(old&&(old.source!==data.source||old.language!==data.language||old.target!==data.target))throw new HttpError(409,'That experiment already has a different source.');
   if(old?.verified||old&&!verified)return {value:f,result:{ok:true}};
-  const attempt={id:data.id,source:data.source,language:data.language,target:data.target,lesson:targetLesson(data.target),lessonVersion:1,outcome:data.outcome,seconds:Number.isFinite(data.seconds)?Math.max(0,Math.min(30,data.seconds)):null,error:typeof data.error==='string'?data.error.slice(0,300):'',verified,at:new Date().toISOString(),version:modelVersion(data.target),sourceHash:hashCode(data.source),...(verified?{receipt:{model:modelVersion(data.target),runner:'sandbox-v1',snapshot:process.env.SANDBOX_SNAPSHOT_ID??'test-fixture'}}:{})};
-  if(old)p.history=p.history.filter(a=>a.id!==data.id);else p.experiments++;
+  const attempt={id:data.id,source:data.source,language:data.language,target:data.target,lesson:targetLesson(data.target),lessonVersion:1,outcome:data.outcome,seconds:Number.isFinite(data.seconds)?Math.max(0,Math.min(30,data.seconds)):null,error:typeof data.error==='string'?data.error.slice(0,300):'',verified,at:old?.at??at,values:cleanValues(data.values),output:typeof data.output==='string'?data.output.slice(0,4000):'',version:modelVersion(data.target),sourceHash:hashCode(data.source),...(verified?{receipt:{model:modelVersion(data.target),runner:'sandbox-v1',snapshot:process.env.SANDBOX_SNAPSHOT_ID??'test-fixture'}}:{})};
+  if(old)p.history=p.history.filter(a=>a.id!==data.id);
+  if(!old&&!seen){p.experiments++;p.lastActivity=at;const week=weekStart(time);p.activity??={};p.activity[week]=(p.activity[week]??0)+1;p.activity=Object.fromEntries(Object.entries(p.activity).sort(([a],[b])=>a.localeCompare(b)).slice(-8));}
+  p.attemptSeen[data.id]={signature:signature(data),until:time+CHECK_RECEIPT_TTL};
   p.history=[attempt,...p.history].slice(0,12);
-  if(verified&&data.outcome==='reached'&&!p.completed.includes(data.target))p.completed.push(data.target);
+  if(verified){
+   p.checkReceipts[data.id]={signature:signature(data),until:time+CHECK_RECEIPT_TTL,outcome:data.outcome,seconds:attempt.seconds,error:attempt.error};
+   if(data.outcome==='reached'&&!p.completed.includes(data.target)){
+    const lesson=targetLesson(data.target);p.completed.push(data.target);p.challengeCompleted??={};p.challengeCompleted[data.target]=at;
+    if(lessonTargets[lesson].every(t=>p.completed.includes(t))){p.missionCompleted??={};p.missionCompleted[lesson]??=at;}
+   }
+  }
   return {value:f,result:{ok:true,completed:p.completed}};
  });
 }
@@ -122,7 +146,7 @@ export async function cancelRun(store,session,id){
  if(!validAttempt(id))throw new HttpError(400,'Invalid check identifier.');
  return update(store,familyPath(session.familyId),f=>{
   const p=profileIn(f,session),now=Date.now();
-  const completed=p.history.some(a=>a.id===id&&a.verified);
+  const completed=!!p.checkReceipts?.[id]||p.history.some(a=>a.id===id&&a.verified);
   if(!completed){
    f.cancelled=(f.cancelled??[]).filter(r=>r.until>now&&!(r.id===id&&r.profileId===p.id));
    if(f.cancelled.length>=100)throw new HttpError(429,'Please wait before starting more checks.');
@@ -175,3 +199,6 @@ export async function reserveServiceRun(store,session,id,{now=Date.now()}={}){
 export async function releaseServiceRun(store,session,id){
  await update(store,SERVICE_LIMIT_PATH,quota=>{if(!quota)return {value:{day:'',count:0,runs:[]}};quota.runs=quota.runs.filter(r=>r.key!==session.familyId+':'+session.profileId+':'+id);return {value:quota};});
 }
+
+/** Monday 00:00 UTC reporting windows; historical completions have no invented date. */
+export function weekStart(time=Date.now()){const d=new Date(time);d.setUTCHours(0,0,0,0);d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10);}

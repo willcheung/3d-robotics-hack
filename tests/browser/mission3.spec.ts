@@ -1,4 +1,4 @@
-import {openMission,openNotes,openHints,openCommands} from '../learning-ui.ts';
+import {openMission,openHints,readHints,openCommands} from '../learning-ui.ts';
 import {test,expect,type Page} from '../workshop-fixture.ts';
 import {patrolReference,patrolExtra,patrolTransfer} from '../../src/patrol-lesson.ts';
 async function run(page:Page,source?:string){
@@ -14,8 +14,7 @@ for(const lang of ['python','java'] as const){
   await page.goto('/');await openMission(page,'L03');await page.locator('#language').selectOption(lang);
   await expect(page.locator('#mission-job')).toContainText('rangers');await expect(page.locator('.real-world')).toContainText('inspection camera');await expect(page.locator('#value-guide')).toContainText('25 consecutive ticks');
   await expect(page.locator('#code')).toHaveValue(/repeats = 1/);await expect(page.locator('#show-solution')).toBeDisabled();
-  await openNotes(page);await page.locator('#prediction').fill('One repeat stops at -30°; only the first checkpoint can log.');await expect(page.locator('#prediction-feedback')).toContainText('not an automatically graded answer');
-  for(const name of ['Hint 1','Hint 2','Hint 3']){await openHints(page);await page.getByText(name,{exact:true}).click();await expect(page.getByText(name,{exact:true}).locator('..').locator('p')).toBeVisible();}
+  await readHints(page);
   await run(page);await expect(page.locator('#feedback')).not.toHaveClass(/success/);await expect(page.locator('#patrol-progress')).toContainText('1 of 3');await expect(page.locator('#console')).toContainText('Repeat 1 stopped at -30');await expect(page.locator('#console')).not.toContainText('Repeat 2');
   await page.locator('#show-solution').click();await expect(page.locator('#solution-explanation')).toBeVisible();await expect(page.locator('#practice-progress')).toContainText('0 of 3');
   await run(page,patrolReference[lang]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#patrol-progress .logged')).toHaveCount(3);await expect(page.locator('#console')).toContainText('Repeat 3 stopped at 90');await expect(page.locator('#time-value')).toHaveText('7.50s');
@@ -24,7 +23,7 @@ for(const lang of ['python','java'] as const){
   await page.locator('#next-rescue').click();await expect(page.locator('#code')).toHaveValue(patrolReference[lang]);await expect(page.locator('#patrol-progress .logged')).toHaveCount(0);
   await run(page);await expect(page.locator('#feedback')).not.toHaveClass(/success/);await expect(page.locator('#patrol-progress .logged')).toHaveCount(0);
   await run(page,patrolExtra[lang]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#patrol-progress .logged')).toHaveCount(4);await expect(page.locator('#time-value')).toHaveText('8.00s');
-  await page.locator('#next-rescue').click();await run(page,patrolTransfer[lang]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#pointer-value')).toHaveText('-90.0°');await expect(page.locator('#scanner-value')).toHaveText('60.0°');await expect(page.locator('#practice-progress')).toContainText('3 of 3');await expect(page.locator('#next-help')).toContainText('Check & save progress');await expect(page.locator('#next-lesson')).toBeHidden();await page.locator('.world-panel').screenshot({path:`test-results/mission-03-${lang}-cove.png`});
+  await page.locator('#next-rescue').click();await run(page,patrolTransfer[lang]);await expect(page.locator('#feedback')).toHaveClass(/success/);await expect(page.locator('#pointer-value')).toHaveText('-90.0°');await expect(page.locator('#scanner-value')).toHaveText('60.0°');await expect(page.locator('#practice-progress')).toContainText('3 of 3');await expect(page.locator('#next-help')).toContainText('Mission');await expect(page.locator('#next-lesson')).toBeVisible();await page.locator('.world-panel').screenshot({path:`test-results/mission-03-${lang}-cove.png`});
   await page.locator('#reset').click();await expect(page.locator('#patrol-progress .logged')).toHaveCount(0);await expect(page.locator('#pointer-value')).toHaveText('90.0°');await expect(page.locator('#code')).toHaveValue(patrolTransfer[lang]);
   await openMission(page,'L01');await expect(page.locator('#patrol-progress')).toBeHidden();await expect(page.locator('#pointer-value')).toHaveText('0.0°');await openMission(page,'L03');await expect(page.locator('#code')).toHaveValue(patrolTransfer[lang]);
  });

@@ -1,5 +1,5 @@
 import {fixtureParent} from '../helpers/fixture-parent.ts';
-import {test as baseTest,expect,type BrowserContext} from '@playwright/test';
+import {test as baseTest,expect,type BrowserContext,type Page} from '@playwright/test';
 import {BlobStore,provision,login,addStudent,hashCode} from '../../server/family-store.mjs';
 import {del} from '@vercel/blob';
 import {readFileSync} from 'node:fs';
@@ -10,6 +10,7 @@ const test=baseTest.extend<{protection:void}>({protection:[async({context},use)=
 const base=process.env.HOSTED_APP_ORIGIN||'http://127.0.0.1:4373';
 const main=(n=100)=>`public class Main { public static void main(String[] args) throws Exception { Robot.servo(120); Robot.motor(.5); Robot.waitTicks(${n}); Robot.motor(0); } }`;
 const python='from robot import motor, servo, wait\nawait servo(120)\nawait motor(.5)\nawait wait(100)\nawait motor(0)';
+async function confirmedRun(page:Page){const target=await page.locator('#target').inputValue();await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});await expect.poll(async()=>(await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json()).completed,{timeout:80000}).toContain(target);await expect(page.locator('#stop-check')).toBeHidden();}
 const paths=new Set<string>();
 const store=new BlobStore();const write=store.write.bind(store);store.write=async(path:string,...args:unknown[])=>{paths.add(path);return write(path,...args);};
 let parentCode:string,codeA:string,codeB:string;
@@ -22,16 +23,16 @@ test('family sign-in, curriculum availability, real hosted Java and saved cross-
  await page.getByRole('button',{name:'Close family progress'}).click();
  await page.locator('#language').selectOption('java');await page.locator('#code').fill(main());
  await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});await expect(page.locator('#feedback-title')).toContainText('Crew located');
- await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved with its challenge');
+ await expect(page.locator('#save-help')).toContainText('Saved to your account');
  const device=await browser.newContext();await signIn(device,codeA);const other=await device.newPage();await other.goto('/');await expect(other.locator('#profile-label')).toContainText('Nova');await other.locator('#language').selectOption('java');await expect(other.locator('#code')).toHaveValue(main());await device.close();
  await page.locator('#curriculum-open').click();await expect(page.locator('.curriculum-card')).toHaveCount(20);await expect(page.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(16);await expect(page.locator('#revisit-mission')).toBeVisible();
  await page.locator('#curriculum-dialog').screenshot({path:'test-results-hosted/curriculum-desktop.png'});
 });
 test('server-checked Python progress is shared; practice claims cannot unlock; second child stays separate',async({browser,page})=>{
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');await page.locator('#code').fill(python);
- await page.locator('#verify-cloud').click();await expect(page.locator('#save-help')).toContainText('Rescue checked and saved',{timeout:60000});
+ await confirmedRun(page);
  const b=await browser.newContext();await signIn(b,codeB);const other=await b.newPage();await other.goto('/');await expect(other.locator('#profile-label')).toContainText('Orion');await other.locator('#family-open').click();
- await expect(other.locator('.family-results')).toContainText('Nova');await expect(other.locator('.family-results')).toContainText('1/3 checked rescues');await expect(other.locator('.rescue-checklist').first()).toContainText('○ North ridge');await expect(other.locator('#family-content')).not.toContainText('from robot import');
+ await expect(other.locator('.family-results')).toContainText('Nova');await expect(other.locator('.family-results')).toContainText('1/3 challenges complete');await expect(other.locator('.rescue-checklist').first()).toContainText('○ North ridge');await expect(other.locator('#family-content')).not.toContainText('from robot import');
  await other.locator('#family-dialog').screenshot({path:'test-results-hosted/family-results.png'});await b.close();
 });
 test('Java compiler error, infinite-loop Stop and recovery preserve editable source',async({page})=>{
@@ -52,34 +53,37 @@ test('parent sees provisioned student aliases and revokes a signed-in child',asy
  const generated=(await addStudent(store,await login(store,parentCode),'Comet')).code;paths.add(`invites/${hashCode(generated)}.json`);
  await signIn(page.context(),parentCode);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Parent');await page.locator('#family-open').click();await expect(page.locator('.family-results')).toContainText('Comet');
  const child=await browser.newContext();await signIn(child,codeB);const other=await child.newPage();await other.goto('/');await expect(other.locator('#profile-label')).toContainText('Orion');
- page.once('dialog',d=>d.accept());await page.locator('.family-results article').filter({hasText:'Orion'}).getByRole('button',{name:'Revoke access'}).click();await expect(page.locator('#family-message')).toContainText('revoked');
- await other.locator('#save-cloud').click();await expect(other.locator('#save-help')).toContainText('sign in again');await child.close();
+ await page.locator('.family-results article').filter({hasText:'Orion'}).getByText('Manage student login',{exact:true}).click();page.once('dialog',d=>d.accept());await page.locator('.family-results article').filter({hasText:'Orion'}).getByRole('button',{name:'Revoke access'}).click();await expect(page.locator('#family-message')).toContainText('revoked');
+ await other.locator('#code').fill('# revoked account edit');await expect(other.locator('#profile-label')).toHaveText('Guest practice');await child.close();
 });
 test('conflicting devices compare versions and keep the chosen source',async({browser,page})=>{
  await signIn(page.context(),codeA);const second=await browser.newContext();await signIn(second,codeA);const other=await second.newPage();
  await page.goto('/');await other.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');await expect(other.locator('#profile-label')).toContainText('Nova');
- await page.locator('#code').fill('print("first device")');await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved');
- await other.locator('#code').fill('print("second device")');await other.locator('#save-cloud').click();await expect(other.locator('#resolve-conflict')).toBeVisible();await expect(other.locator('#code')).toHaveValue('print("second device")');
- await other.locator('#resolve-conflict').click();await expect(other.locator('#conflict-editor')).toHaveValue('print("second device")');await expect(other.locator('#conflict-cloud')).toHaveValue('print("first device")');await other.locator('#conflict-save').click();await expect(other.locator('#save-help')).toContainText('chosen editor version is saved');
+ await page.locator('#code').fill('print("first device")');await expect(page.locator('#save-help')).toContainText('Saved to your account');
+ await other.locator('#code').fill('print("second device")');await expect(other.locator('#resolve-conflict')).toBeVisible();await expect(other.locator('#code')).toHaveValue('print("second device")');
+ await other.locator('#resolve-conflict').click();await expect(other.locator('#conflict-editor')).toHaveValue('print("second device")');await expect(other.locator('#conflict-cloud')).toHaveValue('print("first device")');await other.locator('#conflict-save').click();await expect(other.locator('#save-help')).toContainText('Saved to your account');
  await second.close();
 });
 test('all three checked rescues complete Mission 1 without unlocking unbuilt missions',async({page})=>{
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');
  for(const [target,source,language] of [['beacon',python,'python'],['farther',main(150),'java'],['reverse','from robot import motor, servo, wait\nawait servo(60)\nawait motor(-.5)\nawait wait(100)\nawait motor(0)','python']]){
-  await page.locator('#language').selectOption(language);await page.locator('#target').selectOption(target);await page.locator('#code').fill(source);await page.locator('#verify-cloud').click();await expect(page.locator('#save-help')).toContainText('Rescue checked and saved',{timeout:60000});
+  await page.locator('#language').selectOption(language);await page.locator('#target').selectOption(target);await page.locator('#code').fill(source);await confirmedRun(page);
  }
  await page.locator('#curriculum-open').click();await expect(page.locator('.curriculum-state').first()).toHaveText('✓ Mission 1 complete');await expect(page.locator('.curriculum-state').filter({hasText:'Coming soon'})).toHaveCount(16);
 });
-test('Stop check cancels real server execution without recording a completed experiment',async({page})=>{
- await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');
- await page.locator('#code').fill('while True:\n    pass # cancellation fixture');await page.locator('#verify-cloud').click();await expect(page.locator('#stop-check')).toBeVisible();await page.locator('#stop-check').click();await expect(page.locator('#save-help')).toContainText('Check stopped',{timeout:30000});await expect(page.locator('#verify-cloud')).toBeEnabled();
- const state=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();expect(state.history.some((a:{source:string;outcome:string})=>a.source.includes('cancellation fixture')&&a.outcome==='reached')).toBe(false);
+test('cancelling a server check does not record an unconfirmed completion',async({page})=>{
+ await signIn(page.context(),codeA);const state=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json(),id=crypto.randomUUID();
+ const input={id,source:'while True:\n    pass # cancellation fixture',language:'python',target:'beacon'};
+ const h={Origin:base,...protectedHeaders,'X-RoboLab-Profile':state.profile.id};const checking=page.request.post(base+'/api/family/verify',{headers:h,data:input,timeout:90000});
+ await expect.poll(async()=>(await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json()).runBusy,{timeout:30000}).toBe(true);
+ expect((await page.request.post(base+'/api/family/cancel',{headers:h,data:{id}})).ok()).toBe(true);await checking;
+ const after=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();expect(after.history.some((a:{id:string;verified:boolean;outcome:string})=>a.id===id&&a.verified&&a.outcome==='reached')).toBe(false);
 });
 test('a sign-in change in another tab cannot save old student code to the new profile',async({page})=>{
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');await page.locator('#code').fill('print("belongs only to Nova")');
  const profile=await page.locator('html').getAttribute('data-profile');
- await signIn(page.context(),parentCode);await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('profile changed');await expect(page.locator('#profile-label')).toHaveText('Guest practice');await expect(page.locator('#code')).not.toHaveValue('print("belongs only to Nova")');
- expect(await page.evaluate(key=>localStorage.getItem(key),`robolab.profile.${profile}.python`)).toBe('print("belongs only to Nova")');
+ await signIn(page.context(),parentCode);await page.locator('#code').fill('print("belongs only to Nova") # after switch');await expect(page.locator('#profile-label')).toHaveText('Guest practice');await expect(page.locator('#code')).not.toHaveValue('print("belongs only to Nova")');
+ expect(await page.evaluate(key=>localStorage.getItem(key),`robolab.profile.${profile}.python`)).toBe('print("belongs only to Nova") # after switch');
  const state=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();expect(state.profile.name).toBe('Parent');expect(JSON.stringify(state.drafts)).not.toContain('belongs only to Nova');
 });
 
@@ -87,10 +91,10 @@ test('restoring Java history preserves unsaved drafts in both languages',async({
  await signIn(page.context(),codeA);await page.goto('/');await expect(page.locator('#profile-label')).toContainText('Nova');
  await page.locator('#language').selectOption('java');await page.locator('#code').fill('// Java draft worth keeping');
  await page.locator('#language').selectOption('python');await page.locator('#code').fill('# Python draft worth keeping');
- await page.locator('#family-open').click();await page.locator('.experiment-list article').filter({hasText:'Java'}).first().getByRole('button',{name:'Load code'}).click();
+ await page.locator('#history-open').click();await page.locator('.experiment-list article').filter({hasText:'Java'}).first().getByRole('button',{name:'Restore this code'}).click();
  await expect(page.locator('#family-dialog')).not.toBeVisible();await expect(page.locator('#language')).toHaveValue('java');await expect(page.locator('#code')).toHaveValue(main(150));
  const state=await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json();
- expect(state.drafts.java.source).toBe('// Java draft worth keeping');expect(state.drafts.python.source).toBe('# Python draft worth keeping');
+ await page.locator('#return-draft').click();await expect(page.locator('#code')).toHaveValue('// Java draft worth keeping');expect(state.drafts.python.source).toBe('# Python draft worth keeping');
  await expect(page.locator('#status-pill')).toHaveText('READY');
 });
 test('separate families cannot see or modify each other through the hosted API',async({browser,page})=>{

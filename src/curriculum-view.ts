@@ -45,7 +45,7 @@ export function curriculumHeader() {
  return `<div class="curriculum-heading"><span class="eyebrow">YOUR ROBOTICS CURRICULUM</span><button data-close aria-label="Close curriculum" autofocus>Close ✕</button></div>
  <div class="curriculum-intro"><h2 id="curriculum-title">Give your code a mission.</h2><p>Aim a rescue light. Program a robotic arm. Send a rover with supplies.<br>Start with one machine, then combine what you learn.</p><p class="curriculum-summary">16 core lessons · 4 optional extensions · ${lessonIds.length} playable now in Python + Java</p></div>
  <nav class="curriculum-chapters" aria-label="Curriculum chapters">${chapters.map(c=>`<a href="#curriculum-${c.id}" data-chapter="${c.id}">${c.label}</a>`).join('')}</nav>
- <div id="curriculum-list"></div><p class="curriculum-footer">Finish all 3 challenges with Check & save progress to unlock the next mission. Sign-in required. Locked missions have read-only previews; retries and hints are free. A successful run shows that your program worked; explaining why and adapting it checks your understanding.</p>
+ <div id="curriculum-list"></div><p class="curriculum-footer">Finish all 3 challenges to unlock the next mission. Successful runs save progress automatically when signed in. Locked missions have read-only previews; retries and hints are free. A successful run shows that your program worked; explaining why and adapting it checks your understanding.</p>
  <p class="curriculum-footer">Plan for about an hour per lesson, with pause and resume when needed. This is a pacing goal to test in class, not a time limit. Concept diagrams show planned missions; their design may change.</p>`;
 }
 

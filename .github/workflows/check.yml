@@ -11,9 +11,10 @@ permissions:
 jobs:
   acceptance:
     runs-on: ubuntu-latest
-    # Four-mission acceptance plus all packages reaches 20 minutes on CI.
-    # Leave cleanup/upload headroom without relaxing any test/runtime deadline.
-    timeout-minutes: 25
+    # The 223-case acceptance suite exceeded the old 25-minute job limit
+    # with no failing case (run 39082870829). Leave package/cleanup headroom;
+    # individual test and student-runtime deadlines remain unchanged.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,11 +24,13 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run setup:java
+      - run: npm run setup:checks
       - run: npm run check
       - name: Package both Vercel sites without deployment
         run: |
           VERCEL_TARGET=app APP_ORIGIN=https://app.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
           VITE_HOSTED=1 VERCEL_TARGET=app APP_ORIGIN=https://app.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
+          WEEKLY_SUMMARY_ENABLED=1 VITE_HOSTED=1 VERCEL_TARGET=app APP_ORIGIN=https://app.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
           VERCEL_TARGET=runtime APP_ORIGIN=https://app.example.test APP_ALTERNATE_ORIGIN=https://robolab.example.test VITE_RUNTIME_ORIGIN=https://python.example.test npm run build:vercel
       - uses: actions/upload-artifact@v4
         if: always()

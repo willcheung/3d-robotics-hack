@@ -6,7 +6,7 @@ test('top navigation opens dialogs without replacing the active draft', async ({
   const code = page.locator('#code');
   await code.fill('# my unfinished experiment');
   const curriculum = page.getByRole('banner').getByRole('button', {name:'Curriculum & unlocks'});
-  const family = page.getByRole('banner').getByRole('button', {name:'Family & progress'});
+  const family = page.getByRole('banner').getByRole('button', {name:'My progress',exact:true});
   await curriculum.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('#curriculum-dialog')).toBeVisible();
@@ -32,6 +32,7 @@ test('every mission keeps the workbench and editable code in the laptop viewport
     await openMission(page,lesson);
     for (const language of ['python','java']) {
       await page.locator('#language').selectOption(language);
+      await expect(page.locator('#run-followup')).toBeHidden();
       const position = await page.evaluate(() => {
         const top = (selector:string) => document.querySelector(selector)!.getBoundingClientRect().top + scrollY;
         return {workbench:top('.workbench'), code:top('#code'), run:top('#run'), job:top('#mission-job')};
@@ -43,6 +44,7 @@ test('every mission keeps the workbench and editable code in the laptop viewport
       await expect(page.locator('#mission-job')).not.toBeEmpty();
       await page.locator('#find-edit').click();
       await expect(page.locator('#code')).toBeFocused();
+      if(lesson==='L01'&&language==='python')await page.screenshot({path:'test-results/completed-mission-return-desktop.png'});
     }
   }
 });

@@ -11,7 +11,7 @@ test('parents have email entry, students have code entry, and guest Python remai
 test('new parents return by email and students retain separate codes and both-language saved drafts',async({page,browser})=>{
  await page.request.post('/__test/newday');await parentEmail(page,'email-only-parent@example.test',true);const profile=await page.locator('html').getAttribute('data-profile');
  const [code]=await addStudents(page,['New pilot']);await page.locator('#family-logout').click();await studentCode(page,code);await page.getByRole('button',{name:'Close family progress'}).click();
- for(const lang of ['python','java']){await page.locator('#language').selectOption(lang);await page.locator('#code').fill(`${lang} saved experiment`);await page.locator('#save-cloud').click();await expect(page.locator('#save-help')).toContainText('Draft saved');}
+ for(const lang of ['python','java']){await page.locator('#language').selectOption(lang);await page.locator('#code').fill(`${lang} saved experiment`);await expect(page.locator('#save-help')).toContainText('Saved to your account');}
  const device=await browser.newContext();try{
   const parent=await device.newPage();await parentEmail(parent,'email-only-parent@example.test');expect(await parent.locator('html').getAttribute('data-profile')).toBe(profile);await expect(parent.locator('.family-results')).toContainText('New pilot');await expect(parent.locator('#setup-receipt')).toBeEmpty();
   await parent.locator('#family-logout').click();await studentCode(parent,code);await parent.getByRole('button',{name:'Close family progress'}).click();

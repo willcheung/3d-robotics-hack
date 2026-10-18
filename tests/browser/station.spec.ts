@@ -11,7 +11,7 @@ async function run(page: Page, source: string) {
   await page.getByLabel('Python code', {exact:true}).fill(source);
   await page.getByRole('button', {name:'Run code'}).click();
 }
-async function done(page: Page) { await expect(page.locator('#runtime-label')).toHaveText('Program finished'); }
+async function done(page: Page) { await expect(page.locator('#runtime-label')).toHaveText('Code finished running'); }
 async function error(page: Page, text: string | RegExp) { await expect(page.locator('#feedback')).toHaveClass(/error/); await expect(page.getByLabel('Python console')).toContainText(text); }
 test.beforeEach(async ({ page }) => { await page.goto('/'); });
 test('diagram labels connect each real command to its moving part and follow camera views', async ({page}) => {
@@ -271,7 +271,7 @@ test('slow browser frames catch up without skipping fixed model ticks', async ({
     };
     requestAnimationFrame(busyFrame);
   });
-  await expect(page.locator('#runtime-label')).toHaveText('Program finished', {timeout:8000});
+  await expect(page.locator('#runtime-label')).toHaveText('Code finished running', {timeout:8000});
   await expect(page.locator('#feedback')).toHaveClass(/success/);
   await expect(page.locator('#pointer-value')).toHaveText('60.0°');
   await expect(page.getByLabel('Python console')).toHaveText('ANGLE 60\nSIMULATED 2\n');
@@ -352,7 +352,7 @@ test('invalid robot values stop without losing code or unlocking progress', asyn
     await expect(page.getByLabel('Python console')).not.toContainText('SHOULD NOT RUN');
     await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(source);
     await expect(page.locator('#next-rescue')).toBeDisabled();
-    await expect(page.locator('#practice-progress')).toHaveText('0 of 3 completed this visit');
+    await expect(page.locator('#practice-progress')).toHaveText('0 of 3 passed in this practice visit');
   }
 });
 
@@ -385,18 +385,18 @@ test('next rescue preserves code and unique successes; practice alone leaves Mis
   await run(page,good.replace('wait(100)','wait(50)')); await done(page); await expect(next).toBeDisabled();
   await run(page,good); await done(page); await expect(next).toBeEnabled();
   await page.getByRole('button',{name:'Run code'}).click(); await done(page);
-  await expect(page.locator('#practice-progress')).toHaveText('1 of 3 completed this visit');
+  await expect(page.locator('#practice-progress')).toHaveText('1 of 3 passed in this practice visit');
   await next.click(); await expect(page.getByLabel('Challenge target')).toHaveValue('farther');
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(good); await expect(next).toBeDisabled();
   await run(page,good.replace('wait(100)','wait(150)')); await done(page); await next.click();
   await expect(page.getByLabel('Challenge target')).toHaveValue('reverse');
   await run(page,good.replace('servo(120)','servo(60)').replace('motor(0.5)','motor(-0.5)')); await done(page);
-  await expect(page.locator('#practice-progress')).toHaveText('3 of 3 completed this visit');
-  await expect(next).toBeHidden(); await expect(page.locator('#next-help')).toContainText('Check & save progress');
+  await expect(page.locator('#practice-progress')).toHaveText('3 of 3 passed in this practice visit');
+  await expect(next).toBeHidden(); await expect(page.locator('#next-help')).toContainText('Sign in as a student');
   await expect(page.locator('#next-lesson')).toBeHidden();await openMission(page,'L02');await expect(page.locator('html')).toHaveAttribute('data-current-mission','L02');await expect(page.locator('#code')).toHaveValue(/reading = await angle/);await expect(page.locator('#code')).not.toBeEditable();
   await openMission(page,'L01');await expect(page.locator('#code')).toHaveValue(/motor\(-0.5\)/);
   await page.screenshot({path:'test-results/s01-complete.png',fullPage:true});
-  await page.reload(); await expect(page.locator('#practice-progress')).toHaveText('0 of 3 completed this visit');
+  await page.reload(); await expect(page.locator('#practice-progress')).toHaveText('0 of 3 passed in this practice visit');
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(/motor\(-0.5\)/);
 });
 
@@ -417,9 +417,9 @@ test('duplicate keyboard Run and target changes cannot mix workers or unlock sta
   await page.getByLabel('Challenge target').selectOption('reverse');
   await expect(page.locator('iframe')).toHaveCount(0);
   await expect(page.locator('#pointer-value')).toHaveText('0.0°');
-  await expect(page.locator('#practice-progress')).toHaveText('0 of 3 completed this visit');
+  await expect(page.locator('#practice-progress')).toHaveText('0 of 3 passed in this practice visit');
   await run(page,good.replace('servo(120)','servo(60)').replace('motor(0.5)','motor(-0.5)')); await done(page);
   await expect(page.locator('#pointer-value')).toHaveText('-60.0°');
-  await expect(page.locator('#practice-progress')).toHaveText('1 of 3 completed this visit');
+  await expect(page.locator('#practice-progress')).toHaveText('1 of 3 passed in this practice visit');
   await expect(page.locator('#crew-status')).toContainText('Lower cove crew located');
 });

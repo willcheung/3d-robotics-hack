@@ -17,8 +17,9 @@ const routes = target === 'app' ? [{src:'/(.*)',headers:h.app,continue:true}] : 
 ];
 if(target==='app'&&process.env.VITE_HOSTED==='1'){
   await import('./package-function.mjs');
+  routes.push({src:'/api/weekly-summary',dest:'/weekly-summary'});
   routes.push({src:'/api/(.*)',dest:'/api?endpoint=$1'});
 }
 routes.push({handle:'filesystem'});
-await writeFile(`${output}/config.json`,JSON.stringify({version:3,routes},null,2));
+await writeFile(`${output}/config.json`,JSON.stringify({version:3,routes,...(target==='app'&&process.env.VITE_HOSTED==='1'&&process.env.WEEKLY_SUMMARY_ENABLED==='1'?{crons:[{path:'/api/weekly-summary',schedule:'0 16 * * *'}]}:{})},null,2));
 console.log(`Packaged ${target} as Vercel Build Output v3. No deployment performed.`);
