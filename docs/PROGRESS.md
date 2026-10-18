@@ -2,9 +2,14 @@
 
 ## FE-01 — Family access and automatic progress
 
-- In progress on `codex/family-experience`, base `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`; exclusive ownership held. See [contract and QA evidence](FAMILY-EXPERIENCE.md).
-- Parent-entry checkpoint fixes removable nickname rows, visible parent sign-in, verified returning-account messaging, legacy public connection retirement and recovery/late-response defects found by native persona review. TypeScript, 24 account tests and seven browser journeys pass locally. Further authorized automatic-save/progress/dashboard work continues in the same slice.
-- No merge, deployment or provider/learner evidence is claimed.
+- Status: review; [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Branch `codex/family-experience`, managed `family-experience` worktree, base `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`. Exclusive slice ownership protected writes. Last runnable and final locally tested application/test source: `5983230a046ee6cf31a3a14e1e329de67b835306`; subsequent record edits are documentation only. PR checks retain exact-head CI.
+- Visible parent email sign-in, removable optional student rows and verified returning-account messaging replace the confusing public legacy entry. Parent dashboard shares authoritative child progress and preserves older activity dates. Existing families, drafts and local notes remain preserved.
+- Drafts save automatically and successful unfinished challenges check automatically. Pending, practice and confirmed progress stay distinct; all surfaces share the same three-target completion rule. Lost replies, immutable source, conflicts and identity switches retain recovery and existing quotas.
+- Manual save/submit/note forms are removed. Bounded Run history retains code, challenge, outcome, measurements and console output. The coordinated Mission 1-3 feedback explains actual outcomes beside Run and the 3D scene; saved completion remains visible on return without showing a stale run explanation.
+- Weekly family summaries are opt-in and disabled operationally by default. Durable dispatch/receipts, quiet-week suppression, consent/recipient revalidation and authentication capacity are tested locally. No provider configuration or actual mail changed.
+- Local coverage: 40 model/autosave/bridge checks, 63 family/email/weekly checks, 17 isolated Java checks, 20 complete family browser journeys and all 83 workshop cases across the full batch and final affected-case reruns. TypeScript/build, four package modes and publication checks pass. Desktop/narrow synthetic screenshots inspected. Initial failures and corrections are preserved in [the contract and QA record](FAMILY-EXPERIENCE.md); no single all-green final broad local run is claimed.
+- All relevant RoboLab persona lenses and native gstack adversarial review were applied; recovery/race/layout findings are fixed with regressions and no remaining actionable finding in the reviewed scope. This is software evidence and synthetic review, not actual learner observation or an external-model review.
+- Unmet release criteria: exact candidate staging/provider/mail/cron qualification, authorized rollout and human parent/learner observation. No merge, deployment, credential/quota changes or gamification. No implementation blocker remains. Next action: review PR #10 and exact-head CI, then obtain separate release authorization before staging/deployment or live summary activation.
 
 ## UI-03 — Guided mission access
 

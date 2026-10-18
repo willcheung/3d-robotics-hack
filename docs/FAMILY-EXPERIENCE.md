@@ -11,13 +11,31 @@ Owner authorized the complete family/student experience on October 17, 2026, inc
 - Parent dashboard leads with each child's progress, next mission, activity and learning concepts. Parents may inspect child progress without impersonation; siblings receive summary data only. Optional weekly family summary, quiet inactive weeks, no per-mission messages. Stable recipient/week receipts, consent revalidation and authentication mail capacity remain required.
 - Streaks, points and new badges are deferred. Existing records and legacy local notes are preserved.
 
-## Evidence and remaining checks
+## Evidence and review state
 
-Design/critique: keep physical accomplishment separate from understanding; explain actual state rather than infer intent from source. Student/teacher: the next action should be Run or adapt the next challenge, with no bookkeeping. Model: preserve server authority and existing model semantics. Builder/QA/retro: validate complete journeys and recovery before adding motivation features. These are informed synthetic reviews, not learner observation.
+Status: **review**, in [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Final locally tested application/test source: `5983230a046ee6cf31a3a14e1e329de67b835306`; subsequent evidence-record edits change documentation only. Base: `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`. Branch/worktree: `codex/family-experience` / managed `family-experience`. Exclusive slice ownership protected implementation. The PR checks are the exact-head CI record; no merge or deployment is claimed.
 
-Parent-entry checkpoint (uncommitted changes on `d90f406`): TypeScript, 24 onboarding/parent-email tests and seven local browser journeys passed. Screenshots inspected at narrow width. Native gstack adversarial review found expired-proof recovery, frozen rejected batches and stale credential responses; fixes and browser regressions pass. Local fixture inbox only; no real delivery or physical second-device claim.
+Design/critique: keep physical accomplishment separate from understanding; explain actual state rather than infer intent from source. Student/teacher: the next action should be Run or adapt the next challenge, with no bookkeeping. Model: preserve server authority and existing model semantics. Builder/QA/retro: validate complete journeys and recovery before adding motivation features. These are informed synthetic reviews, not learner observation. The measured feedback implementation was coordinated with the Mission 1-3 chat and integrated from UI-04 source `6b76194f01128743e9a370ff829abf33177efea2`.
 
-Remaining acceptance: automatic saves/checks in both languages and four playable missions; partial/full progress and parent consistency; fresh-browser resume; immutable source under edits; offline/lost responses/duplicates/conflicts; Stop/logout/revoke/sibling isolation; useful history and note removal; weekly windows/deduplication/quiet weeks/opt-out/provider failure. Run affected and full repository checks and inspect final screenshots. Record exact tested commit and review/CI state before handoff. Real provider and learner checks remain release gates.
+Local validation covers all **223 current cases**:
+
+| Checks | Passed coverage |
+| --- | --- |
+| Model, autosave, Python bridge and preview | 40 |
+| Family, recovery, parent email and weekly summary | 63 |
+| Real isolated Java execution | 17 |
+| Family browser journeys with real Python/Java server checks | 20 |
+| Workshop browser behavior in both languages | 83 |
+
+The family journeys cover all twelve challenges per language, automatic draft/progress saves, consistent child/parent results, fresh-browser resume, immutable submitted source, lost responses, duplicate receipts, offline retry, draft conflicts, Stop/logout/revocation and sibling privacy. Weekly tests cover reporting windows, quiet weeks, legacy dates, stable receipts, provider/queue failures, expired payloads, opt-out/recipient revalidation, bounded scanning and reserved authentication-mail capacity. They use disposable local accounts and controlled mail/store adapters; they do not prove live provider delivery.
+
+The initial 80-case workshop batch passed 77 and found two outdated test assumptions (the renamed student navigation button and capturing feedback before running code) plus a real completed-mission layout regression. The screenshot now follows a real delivery; saved completion stays in the top strip while run follow-up requires a finished run. Corrected cases pass with unchanged layout bounds. Three new Stop/check race cases pass, and final affected batches revalidate curriculum, both-language explanations, hints, navigation and recovery. This is coverage across the broad batch and focused final reruns, not a claim of one all-green final local broad run.
+
+TypeScript/production build, publication checks and all four package modes pass locally: static app, hosted app with weekly delivery off/on, and isolated runtime. Hosted test discovery passes; provider suites were not executed. Inspected synthetic screenshots include parent progress, all-mission completion, narrow measured feedback and the corrected returning-student laptop layout. No physical second-device or real learner pilot is claimed.
+
+Native gstack adversarial source review found recovery/race defects and required regressions; its final reviewed scope has no remaining actionable findings. The final layout/activity/copy follow-up also has no finding. Source review and test/fixture summary inspection are distinct evidence; no external-model review is credited. The earlier draft CI run was superseded by final fixes; exact-head CI results belong to PR #10.
+
+Remaining release gates: separately authorized protected staging with actual Blob/Sandbox/mail/queue/cron, one designated opted-in family's inbox and scheduled weekly execution, rollout/rollback qualification, and public smoke checks. Observe a parent returning on another computer and a learner explaining a changed challenge before claiming usability or understanding. Next action: review PR #10 and its final CI; release only after explicit authorization. Streaks/badges remain deferred.
 
 ## Weekly delivery and rollout
 
@@ -38,6 +56,6 @@ The application package includes the cron only when explicitly enabled, followin
 
 ## Review findings resolved
 
-Native adversarial review and QA probes found and repaired: expired email proof without restart; rejected student batches frozen as ambiguous retries; late replacement credentials crossing identities; Undo during an in-flight save dropping the reverted source; older local-only edits falsely marked synced; conflicts blocking logout; stale private history after forced sign-out; successful reruns mislabeled pending; and delayed conflict-save acknowledgements updating another session's draft metadata. Regression tests exercise both a different student and a renewed session for the same student.
+Native adversarial review and QA probes found and repaired: expired email proof without restart; rejected student batches frozen as ambiguous retries; late replacement credentials crossing identities; Undo during an in-flight save dropping the reverted source; older local-only edits falsely marked synced; conflicts blocking logout; stale private history after forced sign-out; successful reruns mislabeled pending; delayed conflict-save acknowledgements updating another session's draft metadata; finished Stop responses falsely announcing completion after a miss/error; and duplicate completion content pushing returning students' code below the intended viewport. Regression tests exercise both a different student and a renewed session for the same student.
 
 These findings came from informed design, critique, student, teacher, model, build, QA and retro lenses plus native gstack adversarial review. There was no real learner observation or independent external-model review.

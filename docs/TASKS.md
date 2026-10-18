@@ -6,7 +6,7 @@ FOUNDATION.md is the current cross-slice acceptance contract and implemented/pla
 
 ## FE-01 — Family access and automatic progress
 
-- Status: in_progress; owner authorized the combined experience and QA.
+- Status: review; implemented and locally validated in [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Final application/test source: `5983230a046ee6cf31a3a14e1e329de67b835306`; exact-head CI is recorded on the PR.
 - Contract and evidence: [FAMILY-EXPERIENCE.md](FAMILY-EXPERIENCE.md).
 - One cumulative runnable slice with internal implementation checkpoints. No later lessons or gamification, merge or deployment.
 
