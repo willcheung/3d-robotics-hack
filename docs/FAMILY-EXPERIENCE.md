@@ -59,3 +59,9 @@ The application package includes the cron only when explicitly enabled, followin
 Native adversarial review and QA probes found and repaired: expired email proof without restart; rejected student batches frozen as ambiguous retries; late replacement credentials crossing identities; Undo during an in-flight save dropping the reverted source; older local-only edits falsely marked synced; conflicts blocking logout; stale private history after forced sign-out; successful reruns mislabeled pending; delayed conflict-save acknowledgements updating another session's draft metadata; finished Stop responses falsely announcing completion after a miss/error; and duplicate completion content pushing returning students' code below the intended viewport. Regression tests exercise both a different student and a renewed session for the same student.
 
 These findings came from informed design, critique, student, teacher, model, build, QA and retro lenses plus native gstack adversarial review. There was no real learner observation or independent external-model review.
+
+## Account navigation follow-up
+
+The header uses one account entry. Guests choose **Sign in**, then **Student sign in** or **Parent sign in**. Signed-in students open **My progress** directly; parents open **Parent dashboard** directly. The visible profile label still identifies the active account. Sign-out restores the guest entry. This supersedes the three separate guest buttons without changing authentication, saved work, or family authorization.
+
+The sign-in disclosure supports ordinary Tab navigation, arrow keys, Escape, outside-click dismissal, and focus return after closing the form. Its controls remain reachable on narrow screens. The curriculum introduction omits the redundant rescue-light/arm/rover paragraph while retaining the actual playable count, chapters, previews, and unlock states.
