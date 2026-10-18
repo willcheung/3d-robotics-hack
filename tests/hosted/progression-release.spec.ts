@@ -88,7 +88,7 @@ test('hosted Missions 1–4: both runtimes, checked unlocks, recovery and eight 
   for(const id of ['L01','L02','L03','L04'] as const)for(const lang of ['python','java'] as const){
    await openMission(resume,id);await resume.locator('#language').selectOption(lang);await expect(resume.locator('#code')).toHaveValue(saved.get(id+lang)!);await expect(resume.locator('#target')).toHaveValue(getLesson(id).transferTarget);await expect(resume.locator('#experiment-notes')).toHaveCount(0);
   }
-  await resume.locator('#family-open').click();await expect(resume.locator('#family-content > .mission-progress').last()).toContainText('✓ Complete');await resume.getByRole('button',{name:'Close family progress'}).click();
+  await resume.locator('#family-open').click();await resume.locator('.arena-details>summary').click();await expect(resume.locator('.arena-details .mission-progress').last()).toContainText('✓ Complete');await resume.getByRole('button',{name:'Close family progress'}).click();
   await resume.setViewportSize({width:390,height:844});expect(await resume.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);await resume.screenshot({path:test.info().outputPath(`${language}-resume-narrow.png`),fullPage:true});
   await fresh.close();await context.close();
   console.log(`${language}: errors, Stop/retry, all eight saved code/challenge pairs, restore and fresh-device resume passed.`);
