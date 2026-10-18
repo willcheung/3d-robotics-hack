@@ -1,6 +1,6 @@
 import './style.css';
 import {runValues} from './run-values.ts';
-import {chooseDraft,readDraftBase} from './draft-sync.ts';
+import {chooseDraft,readDraftBase,hasPendingDraft} from './draft-sync.ts';
 import { initialState, reached, targets, lessonIds, lessonTargets, targetLesson, draftKey, type LessonId, type State } from './model.ts';
 import {missionAccess} from './progression.ts';
 import { Runner, type RunStatus } from './runner.ts';
@@ -389,7 +389,8 @@ const family=attachFamily({
       const saved=cloud[draftKey(id,lang)],key=storageKey(lang,id);let raw=null;try{raw=localStorage.getItem(key+'.experiment');}catch{}
       const prior=experiments.get(key)??readExperiment(raw,local??getLesson(id).starters[lang],id);
       const localDraft=local!==null||experiments.has(key)?{source:experiments.get(key)?.source??local!,target:prior.target}:undefined;
-      const chosen=chooseDraft(localDraft,saved,readDraftBase(draftPrefix.replace('robolab.profile.',''),draftKey(id,lang)));
+      const owner=draftPrefix.replace('robolab.profile.',''),context=draftKey(id,lang);
+      const chosen=chooseDraft(localDraft,saved,readDraftBase(owner,context),hasPendingDraft(owner,context));
       lessonDrafts[id][lang]=chosen?.source??getLesson(id).starters[lang];
       prior.source=lessonDrafts[id][lang];prior.target=chosen?.target&&(lessonTargets[id] as readonly string[]).includes(chosen.target)?chosen.target:prior.target;experiments.set(key,prior);
     }

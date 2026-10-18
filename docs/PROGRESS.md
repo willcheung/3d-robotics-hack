@@ -2,6 +2,18 @@
 
 ## FE-01 — Family access and automatic progress
 
+### Release qualification and restore repair — October 18, 2026
+
+The owner authorized protected staging, then merge/deploy if checks passed. PR #10 was merged as `a5d54f8a81a946fa6434484649732770fef8d0a1`, with the identical tree to tested head `c01135c9138f0f74b0e7c03630c4f5dd7b0f4ad6`, and promoted. Exact-head CI (223 tests/four package modes), ten real provider/store tests, twelve staging family/security checks, full staging Python/Java progression, actual-inbox new/returning parent sign-in and weekly delivery passed. Production cron registration and a manual provider invocation delivered the expected synthetic summary; a wall-clock scheduled invocation has not been observed.
+
+Public smoke, layout and eleven family/security cases passed. One login transport timeout passed the unchanged conflict test twice on rerun. Full public progression then exposed a save-ordering defect: Restore example → immediate reload → Return to my draft could report saved before the old page's pending example save committed. The returned code remained local but a fresh browser could receive the example. The release is not yet fully verified.
+
+The follow-up branch `codex/family-restore-sync`, based on the merge above, records each outgoing conditional save locally until acknowledgment. A reloaded page settles those exact writes before saving its latest draft; known completed writes are distinguished from genuine other-device conflicts. Local selection preserves an undo while an older write is uncertain. Profiles, languages and missions remain separate; server revisions, APIs and resource allowances are unchanged.
+
+The deterministic unit regression failed on the released implementation and passes with the repair. Added cases cover lost acknowledgments, transport retry, another profile/device, invalid drafts and malformed local records. The browser regression delays the old request beyond reload and verifies the returned code through a fresh student sign-in. Next: finish exact-source local/CI checks, qualify the repair on staging, then complete the authorized release and public progression. Private operator receipts retain deployment IDs, fixture cleanup, quota counters and rollback artifacts. No learner pilot is claimed.
+
+The implementation history below predates the release qualification.
+
 - Status: review; [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Branch `codex/family-experience`, managed `family-experience` worktree, base `ce24ca5b82dbbc8b43175022f42ef3d03e78cfde`. Exclusive slice ownership protected writes. Family implementation/test checkpoint: `5983230a046ee6cf31a3a14e1e329de67b835306`; subsequent changes record evidence and extend only the overall CI job allowance after its 25-minute ceiling interrupted passing tests. Current main `841f341e2e722b767efceff9b6f47b635baa2775` is integrated, preserving its favicon and mission-title change; only the progress record conflicted. PR checks retain exact-head CI of the combined candidate.
 - Visible parent email sign-in, removable optional student rows and verified returning-account messaging replace the confusing public legacy entry. Parent dashboard shares authoritative child progress and preserves older activity dates. Existing families, drafts and local notes remain preserved.
 - Drafts save automatically and successful unfinished challenges check automatically. Pending, practice and confirmed progress stay distinct; all surfaces share the same three-target completion rule. Lost replies, immutable source, conflicts and identity switches retain recovery and existing quotas.
