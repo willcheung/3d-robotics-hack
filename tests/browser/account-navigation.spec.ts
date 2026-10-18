@@ -9,23 +9,31 @@ test.beforeEach(async({page})=>{
 test('one guest entry supports keyboard choices, dismissal, and modal return without changing the draft',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/');await page.locator('#code').fill('# keep this guest experiment');
-  const entry=page.getByRole('banner').getByRole('button',{name:'Sign in',exact:true});
+  const entry=page.getByRole('banner').getByRole('button',{name:'Sign in / Sign up',exact:true});
   await expect(page.getByRole('banner').getByRole('button')).toHaveCount(2);
   await expect(page.locator('#parent-signin-open')).toBeHidden();
   await entry.focus();await page.keyboard.press('Enter');
   await expect(entry).toHaveAttribute('aria-expanded','true');
   await page.keyboard.press('Tab');await expect(page.locator('#student-signin-open')).toBeFocused();
   await page.keyboard.press('Tab');await expect(page.locator('#parent-signin-open')).toBeFocused();
+  await page.keyboard.press('Tab');await expect(page.locator('#parent-signup-open')).toBeFocused();
   await page.keyboard.press('Escape');await expect(entry).toBeFocused();await expect(page.locator('#signin-options')).toBeHidden();
   await page.keyboard.press('ArrowDown');await expect(page.locator('#student-signin-open')).toBeFocused();
   await page.keyboard.press('ArrowDown');await expect(page.locator('#parent-signin-open')).toBeFocused();
   await page.keyboard.press('Enter');await expect(page.locator('#parent-signin-email')).toBeFocused();
   await expect(page.locator('#student-entry')).toBeHidden();await expect(page.locator('#signin-options')).toBeHidden();
   await page.keyboard.press('Escape');await expect(entry).toBeFocused();
+  await page.keyboard.press('ArrowUp');await expect(page.locator('#parent-signup-open')).toBeFocused();
+  await page.keyboard.press('ArrowDown');await expect(page.locator('#student-signin-open')).toBeFocused();
+  await page.keyboard.press('ArrowUp');await expect(page.locator('#parent-signup-open')).toBeFocused();
+  await page.keyboard.press('Enter');await expect(page.locator('#parent-signin-email')).toBeFocused();
+  await expect(page.locator('#parent-entry')).toContainText('create a family account');
+  await page.keyboard.press('Escape');await expect(entry).toBeFocused();
   await openSignIn(page,'student');await expect(page.locator('#access-code')).toBeFocused();await expect(page.locator('#parent-entry')).toBeHidden();
   await page.getByRole('button',{name:'Close family progress'}).click();await expect(entry).toBeFocused();
   await entry.click();await page.locator('h1').click();await expect(page.locator('#signin-options')).toBeHidden();
   await entry.click();await page.keyboard.press('Tab');await page.keyboard.press('Tab');await page.keyboard.press('Tab');
+  await expect(page.locator('#parent-signup-open')).toBeFocused();await page.keyboard.press('Tab');
   await expect(page.locator('#signin-options')).toBeHidden();await expect(entry).toHaveAttribute('aria-expanded','false');
   await expect(page.locator('#code')).toHaveValue('# keep this guest experiment');expect(errors).toEqual([]);
 });
@@ -39,7 +47,7 @@ for(const role of ['student','parent'])test(`${role} keeps direct progress acces
   await page.goto('/');const entry=page.locator('#family-open');
   await expect(entry).toHaveText(role==='parent'?'Parent dashboard':'My progress');await expect(entry).toHaveAttribute('aria-haspopup','dialog');
   await entry.click();await expect(page.locator('#family-dialog')).toBeVisible();await expect(page.locator('#signin-options')).toBeHidden();
-  await page.locator('#family-logout').click();await expect(entry).toHaveText('Sign in ⌄');
+  await page.locator('#family-logout').click();await expect(entry).toHaveText('Sign in / Sign up ⌄');
   await page.keyboard.press('Escape');await expect(entry).toBeFocused();
   await openSignIn(page,'parent');await expect(page.locator('#parent-signin-email')).toBeFocused();
 });
@@ -49,7 +57,7 @@ test('guest navigation and dropdown fit narrow, tablet and desktop screens',asyn
   for(const width of [320,390,768,1024,1366]){
     await page.setViewportSize({width,height:900});await page.locator('#family-open').click();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    for(const selector of ['#curriculum-open','#family-open','#signin-options','#student-signin-open','#parent-signin-open']){
+    for(const selector of ['#curriculum-open','#family-open','#signin-options','#student-signin-open','#parent-signin-open','#parent-signup-open']){
       const box=(await page.locator(selector).boundingBox())!;
       expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width);expect(box.height).toBeGreaterThanOrEqual(44);
     }

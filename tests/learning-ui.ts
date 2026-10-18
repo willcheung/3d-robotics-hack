@@ -25,6 +25,6 @@ export async function readHints(page:Page, count=3) {
 
 /** Choose a role from the single guest sign-in entry. */
 export async function openSignIn(page:Page, mode:'parent'|'student') {
-  await page.getByRole('banner').getByRole('button',{name:'Sign in',exact:true}).click();
+  await page.getByRole('banner').getByRole('button',{name:'Sign in / Sign up',exact:true}).click();
   await page.locator(`#${mode}-signin-open`).click();
 }
