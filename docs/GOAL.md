@@ -1,10 +1,12 @@
 # Manual goal contract
 
-## Current implementation objective: family arena MVP
+## Completed goal: family arena MVP
 
 The owner explicitly authorized implementing and testing the family leaderboard, including existing parents, with the reviewed scoring and badges. Implement ARENA-01 from [ARENA-MVP.md](ARENA-MVP.md): one shared family board, each signed-in profile's own progress/Continue, identical points and four badges, Parent labels and separate admin controls. Global leaderboard comes later; parents remain excluded from that future kids' board.
 
 Preserve free practice Run and help, canonical checked unlocks, saved drafts and existing accounts. Count only trusted finalized reached/missed scored checks, use ten-check reward bands and a fixed mission bonus, preserve earned awards and migrate old completions with unknown historical counts. Prepare the tested review candidate using exclusive ownership and the landed base. This authorization includes implementation/local testing, not merge, deployment, live provider qualification or publication of children’s data. PROGRESS.md records evidence and remaining gates.
+
+The owner subsequently requested testing and production deployment. That release is complete: PR #16 merged as `9a86d8cea5b92b915abba4556161483a77d17da9` and the identical tested artifact is live. PROGRESS.md records CI, staging, candidate and public evidence. Earlier no-release wording above is historical; it does not restrict this completed authorization or authorize global publication, later lessons or future deployments.
 
 ## Completed goal: curriculum mission previews
 
