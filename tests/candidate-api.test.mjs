@@ -35,10 +35,10 @@ test('protected candidate streams a real Java parcel delivery, checks all twelve
   for(const lesson of ['L01','L02','L03','L04']){
    const info=getLesson(lesson),refs=lesson==='L01'?[info.reference.python,info.reference.python.replace('turn_ticks = 100','turn_ticks = 150'),info.transferReference.python]:lesson==='L02'?[sensorReference.python,sensorReference.python,sensorTransfer.python]:lesson==='L03'?[patrolReference.python,patrolExtra.python,patrolTransfer.python]:[armReference.python,armMoved.python,armTransfer.python];
    for(const [i,target] of lessonTargets[lesson].entries()){
-    const verified=await post('/api/family/verify',{id:randomUUID(),language:'python',target,source:refs[i]});assert.equal(verified.status,200);assert.equal((await verified.json()).outcome,'reached');
+    const verified=await post('/api/family/verify',{id:randomUUID(),language:'python',target,source:refs[i],checkRevision:(await get()).checkRevision});assert.equal(verified.status,200);assert.equal((await verified.json()).outcome,'reached');
    }
   }
-  const wrong=await post('/api/family/verify',{id:randomUUID(),language:'java',target:'parcel-across',source:getLesson('L04').starters.java,outcome:'reached',state:{arm:{payload:'delivered'}}});assert.equal(wrong.status,200);assert.equal((await wrong.json()).outcome,'missed');
+  const wrong=await post('/api/family/verify',{id:randomUUID(),checkRevision:(await get()).checkRevision,language:'java',target:'parcel-across',source:getLesson('L04').starters.java,outcome:'reached',state:{arm:{payload:'delivered'}}});assert.equal(wrong.status,200);assert.equal((await wrong.json()).outcome,'missed');
   const result=await get();assert.deepEqual(result.completed,Object.values(lessonTargets).flat());assert.equal(result.history[0].receipt.model,'parcel-arm-v1');assert.equal(result.runBusy,false);assert.equal((await privateStore.read(SERVICE_LIMIT_PATH)).value.runs.filter(r=>r.key.startsWith(session.familyId+':')).length,0);
  }finally{if(handle)await post('/api/java/stop',{session:handle}).catch(()=>{});if(paths.length)await del([...new Set(paths)]);}
 });

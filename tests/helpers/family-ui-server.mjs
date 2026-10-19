@@ -12,6 +12,7 @@ import {javaApi} from '../../server/java-api.mjs';
 import {buildRuntime} from '../../scripts/build-runtime.mjs';
 import {JavaRun} from '../../server/java-run.mjs';
 import {lessonTargets} from '../../src/model.ts';
+import {initialArena} from '../../src/arena.ts';
 import {parseMessage} from '../../src/protocol.ts';
 const origin='http://127.0.0.1:4473',root=path.resolve('work/family-ui-dist');
 const messages=[],store=new MemoryStore();let time=Date.now();
@@ -28,6 +29,15 @@ const onboarding=onboardingService({store,password,appOrigin:origin,mail,enqueue
 const api=hostedApi({store,enqueue,Run:LocalCheck,mail,recoveryNow:()=>time,appOrigin:origin,password:'test-only-family-ui-session-password-32-characters'});
 const java=javaApi(origin);
 const server=http.createServer(async(req,res)=>{
+ // Synthetic scoring boundary only. Never bundled into the production handler.
+ if(req.url==='/__test/arena'&&req.method==='POST'){
+  const session=await getIronSession(req,res,{password,cookieName:'robolab-local'});
+  await update(store,familyPath(session.familyId),f=>{for(const p of f.profiles){
+   if(p.role==='parent')p.completed=[...lessonTargets.L01];
+   p.arena=initialArena(p.completed);
+   if(p.id===session.profileId&&p.role==='student')p.arena.challenges.beacon.checks=10;
+  }return {value:f};});res.end('ok');return;
+ }
  // Test-only persisted prerequisites for draft/navigation fixtures. The real
  // unlock test never calls this endpoint and executes every checked program.
  if(req.url==='/__test/completed'&&req.method==='POST'){

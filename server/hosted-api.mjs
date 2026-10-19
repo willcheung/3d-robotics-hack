@@ -54,7 +54,7 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
    if(path==='/api/family/students'){json(res,200,await addStudent(store,session,data.name));return true;}
    if(path==='/api/family/access'){json(res,200,await studentAccess(store,session,data.id,data.revoke===true));return true;}
    if(path==='/api/family/draft'){json(res,200,await saveDraft(store,session,data));return true;}
-   if(path==='/api/family/cancel'){const cancelled=await cancelRun(store,session,data.id);if(cancelled.name)await stopSandbox({name:cancelled.name});json(res,200,{completed:cancelled.completed});return true;}
+   if(path==='/api/family/cancel'){const cancelled=await cancelRun(store,session,data.id,data.checkRevision);if(cancelled.name)await stopSandbox({name:cancelled.name});json(res,200,{completed:cancelled.completed,...(cancelled.stale?{stale:true}:{})});return true;}
    if(path==='/api/family/attempt'){json(res,200,await recordAttempt(store,session,data,false));return true;}
    if(path==='/api/java/reply'||path==='/api/java/stop'){
     if(typeof data.session!=='string'||data.session.length>4096)throw new HttpError(400,'Invalid run.');
@@ -71,7 +71,7 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
     if(missing)throw new HttpError(403,`Check all three Mission ${Number(missing.slice(1))} rescues to unlock checked Mission ${Number(targetLesson(data.target).slice(1))} progress. You can preview this mission until it unlocks.`);
     const id=verify?data.id:randomUUID(),receipt=await reserveRun(store,session,id,verify?data:undefined);if(receipt){json(res,200,receipt);return true;}
     let run,state=initialState(verify?data.target:'beacon'),outcome='error',error='',output='',done=false,terminal,released=false,serviceReserved=false;
-    const release=async()=>{const results=await Promise.allSettled([releaseRun(store,session,id),...(serviceReserved?[releaseServiceRun(store,session,id)]:[])]);const failed=results.find(r=>r.status==='rejected');if(failed)throw failed.reason;released=true;};
+    const release=async()=>{const results=await Promise.allSettled([releaseRun(store,session,id,verify?data.checkRevision+1:undefined),...(serviceReserved?[releaseServiceRun(store,session,id)]:[])]);const failed=results.find(r=>r.status==='rejected');if(failed)throw failed.reason;released=true;};
     try {
      await reserveServiceRun(store,session,id);serviceReserved=true;
      if(!verify){res.writeHead(200,{'Content-Type':'application/x-ndjson','Cache-Control':'no-store, no-transform','X-Content-Type-Options':'nosniff'});res.flushHeaders?.();}
@@ -86,7 +86,7 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
       } else if(message.type==='done'||message.type==='error')terminal=message;
       else if(!res.destroyed&&!res.write(JSON.stringify(message)+'\n'))run.stop();
      },e=>{if(e){error=e.message;outcome='error';done=false;}},{language:verify?data.language:'java',purpose:verify?'progress-check':'practice',onSession:async c=>{
-      if(verify){if(!await bindRun(store,session,id,c.name))run.stop();}
+      if(verify){if(!await bindRun(store,session,id,c.name,data.checkRevision+1))run.stop();}
       else {const handle=await sealData({...c,familyId:session.familyId,profileId:profile.id,epoch:profile.epoch,expires:Date.now()+90000},{password,ttl:90});if(!res.destroyed)res.write(JSON.stringify({type:'session',id:handle})+'\n');}
      }});
      res.once('close',()=>run.stop());
@@ -96,9 +96,9 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
      if(verify&&!res.destroyed){
       if(!done&& !error)error='Check was interrupted. Your source is safe; try again.';
       const result={...data,outcome,seconds:state.ticks*.02,error,values:runValues(state),output};
-      await recordAttempt(store,session,result,true);
+      const saved=await recordAttempt(store,session,result,true,data.checkRevision+1);
       await release();
-      json(res,200,{outcome,seconds:result.seconds,error,completed:(await current(store,session)).profile.completed});
+      json(res,200,{outcome,seconds:result.seconds,error,pointsEarned:saved.pointsEarned??0,completed:(await current(store,session)).profile.completed});
      }
     } finally {if(!released)await release();if(!verify&&res.headersSent&&!res.destroyed)res.end();}
     return true;

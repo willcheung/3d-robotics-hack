@@ -24,6 +24,24 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 - Persist the fields in PROGRESS.md: ID/status, base SHA, branch/worktree, PR, last runnable commit, tested SHA, checks/evidence, unmet criteria, exact next action, and blockers. Recheck affected behavior after a changed base or rebase.
 - Before unattended coding, OPS-01 must establish supported durable atomic ownership of a cycle and slice. Prior chat history alone is not a lock. Do not let hourly polls or a manual goal become competing writers.
 
+## ARENA-01 — Family scoreboard and participant progress
+
+- Parent participation is in MVP scope: rank existing active parent and student profiles together using each profile's own progress, the identical scoring/badges and a Parent label. “You” and Continue refer to the signed-in profile. Keep parent admin controls separate and preserve student-only provisioning lists; share only aggregate participant achievements.
+
+- Status: validated_local on `codex/family-arena`; owner authorized family MVP implementation/testing, including parents, and deferred global. Exact source, local checks, partial broader-suite limits and remaining publication/release gates are recorded in PROGRESS.md.
+- Contract: [ARENA-MVP.md](ARENA-MVP.md). One minimum lovable slice: shared family ranks, own progress/Continue, four mission badges and per-challenge ten-try rewards (100 down to 50, plus 200 per mission). Free Run/help, shared ties, truthful legacy unknown counts and no time scoring.
+- Reuse: released authoritative checks, existing private family document/CAS, sessions, one-active-run guard and current UI. Add small durable scoring fields; no new service, achievement framework or performance evaluator.
+- Kickoff gates satisfied: family-first split explicitly selected, landed account navigation reconciled from main `fb19c43`, exclusive ownership claimed before source edits. MVP counts only trusted terminal reached/missed checks; every error/Stop/unknown outcome is uncharged unless finalization already won before a late Stop/response loss. The earlier planning-only GitHub outage is historical; implementation kickoff used live ownership/PR inspection.
+- Acceptance: exact band boundaries and totals; no duplicate/replayed counting after history eviction; existing/mixed progress migration; lost-result/Stop/concurrency recovery; Python/Java and family authorization/draft/unlock preservation; inspected desktop/narrow states. Detailed checks are in ARENA-MVP.md.
+
+## ARENA-02 — Opt-in world arcade
+
+- Kids-only eligibility: exclude parent profiles server-side from enrollment, projections, all-player/near-me ranks and player cards. Parent approval of a student never enrolls the parent. Test this exclusion even when a parent has points and a client requests participation.
+
+- Status: draft; proposed next delivery slice after ARENA-01 is accepted. Retains the owner's global-leaderboard request without expanding the first family release.
+- Scope: reuse the same standings/points/badges for one common mission track; signed-in board, parent approval plus student choice, generated aliases, minimal aggregate projection and removal on hide/revoke. No automatic publication, chat, free-text profiles, seasons or new assessments.
+- Before ready: explicit slice acceptance, reviewed minimal index/participation contract and current ownership. This document grants no real child enrollment or deployment.
+
 ## UI-03 — Guided mission access
 
 - Status: validated locally on `codex/guided-missions`; owner explicitly selected checked completion with sign-in as the unlock rule. Not landed or deployed.
@@ -142,7 +160,7 @@ If the environment cannot support those guarantees, report the specific missing 
 - Depends on: S03 landed
 - Working outcome: revisit completed practice, advance to the next released lesson and inspect/restore an earlier experiment without losing the current draft.
 - Scope: extend the DEPLOY-01 L01 map/journal to multiple released lessons, declared prerequisites and last-available behavior; bounded source/target/version/language/outcome/time history; separate completion and understanding; safe source restore, retention, version migration and storage recovery. The journal works with the existing real lesson, not an empty framework.
-- Acceptance: one terminal record per Run; immutable executed source; reached/missed/error/stopped/outage/interrupted categories; no retry penalty or auto-run on restore; protect current work before replacement. Reload cannot turn an interrupted run into success.
+- Acceptance: one terminal record per Run; immutable executed source; reached/missed/error/stopped/outage/interrupted categories; no practice retry penalty or auto-run on restore; protect current work before replacement. ARENA-MVP.md separately governs scored checks, not this practice journal. Reload cannot turn an interrupted run into success.
 - Validation: full next/revisit/history/restore browser flows, exact-once races, cancel/outage classification, quota/denied/corrupt storage, migration, cross-tab conflicts, both language drafts, screenshots. If too large, split map/progress and journal into separate observable slices before starting.
 
 ## S04 — One arm mission
@@ -170,7 +188,7 @@ If the environment cannot support those guarantees, report the specific missing 
 - Depends on: S02, S03H, S05 landed
 - Working outcome: siblings make separate attempts at the same challenge and compare server-validated results in a shared family view, with personal bests and trusted replay.
 - Scope: explicit authoritative server execution in both Python and Java, isolated student runners, trusted simulator/evaluator owner, supported competition-code contract, fixed scenarios, versions, rubric, failure/time-budget outcomes, ties, idempotency, and private results UI.
-- Acceptance: no client score, student trace, writable rubric, or success flag can forge results. Rank reliability before simulated time; track experiments without penalizing retries or help. Store trusted source/runtime/compiler/API/model/challenge/seed/result/trace receipts. Define treatment of clocks/randomness/concurrency and computational resource limits; deterministic model replay is not a promise that arbitrary source always reproduces identically. If supported deterministic source enforcement cannot be proved, keep those programs practice-only and label eligibility honestly. AI policy is equal. Live simultaneous robot control is outside this slice.
+- Acceptance: no client score, student trace, writable rubric, or success flag can forge results. October 18 supersedes the old simulated-time/retry-neutral ranking: ARENA-MVP.md defines the first progress scoreboard; a later S06 multi-scenario evaluator needs a fresh, separately reviewed rubric without time tiebreakers. Track practice without penalty and keep help free. Store trusted source/runtime/compiler/API/model/challenge/seed/result/trace receipts. Define treatment of clocks/randomness/concurrency and computational resource limits; deterministic model replay is not a promise that arbitrary source always reproduces identically. If supported deterministic source enforcement cannot be proved, keep those programs practice-only and label eligibility honestly. AI policy is equal. Live simultaneous robot control is outside this slice.
 - Validation: both-language authoritative feedback execution, model tampering, forged submissions, clock/random/thread cases, timeout/seed/tie boundaries, duplicates/races, access control, known-wrong programs, replay, full two-child flow. Rendering speed cannot affect model time/ranking.
 
 ## S07 — Live AI coaching

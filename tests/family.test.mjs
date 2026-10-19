@@ -7,7 +7,7 @@ import {provision,login,current,addStudent,studentAccess,saveDraft,reserveRun,re
 import {hostedApi} from '../server/hosted-api.mjs';
 import {MemoryStore} from './helpers/memory-store.mjs';
 async function fixtures(){const store=new MemoryStore(),seed=await provision(store),parent=await login(store,seed.code),a=await addStudent(store,parent,'A'),b=await addStudent(store,parent,'B');return {store,seed,parent,a:await login(store,a.code),b:await login(store,b.code)};}
-const attempt=(extra={})=>({id:randomUUID(),language:'python',source:'print(1)',target:'beacon',outcome:'reached',seconds:2,...extra});
+const attempt=(extra={})=>({id:randomUUID(),checkRevision:0,language:'python',source:'print(1)',target:'beacon',outcome:'reached',seconds:2,...extra});
 test('separate families/students, parent-only provisioning, private code, rotation and revocation',async()=>{
  const {store,parent,a,b}=await fixtures();
  await assert.rejects(addStudent(store,a,'forbidden'),e=>e.status===403);

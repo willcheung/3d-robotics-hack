@@ -6,11 +6,11 @@ import {provision,login,current,addStudent,saveDraft,recordAttempt,view,newCode,
 import {recoveryService,recoveryIndex,resendMailer,EMAIL_LIMIT_PATH,normalizeEmail} from '../server/recovery.mjs';
 import {hostedApi} from '../server/hosted-api.mjs';
 const password='test-recovery-secret-only-not-for-production',origin='https://robolab.example';
-async function fixture(){
+async function fixture(initialTime=Date.UTC(2026,0,1,12)){
  const store=new MemoryStore(),seed=await provision(store),parent=await login(store,seed.code),student=await addStudent(store,parent,'Student'),child=await login(store,student.code),messages=[];
- let time=Date.now();const mail={enabled:true,send:async m=>{messages.push(m);return {id:'test-email'};}};
+ let time=initialTime;const mail={enabled:true,send:async m=>{messages.push(m);return {id:'test-email'};}};
  const service=recoveryService({store,password,appOrigin:origin,mail,now:()=>time});
- const advance=()=>{time+=61000;};
+ const advance=(milliseconds=61000)=>{time+=milliseconds;};
  const token=()=>messages.at(-1).text.match(/#(?:verify-email|recover-family)=([A-Za-z0-9_.-]+)/)[1];
  async function verified(){await service.begin(parent,{email:'PARENT@example.com',code:seed.code});await service.verify(parent,token());advance();}
  return {store,seed,parent,student,child,messages,mail,service,advance,token,verified,expire:()=>{time+=16*60000;}};
@@ -70,6 +70,14 @@ test('durable email cooldown/limits, validation and disabled provider fail close
  const quota=await f.store.read(EMAIL_LIMIT_PATH);assert.equal(JSON.stringify(quota).includes('unknown@example.com'),false);assert.equal(quota.value.count,5);
  for(const email of ['a\r\nBcc:x@example.com','a@b','a..b@example.com','a@b.example\n\n']){if(email.endsWith('\n\n'))continue;assert.throws(()=>normalizeEmail(email));}
  const disabled=recoveryService({store:f.store,password,appOrigin:origin,mail:{enabled:false}});await assert.rejects(disabled.forgot({email:'p@example.com'}),e=>e.status===503);
+});
+test('recovery email daily allowance resets at UTC midnight while retaining the cooldown',async()=>{
+ const f=await fixture(Date.UTC(2026,0,1,23,55));
+ for(let i=0;i<5;i++){await f.service.forgot({email:'unknown@example.com'});if(i<4)f.advance();}
+ assert.equal((await f.store.read(EMAIL_LIMIT_PATH)).value.count,5);
+ f.advance();await f.service.forgot({email:'unknown@example.com'});
+ const next=(await f.store.read(EMAIL_LIMIT_PATH)).value;assert.equal(next.day,'2026-01-02');assert.equal(next.count,1);
+ await assert.rejects(f.service.forgot({email:'unknown@example.com'}),e=>e.status===429);
 });
 test('Resend adapter sends only bounded transactional text, uses idempotency and masks provider errors',async()=>{
  let request;const mail=resendMailer({key:'test-key',from:'RoboLab <robolab@vibecodingdad.com>',fetcher:async(url,options)=>{request={url,options};return Response.json({id:'sent'});}});

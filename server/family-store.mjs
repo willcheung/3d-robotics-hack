@@ -1,4 +1,5 @@
 import {cleanValues} from '../src/run-values.ts';
+import {initialArena,arenaSummary,challengePoints} from '../src/arena.ts';
 import {get,put,list,BlobPreconditionFailedError} from '@vercel/blob';
 import {randomBytes,randomUUID,createHash,createHmac} from 'node:crypto';
 import {targets,lessonTargets,missingPrerequisite,modelVersion,targetLesson,draftKey} from '../src/model.ts';
@@ -30,9 +31,11 @@ export function view(family,profile){return {
  drafts:profile.drafts,history:profile.history,
  students:family.profiles.filter(p=>p.role==='student'&&p.active).map(p=>({id:p.id,name:p.name,completed:p.completed,experiments:p.experiments,...(profile.role==='parent'?{lastActivity:p.lastActivity??p.history[0]?.at??null,missionCompleted:p.missionCompleted??{},recent:p.history.slice(0,3).map(a=>({target:a.target,outcome:a.outcome,verified:a.verified,at:a.at}))}:{})})),
  completed:profile.completed,
+ arena:arenaSummary(profile.completed,profile.arena),checkRevision:profile.arena?.revision??0,
+ participants:family.profiles.filter(p=>p.active&&['parent','student'].includes(p.role)).map(p=>({id:p.id,name:p.name,role:p.role,arena:arenaSummary(p.completed,p.arena)})).sort((a,b)=>b.arena.points-a.arena.points||a.name.localeCompare(b.name)).map((p,_,all)=>({...p,rank:p.arena.points?1+all.filter(other=>other.arena.points>p.arena.points).length:null})),
  ...(profile.role==='parent'?{recoveryEmail:profile.recovery?.email??null}:{}),
  runBusy:family.runs.some(r=>r.profileId===profile.id&&r.until>Date.now()),
- // Independent attempts share progress. No client-reported score or rankings.
+ // Only safe family aggregates; drafts, history and parent settings stay private.
 };}
 export async function provision(store,{familyId=randomUUID(),parentName='Parent'}={}){
  const code=newCode(),profileId=randomUUID();
@@ -90,6 +93,7 @@ export async function reserveRun(store,session,id,input){
    if(!input||!matches)throw new HttpError(409,'This experiment is already checked with a different source.');
    return {value:f,result:{outcome:(receipt??historical).outcome,seconds:(receipt??historical).seconds,error:(receipt??historical).error,completed:p.completed,replayed:true}};
   }
+  if(input&&(!Number.isSafeInteger(input.checkRevision)||input.checkRevision!==(p.arena?.revision??0)))throw new HttpError(409,'Scored checks changed. Refresh progress before submitting again.','STALE_CHECK');
   const recorded=p.attemptSeen?.[id]??p.history.find(a=>a.id===id);if(input&&recorded&&(recorded.signature??signature(recorded))!==signature(input))throw new HttpError(409,'That experiment already has a different source.');
   f.runs=f.runs.filter(r=>r.until>now);
   f.cancelled=(f.cancelled??[]).filter(r=>r.until>now);
@@ -97,11 +101,12 @@ export async function reserveRun(store,session,id,input){
   if(f.runs.some(r=>r.profileId===p.id)||f.runs.length>=2)throw new HttpError(409,'A family run is still active. Stop it or try again shortly.');
   if(f.daily.day!==day)f.daily={day,count:0};
   if(f.daily.count>=60)throw new HttpError(429,'The family’s 60 hosted runs for today are used. Python practice is still available.');
-  f.daily.count++;f.runs.push({id,profileId:p.id,until:now+120000,...(input?{signature:signature(input)}:{})});return {value:f,result:null};
+  if(input){p.arena??=initialArena(p.completed);p.arena.revision++;}
+  f.daily.count++;f.runs.push({id,profileId:p.id,until:now+120000,...(input?{signature:signature(input),target:input.target,checkRevision:p.arena.revision}:{})});return {value:f,result:null};
  });
 }
-export async function releaseRun(store,session,id){await update(store,familyPath(session.familyId),f=>{if(!f)return {value:f};f.runs=f.runs.filter(r=>r.id!==id||r.profileId!==session.profileId);return {value:f};});}
-export async function recordAttempt(store,session,data,verified=false){
+export async function releaseRun(store,session,id,checkRevision){await update(store,familyPath(session.familyId),f=>{if(!f)return {value:f};f.runs=f.runs.filter(r=>r.id!==id||r.profileId!==session.profileId||checkRevision!==undefined&&r.checkRevision!==checkRevision);return {value:f};});}
+export async function recordAttempt(store,session,data,verified=false,scoredRevision){
  sourceInput(data);
  if(!validAttempt(data.id)||typeof data.target!=='string'||!Object.hasOwn(targets,data.target)||!['reached','missed','error','stopped','unavailable'].includes(data.outcome))throw new HttpError(400,'Invalid experiment.');
  return update(store,familyPath(session.familyId),f=>{
@@ -116,6 +121,18 @@ export async function recordAttempt(store,session,data,verified=false){
   if(verified&&f.cancelled?.some(r=>r.id===data.id&&r.profileId===p.id))throw new HttpError(409,'Check stopped. No completion was awarded.');
   if(old&&(old.source!==data.source||old.language!==data.language||old.target!==data.target))throw new HttpError(409,'That experiment already has a different source.');
   if(old?.verified||old&&!verified)return {value:f,result:{ok:true}};
+  let pointsEarned=0;
+  if(verified&&scoredRevision!==undefined){
+   const active=f.runs.find(r=>r.id===data.id&&r.profileId===p.id);
+   if(!active||active.until<=time||active.checkRevision!==scoredRevision||p.arena?.revision!==scoredRevision||active.target!==data.target||active.signature!==signature(data))throw new HttpError(409,'This check is no longer active. Refresh progress.','STALE_CHECK');
+   const before=arenaSummary(p.completed,p.arena).points,score=p.arena.challenges[data.target];
+   if(score.points===null&&['reached','missed'].includes(data.outcome)){
+    score.checks++;if(data.outcome==='reached')score.points=challengePoints(score.checks);
+   }
+   pointsEarned=arenaSummary(p.completed,p.arena).points-before;
+   // Clear only this scored reservation inside the terminal conditional write.
+   f.runs=f.runs.filter(r=>r!==active);
+  }
   const attempt={id:data.id,source:data.source,language:data.language,target:data.target,lesson:targetLesson(data.target),lessonVersion:1,outcome:data.outcome,seconds:Number.isFinite(data.seconds)?Math.max(0,Math.min(30,data.seconds)):null,error:typeof data.error==='string'?data.error.slice(0,300):'',verified,at:old?.at??at,values:cleanValues(data.values),output:typeof data.output==='string'?data.output.slice(0,4000):'',version:modelVersion(data.target),sourceHash:hashCode(data.source),...(verified?{receipt:{model:modelVersion(data.target),runner:'sandbox-v1',snapshot:process.env.SANDBOX_SNAPSHOT_ID??'test-fixture'}}:{})};
   if(old)p.history=p.history.filter(a=>a.id!==data.id);
   if(!old&&!seen){p.experiments++;p.lastActivity=at;const week=weekStart(time);p.activity??={};p.activity[week]=(p.activity[week]??0)+1;p.activity=Object.fromEntries(Object.entries(p.activity).sort(([a],[b])=>a.localeCompare(b)).slice(-8));}
@@ -128,31 +145,32 @@ export async function recordAttempt(store,session,data,verified=false){
     if(lessonTargets[lesson].every(t=>p.completed.includes(t))){p.missionCompleted??={};p.missionCompleted[lesson]??=at;}
    }
   }
-  return {value:f,result:{ok:true,completed:p.completed}};
+  return {value:f,result:{ok:true,completed:p.completed,pointsEarned}};
  });
 }
 
 // Cancellation is durable across stateless Functions, including creation races.
-export async function bindRun(store,session,id,name){
+export async function bindRun(store,session,id,name,checkRevision){
  return update(store,familyPath(session.familyId),f=>{
   profileIn(f,session);
-  const row=f.runs.find(r=>r.id===id&&r.profileId===session.profileId);
+  const row=f.runs.find(r=>r.id===id&&r.profileId===session.profileId&&(checkRevision===undefined||r.checkRevision===checkRevision));
   const allowed=!!row&&!f.cancelled?.some(r=>r.id===id&&r.profileId===session.profileId);
   if(allowed)row.name=name;
   return {value:f,result:allowed};
  });
 }
-export async function cancelRun(store,session,id){
+export async function cancelRun(store,session,id,checkRevision){
  if(!validAttempt(id))throw new HttpError(400,'Invalid check identifier.');
  return update(store,familyPath(session.familyId),f=>{
   const p=profileIn(f,session),now=Date.now();
   const completed=!!p.checkReceipts?.[id]||p.history.some(a=>a.id===id&&a.verified);
+  const row=f.runs.find(r=>r.id===id&&r.profileId===p.id);
+  if(!completed&&(row?.checkRevision!==undefined&&row.checkRevision!==checkRevision||!row&&checkRevision!==undefined&&checkRevision<(p.arena?.revision??0)))return {value:f,result:{completed:false,stale:true}};
   if(!completed){
    f.cancelled=(f.cancelled??[]).filter(r=>r.until>now&&!(r.id===id&&r.profileId===p.id));
    if(f.cancelled.length>=100)throw new HttpError(429,'Please wait before starting more checks.');
    f.cancelled.push({id,profileId:p.id,until:now+120000});
   }
-  const row=f.runs.find(r=>r.id===id&&r.profileId===p.id);
   return {value:f,result:{completed,name:row?.name}};
  });
 }

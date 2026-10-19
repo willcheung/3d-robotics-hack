@@ -4,6 +4,8 @@ import {armReference,armMoved,armTransfer} from '../../src/arm-lesson.ts';
 async function run(page:Page,source?:string){
  if(source!==undefined)await page.locator('#code').fill(source);
  await page.locator('#run').click();await expect(page.locator('#status-pill')).not.toHaveText('LOADING',{timeout:47000});await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:22000});
+ // Explicit fixture check after successful practice; real server scoring is covered by family-ui.
+ if((await page.locator('#feedback').getAttribute('class'))?.split(' ').includes('success')){await page.locator('#verify-cloud').click();await expect(page.locator('#stop-check')).toBeHidden();}
 }
 for(const lang of ['python','java'] as const){
  test(`Mission 4 ${lang}: diagnose the early turn, deliver all three parcels and retain prior worlds`,async({page})=>{
