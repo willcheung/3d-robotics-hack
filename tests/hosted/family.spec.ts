@@ -11,7 +11,7 @@ const test=baseTest.extend<{protection:void}>({protection:[async({context},use)=
 const base=process.env.HOSTED_APP_ORIGIN||'http://127.0.0.1:4373';
 const main=(n=100)=>`public class Main { public static void main(String[] args) throws Exception { Robot.servo(120); Robot.motor(.5); Robot.waitTicks(${n}); Robot.motor(0); } }`;
 const python='from robot import motor, servo, wait\nawait servo(120)\nawait motor(.5)\nawait wait(100)\nawait motor(0)';
-async function confirmedRun(page:Page){const target=await page.locator('#target').inputValue();await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});await page.locator('#verify-cloud').click();await expect.poll(async()=>(await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json()).completed,{timeout:80000}).toContain(target);await expect(page.locator('#stop-check')).toBeHidden();}
+async function confirmedRun(page:Page){const target=await page.locator('#target').inputValue();await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});if(await page.locator('#verify-cloud').textContent()!=='Challenge checked ✓')await page.locator('#verify-cloud').click();await expect.poll(async()=>(await (await page.request.get(base+'/api/family',{headers:protectedHeaders})).json()).completed,{timeout:80000}).toContain(target);await expect(page.locator('#stop-check')).toBeHidden();}
 const paths=new Set<string>();
 const store=new BlobStore();const write=store.write.bind(store);store.write=async(path:string,...args:unknown[])=>{paths.add(path);return write(path,...args);};
 let parentCode:string,codeA:string,codeB:string;
