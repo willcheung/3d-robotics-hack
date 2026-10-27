@@ -7,8 +7,11 @@ ulimit -c 0
 if [ "$1" = java ]; then
  cp /opt/robot/Main.java /work/Main.java
  mkdir out
- javac -J-Xmx96m -J-XX:MaxMetaspaceSize=64m -J-XX:ActiveProcessorCount=1 -encoding UTF-8 -proc:none -cp /opt/robot -d out Main.java
+ javac -g -J-Xmx96m -J-XX:MaxMetaspaceSize=64m -J-XX:ActiveProcessorCount=1 -encoding UTF-8 -proc:none -cp /opt/robot -d out Main.java
  printf '@compiled\n'
+ if [ "${2:-run}" = trace ]; then
+  exec timeout --signal=KILL 300s java --add-modules jdk.jdi -Xmx24m -XX:MaxMetaspaceSize=32m -XX:ActiveProcessorCount=1 -XX:+UseSerialGC -XX:-UsePerfData -cp /opt/robot TraceMain
+ fi
  exec timeout --signal=KILL 20s java -Xmx96m -XX:MaxMetaspaceSize=64m -XX:MaxDirectMemorySize=16m -XX:ActiveProcessorCount=1 -XX:+UseSerialGC -XX:-UsePerfData -cp out:/opt/robot Main
 else
  printf '@compiled\n'

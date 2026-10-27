@@ -152,9 +152,11 @@ test('hard stop infinite Python loop, retain code, new worker recovers', async (
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(source);
   await run(page,good); await done(page); await expect(page.locator('#feedback')).toHaveClass(/success/);
 });
-test('automatic deadline terminates infinite loop', async ({page}) => {
-  await run(page,'while True:\n    pass');
-  await expect(page.locator('#feedback')).toHaveClass(/error/,{timeout:35000}); await expect(page.getByLabel('Python console')).toContainText('20 second run limit'); await expect(page.locator('iframe')).toHaveCount(0);
+test('automatic runtime-work deadline terminates unresponsive native Python', async ({page}) => {
+  // Teaching delays at traceable loop lines are excluded from runtime work.
+  // This native calculation cannot reach another source boundary or robot reply.
+  await run(page,'sum(range(10**12))');
+  await expect(page.locator('#feedback')).toHaveClass(/error/,{timeout:35000}); await expect(page.getByLabel('Python console')).toContainText('20 second runtime work limit'); await expect(page.locator('iframe')).toHaveCount(0);
 });
 test('output flood is bounded, terminates and can run again', async ({page}) => {
   await run(page,"while True:\n    print('x' * 1024)"); await error(page,/Console limit/);

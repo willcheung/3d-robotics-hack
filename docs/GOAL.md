@@ -1,5 +1,9 @@
 # Manual goal contract
 
+## Current manual goal: execution tracing in both languages
+
+The owner requested native current-line highlighting, execution speed, Pause and Step one line for Python and Java across every playable mission, with tests for loops, branches and synchronized robot motion. Implement TRACE-01 under [EXECUTION-TRACING.md](EXECUTION-TRACING.md), preserving real runtimes, immutable source/drafts, checked progress and bounded isolation. Test all L01–L04 journeys and recovery; inspect desktop/narrow screenshots and retain exact-source evidence. This authorizes implementation and local checks. It does not authorize merge, deployment, live provider consumption, later lessons or account changes.
+
 ## Completed goal: family arena MVP
 
 The owner explicitly authorized implementing and testing the family leaderboard, including existing parents, with the reviewed scoring and badges. Implement ARENA-01 from [ARENA-MVP.md](ARENA-MVP.md): one shared family board, each signed-in profile's own progress/Continue, identical points and four badges, Parent labels and separate admin controls. Global leaderboard comes later; parents remain excluded from that future kids' board.

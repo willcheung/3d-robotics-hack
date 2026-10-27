@@ -24,9 +24,9 @@ if(target==='runtime') {
     const root='.vercel/output/functions/api.func';
     for (const file of ['LICENSE','licenses/node_modules/@vercel/sandbox/LICENSE','licenses/node_modules/@vercel/blob/license.md','licenses/node_modules/iron-session/LICENSE.md']) assert.ok((await stat(`${root}/${file}`)).size>100);
     const fn=JSON.parse(await readFile(`${root}/.vc-config.json`,'utf8'));
-    assert.equal(fn.runtime,'nodejs24.x');assert.equal(fn.maxDuration,90);assert.equal(fn.supportsResponseStreaming,true);assert.equal(fn.shouldAddHelpers,false);
+    assert.equal(fn.runtime,'nodejs24.x');assert.equal(fn.maxDuration,360);assert.equal(fn.supportsResponseStreaming,true);assert.equal(fn.shouldAddHelpers,false);
     assert.ok(config.routes.some(r=>r.src==='/api/(.*)'&&r.dest==='/api?endpoint=$1'));
-    for(const file of ['server/sandbox-relay.mjs','server/hosted-run.sh','server/python-run.py','java/Robot.java'])assert.ok((await stat(`${root}/${file}`)).isFile());
+    for(const file of ['server/sandbox-relay.mjs','server/hosted-run.sh','server/python-run.py','java/Robot.java','java/TraceMain.java'])assert.ok((await stat(`${root}/${file}`)).isFile());
     assert.equal(typeof (await import(pathToFileURL(resolve(root,fn.handler)).href)).default,'function');
     const weeklyRoot='.vercel/output/functions/weekly-summary.func';assert.equal(typeof (await import(pathToFileURL(resolve(weeklyRoot,'handler.mjs')).href)).default,'function');
     assert.deepEqual(config.crons??[],process.env.WEEKLY_SUMMARY_ENABLED==='1'?[{path:'/api/weekly-summary',schedule:'0 16 * * *'}]:[]);

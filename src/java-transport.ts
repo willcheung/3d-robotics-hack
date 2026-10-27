@@ -8,7 +8,7 @@ export class JavaTransport {
   }
   private async start(source: string) {
     try {
-      const response = await fetch('/api/java/run', {method:'POST',headers:{'Content-Type':'application/json','X-RoboLab-Profile':document.documentElement.dataset.profile??''},body:JSON.stringify({source}),credentials:'same-origin',signal:this.abort.signal});
+      const response = await fetch('/api/java/run', {method:'POST',headers:{'Content-Type':'application/json','X-RoboLab-Profile':document.documentElement.dataset.profile??''},body:JSON.stringify({source,trace:true}),credentials:'same-origin',signal:this.abort.signal});
       if(!response.ok) {const failure=await response.json().catch(()=>({}));throw new Error(failure.error||'Java is unavailable. Your draft is safe.');}
       if(!response.headers.get('content-type')?.includes('application/x-ndjson') || !response.body) throw new Error(response.status===409 ? 'Java is still stopping the previous run. Try again in a moment.' : 'Java is unavailable on this workshop. You can keep your Java draft and switch to Python.');
       const reader=response.body.getReader(), decoder=new TextDecoder(); let buffer='';

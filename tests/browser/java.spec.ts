@@ -3,7 +3,11 @@ const main=(body:string)=>`public class Main {\n    public static void main(Stri
 const good=main('Robot.servo(120); Robot.motor(.5); Robot.waitTicks(100); Robot.motor(0); System.out.println("ANGLE " + Math.round(Robot.angle()));');
 async function java(page:Page) {await page.getByLabel('Programming language').selectOption('java');}
 async function run(page:Page,source:string) {await page.getByLabel('Java code',{exact:true}).fill(source);await page.getByRole('button',{name:'Run code'}).click();}
-async function done(page:Page) {await expect(page.locator('#runtime-label')).toHaveText('Code finished running');}
+async function done(page:Page) {
+  // Native tracing adds deliberate reading time; startup remains an independent phase.
+  await expect(page.locator('#status-pill')).not.toHaveText('LOADING',{timeout:47000});
+  await expect(page.locator('#runtime-label')).toHaveText('Code finished running',{timeout:30000});
+}
 test.beforeEach(async({page})=>{await page.goto('/');await java(page);});
 test('Java starter teaches syntax, editable real code misses then rescues; progress survives language switch',async({page})=>{
   const editor=page.getByLabel('Java code',{exact:true}), source=await editor.inputValue();
@@ -56,7 +60,7 @@ test('Stop, Reset and language switch cancel infinite Java and preserve both dra
 });
 test('Java output flood/range errors are bounded; no false success; new run recovers',async({page})=>{
   await run(page,main('Robot.motor(2);'));await expect(page.locator('#feedback')).toHaveClass(/error/);await expect(page.locator('#console')).toContainText('power');
-  await run(page,main('while(true) System.out.println("flood flood flood flood");'));await expect(page.locator('#feedback')).toHaveClass(/error/);await expect(page.locator('#console')).toContainText('limit');
+  await run(page,main('System.out.println("flood".repeat(2000));'));await expect(page.locator('#feedback')).toHaveClass(/error/);await expect(page.locator('#console')).toContainText('limit');
   expect((await page.locator('#console').textContent())!.length).toBeLessThan(9200);
   await run(page,good);await done(page);await expect(page.locator('#feedback')).toHaveClass(/success/);
 });
@@ -75,8 +79,9 @@ test('narrow Java editor, help and controls remain readable; storage denial reta
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({path:'test-results/s02-java-narrow.png',fullPage:true});
 });
-test('Java wall-clock deadline terminates an infinite loop without user Stop',async({page})=>{
-  await run(page,main('while(true) {}'));await expect(page.locator('#runtime-label')).toHaveText('Java is running');
-  await expect(page.locator('#feedback')).toHaveClass(/error/,{timeout:25000});await expect(page.locator('#console')).toContainText('20 second run limit');
+test('Java runtime-work deadline terminates unresponsive native work without user Stop',async({page})=>{
+  // Line reading time is intentionally excluded; this native call never replies.
+  await run(page,main('Thread.sleep(60000);'));await expect(page.locator('#runtime-label')).toHaveText('Java is running');
+  await expect(page.locator('#feedback')).toHaveClass(/error/,{timeout:25000});await expect(page.locator('#console')).toContainText('20 second runtime work limit');
   await run(page,good);await done(page);await expect(page.locator('#feedback')).toHaveClass(/success/);
 });

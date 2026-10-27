@@ -4,6 +4,12 @@ Kickoff is authorized. Each delivered chunk must be a runnable, self-contained a
 
 FOUNDATION.md is the current cross-slice acceptance contract and implemented/planned capability ledger. Detailed engineering coverage is retained in ENGINEERING-CHECKS.md. That document is not the execution queue. Vercel build/hosting requirements and the separately authorized DEPLOY-01 gate are in DEPLOYMENT.md. Every slice retains a deployable web build; no automatic deployment is authorized.
 
+## TRACE-01 — Native source execution playback
+
+- Status: in_progress; owner-authorized manual implementation on `codex/execution-tracing`, base `763c5ac`, exclusive claim `1181109`.
+- Scope: Python/Java source lines, loops/branches/helpers, synchronized speed/Pause/Step across L01–L04. [EXECUTION-TRACING.md](EXECUTION-TRACING.md) freezes behavior, limits and acceptance.
+- Preserve score checks, original source/drafts and runtime isolation. Hosted qualification and deployment remain separate; do not mark done before accepted work lands.
+
 ## FE-01 — Family access and automatic progress
 
 - Status: review; implemented and locally validated in [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Family implementation/test checkpoint: `5983230a046ee6cf31a3a14e1e329de67b835306`; exact-head CI is recorded on the PR.

@@ -16,7 +16,7 @@ Left: an explorable 3D model of the lesson’s mechanism: an arm, motor assembly
 
 Right: a readable editor with short runnable examples, useful comments, and a small robot command reference. Run, Stop, Reset, and Restore Example are always visible. Code edits apply on Run rather than restarting a moving robot on every keystroke.
 
-A compact mission card gives one useful job before its numerical targets: a stranded crew needs a light, or a worker needs a parcel delivered. Show the beneficiary and the result in the scene. Console output, sensor values, and a command timeline explain what happened. Highlight robot API calls when their commands execute; do not promise a full general-purpose Java/Python debugger in the first version. Error messages preserve the real error and add a plain-language explanation.
+A compact mission card gives one useful job before its numerical targets: a stranded crew needs a light, or a worker needs a parcel delivered. Show the beneficiary and the result in the scene. Console output, sensor values, and a command timeline explain what happened. The owner authorized TRACE-01 source execution playback: native Python/Java line highlights through loops, branches and helper calls, with speed, Pause and Step synchronized with robot ticks. See EXECUTION-TRACING.md for its bounded practice contract and browser requirements; it is not an expression/variable inspector. Error messages preserve the real error and add a plain-language explanation.
 
 The AI coach opens as a drawer rather than taking a permanent third column. It can explain selected code, suggest a focused change, or help debug an observed failure. Students preview changes and choose whether to apply them.
 

@@ -58,10 +58,10 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
    if(path==='/api/family/attempt'){json(res,200,await recordAttempt(store,session,data,false));return true;}
    if(path==='/api/java/reply'||path==='/api/java/stop'){
     if(typeof data.session!=='string'||data.session.length>4096)throw new HttpError(400,'Invalid run.');
-    const c=await unsealData(data.session,{password,ttl:90});
+    const c=await unsealData(data.session,{password,ttl:360});
     if(c.familyId!==session.familyId||c.profileId!==profile.id||c.epoch!==profile.epoch||!(c.expires>Date.now()))throw new HttpError(403,'That run is not yours or has expired.');
     if(path.endsWith('/stop'))await stopSandbox(c);
-    else {if(!Number.isSafeInteger(data.id)||data.id<1||data.id>2000||!(data.value===null||typeof data.value==='number'&&Number.isFinite(data.value)))throw new HttpError(400,'Invalid reply.');await relayReply(c,data.id,data.value);}
+    else {if(!Number.isSafeInteger(data.id)||data.id<1||data.id>12000||!(data.value===null||typeof data.value==='number'&&Number.isFinite(data.value)))throw new HttpError(400,'Invalid reply.');await relayReply(c,data.id,data.value);}
     json(res,200,{ok:true});return true;
    }
    if(path==='/api/java/run'||path==='/api/family/verify'){
@@ -69,11 +69,11 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
     if(verify&&(typeof data.target!=='string'||!Object.hasOwn(targets,data.target)))throw new HttpError(400,'Unknown rescue target.');
     const missing=verify&&missingPrerequisite(targetLesson(data.target),profile.completed);
     if(missing)throw new HttpError(403,`Check all three Mission ${Number(missing.slice(1))} rescues to unlock checked Mission ${Number(targetLesson(data.target).slice(1))} progress. You can preview this mission until it unlocks.`);
-    const id=verify?data.id:randomUUID(),receipt=await reserveRun(store,session,id,verify?data:undefined);if(receipt){json(res,200,receipt);return true;}
+    const id=verify?data.id:randomUUID(),receipt=await reserveRun(store,session,id,verify?data:undefined,{practice:!verify&&data.trace===true});if(receipt){json(res,200,receipt);return true;}
     let run,state=initialState(verify?data.target:'beacon'),outcome='error',error='',output='',done=false,terminal,released=false,serviceReserved=false;
     const release=async()=>{const results=await Promise.allSettled([releaseRun(store,session,id,verify?data.checkRevision+1:undefined),...(serviceReserved?[releaseServiceRun(store,session,id)]:[])]);const failed=results.find(r=>r.status==='rejected');if(failed)throw failed.reason;released=true;};
     try {
-     await reserveServiceRun(store,session,id);serviceReserved=true;
+     await reserveServiceRun(store,session,id,{practice:!verify&&data.trace===true});serviceReserved=true;
      if(!verify){res.writeHead(200,{'Content-Type':'application/x-ndjson','Cache-Control':'no-store, no-transform','X-Content-Type-Options':'nosniff'});res.flushHeaders?.();}
      run=new Run(data.source,async message=>{
       if(verify){
@@ -85,9 +85,9 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
        else if(message.type==='done'){done=true;outcome=reached(state,targets[data.target])?'reached':'missed';}
       } else if(message.type==='done'||message.type==='error')terminal=message;
       else if(!res.destroyed&&!res.write(JSON.stringify(message)+'\n'))run.stop();
-     },e=>{if(e){error=e.message;outcome='error';done=false;}},{language:verify?data.language:'java',purpose:verify?'progress-check':'practice',onSession:async c=>{
+     },e=>{if(e){error=e.message;outcome='error';done=false;}},{language:verify?data.language:'java',purpose:verify?'progress-check':'practice',trace:!verify&&data.trace===true,onSession:async c=>{
       if(verify){if(!await bindRun(store,session,id,c.name,data.checkRevision+1))run.stop();}
-      else {const handle=await sealData({...c,familyId:session.familyId,profileId:profile.id,epoch:profile.epoch,expires:Date.now()+90000},{password,ttl:90});if(!res.destroyed)res.write(JSON.stringify({type:'session',id:handle})+'\n');}
+      else {const handle=await sealData({...c,familyId:session.familyId,profileId:profile.id,epoch:profile.epoch,expires:Date.now()+(data.trace===true?360000:90000)},{password,ttl:data.trace===true?360:90});if(!res.destroyed)res.write(JSON.stringify({type:'session',id:handle})+'\n');}
      }});
      res.once('close',()=>run.stop());
      await run.finished;

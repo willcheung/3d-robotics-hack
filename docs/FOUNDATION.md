@@ -9,7 +9,7 @@ Updated from early play-test feedback. Missions 1–3 run online in Python and J
 | Capability | Current evidence / future gate |
 | --- | --- |
 | Python execution | Real Pyodide/CPython, isolated runtime origin, trusted command/sensor bridge; acceptance in VALIDATION.md. |
-| Learning workspace | Editable Python and Java with syntax colors, line numbers, keyboard indentation/unindent/undo, Run/Stop/Reset/Restore, draft storage and explicit storage failure; lightweight textarea, not a full debugger or autocomplete IDE. |
+| Learning workspace | Editable Python and Java with syntax colors, line numbers, keyboard indentation/unindent/undo, Run/Stop/Reset/Restore, draft storage and explicit storage failure; lightweight textarea, not an autocomplete IDE. TRACE-01 adds a review-candidate native execution highlight, speed/Pause/Step and synchronized motion under EXECUTION-TRACING.md; release qualification remains separate. |
 | Mission 1 | Rescue searchlight with three practice locations, visible job/consequence, value/range guide, comments on every executable starter line, real-life machine connection and transfer questions. |
 | Progression | Next-rescue action preserves code; three unique local successes count once per visit. Reload starts a new visit; draft remains. Signed-in students also have persistent server-checked milestones and a private experiment history. Neither is proof of mastery or an official competitive score. |
 | Java | S02 local build: real JDK compilation/execution, equivalent robot behavior and separately saved drafts; see JAVA.md for setup and exact limits. DEPLOY-01 now has live Vercel Sandbox Java/Python evidence; its server gateway is live. See HOSTED.md. |

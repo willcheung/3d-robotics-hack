@@ -4,8 +4,8 @@ const root='.vercel/output/functions/api.func';
 await mkdir(`${root}/server`,{recursive:true});await mkdir(`${root}/java`,{recursive:true});
 await build({entryPoints:['server/hosted-api.mjs'],outfile:`${root}/server/handler.mjs`,bundle:true,platform:'node',target:'node24',format:'esm',banner:{js:"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);"}});
 for(const file of ['sandbox-relay.mjs','hosted-run.sh','python-run.py'])await copyFile(`server/${file}`,`${root}/server/${file}`);
-await copyFile('java/Robot.java',`${root}/java/Robot.java`);
-await writeFile(`${root}/.vc-config.json`,JSON.stringify({runtime:'nodejs24.x',handler:'server/handler.mjs',launcherType:'Nodejs',maxDuration:90,memory:1024,shouldAddHelpers:false,supportsResponseStreaming:true,regions:['iad1']}));
+for(const file of ['Robot.java','TraceMain.java'])await copyFile(`java/${file}`,`${root}/java/${file}`);
+await writeFile(`${root}/.vc-config.json`,JSON.stringify({runtime:'nodejs24.x',handler:'server/handler.mjs',launcherType:'Nodejs',maxDuration:360,memory:1024,shouldAddHelpers:false,supportsResponseStreaming:true,regions:['iad1']}));
 
 const mailRoot='.vercel/output/functions/onboarding-mail.func';
 await mkdir(mailRoot,{recursive:true});
