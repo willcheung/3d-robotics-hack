@@ -261,7 +261,18 @@ test('running source snapshot is stable while student edits the next draft', asy
 });
 test('slow browser frames catch up without skipping fixed model ticks', async ({page}) => {
   await run(page, good.replace('wait, angle', 'wait, angle, clock') + '\nprint("SIMULATED", await clock())');
+  await page.locator('#pause').click();
   await expect(page.locator('#runtime-label')).toHaveText('Python is running');
+  // Start the rendering stress at a known motion boundary. Native tracing
+  // deliberately paces the setup lines too; their reading time is separate
+  // from this test's unchanged eight-second bound for the two-second move.
+  await expect(page.locator('#code')).toHaveAttribute('data-execution-line','1');
+  for (const line of [2,3,4]) {
+    await page.locator('#step').click();
+    await expect(page.locator('#code')).toHaveAttribute('data-execution-line',String(line));
+    await expect(page.locator('#step')).toBeEnabled();
+  }
+  await expect(page.locator('#time-value')).toHaveText('0.00s');
   // Compete for the UI thread like software rendering on a slow machine.
   // This does not replace clocks, model functions, messages, or real Python.
   await page.evaluate(() => {
@@ -274,6 +285,7 @@ test('slow browser frames catch up without skipping fixed model ticks', async ({
     };
     requestAnimationFrame(busyFrame);
   });
+  await page.locator('#pause').click();
   await expect(page.locator('#runtime-label')).toHaveText('Code finished running', {timeout:8000});
   await expect(page.locator('#feedback')).toHaveClass(/success/);
   await expect(page.locator('#pointer-value')).toHaveText('60.0°');
