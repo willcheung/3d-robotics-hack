@@ -1,8 +1,10 @@
 # Manual goal contract
 
-## Current manual goal: execution tracing in both languages
+## Completed goal: execution tracing in both languages
 
 The owner requested native current-line highlighting, execution speed, Pause and Step one line for Python and Java across every playable mission, with tests for loops, branches and synchronized robot motion. Implement TRACE-01 under [EXECUTION-TRACING.md](EXECUTION-TRACING.md), preserving real runtimes, immutable source/drafts, checked progress and bounded isolation. Test all L01–L04 journeys and recovery; inspect desktop/narrow screenshots and retain exact-source evidence. The owner subsequently authorized hosted tests, then merge and deployment if everything passes, followed by live verification of highlighting, speed, Pause and Step in Python and Java across all four missions. Use disposable fixtures and existing staging/production services; preserve accounts, data, quotas, credentials and settings. Later lessons and unrelated account changes remain outside scope.
+
+The authorized release is complete: [PR #17](https://github.com/willcheung/3d-robotics-hack/pull/17) merged as `204b09982ad58881b1987577435fcac12ea8194a` with the identical tested tree, and [RoboLab](https://robolab.vibecodingdad.com) passed both-language highlighting, speed, Pause and Step checks across all four playable missions. PROGRESS.md records exact-head CI, protected staging, production-candidate and public evidence. This establishes software behavior in Chromium, not an actual learner or non-Chromium device pilot.
 
 ## Completed goal: family arena MVP
 
