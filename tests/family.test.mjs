@@ -248,7 +248,7 @@ test('teaching playback leases cover five minutes without changing scored-check 
  const {store,a,b}=await fixtures(),practice=randomUUID(),now=Date.now();
  await reserveRun(store,a,practice,undefined,{practice:true});
  const f=(await current(store,a)).family;
- assert.ok(f.runs[0].until>=now+360000&&f.runs[0].until<=Date.now()+360000);
+ assert.ok(f.runs[0].until>=now+420000&&f.runs[0].until<=Date.now()+420000);
  await assert.rejects(reserveRun(store,a,randomUUID(),undefined,{practice:true}),e=>e.status===409);
  await releaseRun(store,a,practice);
  const check=attempt();await reserveRun(store,a,check.id,check);

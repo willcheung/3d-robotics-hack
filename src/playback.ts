@@ -9,20 +9,40 @@ export class Playback {
   private dead = false;
   private wake?: () => void;
   private speed = 1;
+  private elapsed = 0;
+  private syncedAt = performance.now();
   private changed: (state: PlaybackState) => void;
   constructor(changed: (state: PlaybackState) => void) { this.changed = changed; }
-  setSpeed(speed: number) { if ([0.25, 0.5, 1, 2].includes(speed)) this.speed = speed; }
-  pause() { this.paused = true; this.stepping = false; this.emit(); }
-  resume() { this.paused = false; this.stepping = false; this.wake?.(); this.emit(); }
+  setSpeed(speed: number) { if ([0.25, 0.5, 1, 2].includes(speed)) { this.time(); this.speed = speed; } }
+  /** Presentation time includes rendering cost, excludes Pause, and never
+   * supplies the model dt. Only ordered wait calls consume it as fixed ticks. */
+  time() {
+    const now = performance.now();
+    if (!this.dead && (!this.paused || this.stepping)) this.elapsed += (now - this.syncedAt) * this.speed;
+    this.syncedAt = now; return this.elapsed;
+  }
+  async until(deadline: number) {
+    // Even an overdue catch-up batch must yield a browser task, so input,
+    // Stop and Pause cannot be starved by a chain of resolved microtasks.
+    await new Promise(resolve => setTimeout(resolve, 0));
+    while (!this.dead) {
+      await this.delay(0);
+      const remaining = deadline - this.time();
+      if (remaining <= 0 || this.dead) return;
+      await new Promise(resolve => setTimeout(resolve, Math.min(16, remaining / this.speed)));
+    }
+  }
+  pause() { this.time(); this.paused = true; this.stepping = false; this.emit(); }
+  resume() { this.time(); this.paused = false; this.stepping = false; this.wake?.(); this.emit(); }
   step() {
     if (this.dead || this.stepping) return;
-    this.paused = true; this.stepping = true; this.wake?.(); this.emit();
+    this.time(); this.paused = true; this.stepping = true; this.wake?.(); this.emit();
   }
   private emit() { this.changed({ paused: this.paused, stepping: this.stepping, line: this.line }); }
   async atLine(line: number) {
     // A step finishes at the *next* source boundary, including repeated visits
     // to the same line. It never silently consumes an extra line.
-    if (this.stepping && !this.boundary && this.line !== null) this.stepping = false;
+    if (this.stepping && !this.boundary && this.line !== null) { this.time(); this.stepping = false; }
     this.line = line; this.boundary = true; this.emit();
     await this.delay(80, true);
     this.boundary = false;

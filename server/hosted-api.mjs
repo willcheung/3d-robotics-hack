@@ -58,7 +58,7 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
    if(path==='/api/family/attempt'){json(res,200,await recordAttempt(store,session,data,false));return true;}
    if(path==='/api/java/reply'||path==='/api/java/stop'){
     if(typeof data.session!=='string'||data.session.length>4096)throw new HttpError(400,'Invalid run.');
-    const c=await unsealData(data.session,{password,ttl:360});
+    const c=await unsealData(data.session,{password,ttl:420});
     if(c.familyId!==session.familyId||c.profileId!==profile.id||c.epoch!==profile.epoch||!(c.expires>Date.now()))throw new HttpError(403,'That run is not yours or has expired.');
     if(path.endsWith('/stop'))await stopSandbox(c);
     else {if(!Number.isSafeInteger(data.id)||data.id<1||data.id>12000||!(data.value===null||typeof data.value==='number'&&Number.isFinite(data.value)))throw new HttpError(400,'Invalid reply.');await relayReply(c,data.id,data.value);}
@@ -87,7 +87,7 @@ export function hostedApi({store=new BlobStore(),Run=SandboxRun,appOrigin=proces
       else if(!res.destroyed&&!res.write(JSON.stringify(message)+'\n'))run.stop();
      },e=>{if(e){error=e.message;outcome='error';done=false;}},{language:verify?data.language:'java',purpose:verify?'progress-check':'practice',trace:!verify&&data.trace===true,onSession:async c=>{
       if(verify){if(!await bindRun(store,session,id,c.name,data.checkRevision+1))run.stop();}
-      else {const handle=await sealData({...c,familyId:session.familyId,profileId:profile.id,epoch:profile.epoch,expires:Date.now()+(data.trace===true?360000:90000)},{password,ttl:data.trace===true?360:90});if(!res.destroyed)res.write(JSON.stringify({type:'session',id:handle})+'\n');}
+      else {const handle=await sealData({...c,familyId:session.familyId,profileId:profile.id,epoch:profile.epoch,expires:Date.now()+(data.trace===true?420000:90000)},{password,ttl:data.trace===true?420:90});if(!res.destroyed)res.write(JSON.stringify({type:'session',id:handle})+'\n');}
      }});
      res.once('close',()=>run.stop());
      await run.finished;

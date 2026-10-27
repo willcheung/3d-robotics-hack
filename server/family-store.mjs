@@ -102,7 +102,7 @@ export async function reserveRun(store,session,id,input,{practice=false}={}){
   if(f.daily.day!==day)f.daily={day,count:0};
   if(f.daily.count>=60)throw new HttpError(429,'The family’s 60 hosted runs for today are used. Python practice is still available.');
   if(input){p.arena??=initialArena(p.completed);p.arena.revision++;}
-  f.daily.count++;f.runs.push({id,profileId:p.id,until:now+(practice?360000:120000),...(input?{signature:signature(input),target:input.target,checkRevision:p.arena.revision}:{})});return {value:f,result:null};
+  f.daily.count++;f.runs.push({id,profileId:p.id,until:now+(practice?420000:120000),...(input?{signature:signature(input),target:input.target,checkRevision:p.arena.revision}:{})});return {value:f,result:null};
  });
 }
 export async function releaseRun(store,session,id,checkRevision){await update(store,familyPath(session.familyId),f=>{if(!f)return {value:f};f.runs=f.runs.filter(r=>r.id!==id||r.profileId!==session.profileId||checkRevision!==undefined&&r.checkRevision!==checkRevision);return {value:f};});}
@@ -211,7 +211,7 @@ export async function reserveServiceRun(store,session,id,{now=Date.now(),practic
   if(quota.runs.some(r=>r.key===key))return {value:quota};
   if(quota.runs.length>=2)throw new HttpError(429,'The hosted robots are busy. Please try again shortly. Python practice is available.');
   if(quota.count>=120)throw new HttpError(429,'Today’s hosted run allowance is used. Please return tomorrow; Python practice is still available.');
-  quota.count++;quota.runs.push({key,until:now+(practice?360000:120000)});return {value:quota};
+  quota.count++;quota.runs.push({key,until:now+(practice?420000:120000)});return {value:quota};
  });
 }
 export async function releaseServiceRun(store,session,id){

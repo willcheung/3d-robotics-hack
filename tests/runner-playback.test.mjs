@@ -39,3 +39,27 @@ test('invalid, overlapping and stale line messages cannot update model state',as
  await runner.receivePayload({type:'trace',id:2002,line:2});await pending;
  assert.equal(runner.dead,true);assert.equal(snapshots.at(-1).ticks,0);assert.equal(replies.some(m=>m.id===2001),false);
 });
+test('expensive rendering does not add its duration to every model tick',async()=>{
+ const {runner,snapshots}=fixture();
+ try {
+  const original=runner.hooks.snapshot;
+  runner.hooks.snapshot=s=>{original(s);const until=performance.now()+40;while(performance.now()<until){};};
+  await runner.receivePayload({type:'ready',tracing:true});const began=performance.now();
+  await runner.receivePayload({type:'command',id:1,command:{op:'wait',value:20}});
+  const elapsed=performance.now()-began;
+  assert.equal(snapshots.at(-1).ticks,20);assert.ok(elapsed<950,`400ms of playback plus bounded render overhead took ${elapsed}ms`);
+ } finally {runner.stop();}
+});
+test('catch-up rendering yields to scheduled Pause and Stop instead of starving controls',async()=>{
+ const {runner,snapshots}=fixture();let pausedAt=null;let pauseTimer,stopTimer;
+ try {
+  const original=runner.hooks.snapshot;
+  runner.hooks.snapshot=s=>{original(s);const until=performance.now()+80;while(performance.now()<until){};};
+  await runner.receivePayload({type:'ready',tracing:true});
+  pauseTimer=setTimeout(()=>{pausedAt=snapshots.at(-1).ticks;runner.pause();},50);
+  stopTimer=setTimeout(()=>runner.stop(),220);
+  await runner.receivePayload({type:'command',id:1,command:{op:'wait',value:20}});
+  assert.notEqual(pausedAt,null,'Pause must run while the wait is in progress');assert.ok(pausedAt<20);
+  assert.equal(snapshots.at(-1).ticks,pausedAt,'motion must stay frozen until Stop');assert.equal(runner.dead,true);
+ } finally {clearTimeout(pauseTimer);clearTimeout(stopTimer);runner.stop();}
+});

@@ -94,13 +94,15 @@ export class Runner {
           await this.playback.delay(0);
           if (this.dead) return;
           if (m.command.op === 'wait') {
-            // Advance each fixed model tick only after its playback interval.
-            // The same gate pauses motion and source progression; no wall-time
-            // catch-up may occur when a learner resumes a paused wait.
-            for (let completed = 0; completed < m.command.value!; completed++) {
-              await this.playback.delay(20);
+            // Pace against a Pause-aware presentation clock. Rendering may
+            // batch display updates, but every fixed model tick still executes.
+            const began = this.playback.time();
+            let completed = 0;
+            while (completed < m.command.value!) {
+              await this.playback.until(began + (completed + 1) * 20);
               if (this.dead) return;
-              this.state = tick(this.state);
+              const due = Math.min(m.command.value!, Math.floor((this.playback.time() - began) / 20));
+              while (completed < due) { this.state = tick(this.state); completed++; }
               this.hooks.snapshot(this.state);
             }
           } else {
