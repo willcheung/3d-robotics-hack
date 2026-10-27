@@ -94,6 +94,20 @@ test('Python unsupported stack switching retains ordinary Run without a stuck Pa
  await page.locator('#execution-speed').selectOption('0.25');await page.locator('#code').fill('from robot import wait\nawait wait(5)');await page.locator('#run').click();await page.locator('#pause').click();
  await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:47000});await expect(page.locator('#time-value')).toHaveText('0.10s');await expect(page.locator('#execution-speed')).toHaveValue('1');await expect(page.locator('#execution-line')).toBeHidden();
 });
+test('updated Python runtime preserves the legacy app handshake without trace messages',async({page})=>{
+ const messages=await page.evaluate(async(runtime)=>{
+  const frame=document.createElement('iframe');frame.src=runtime+'/?parent='+encodeURIComponent(location.origin);frame.hidden=true;document.body.append(frame);
+  return await new Promise<any[]>((resolve,reject)=>{
+   const messages:any[]=[],token=crypto.randomUUID();const timer=setTimeout(()=>{frame.remove();reject(new Error('Legacy Python run timed out'));},40000);
+   const listener=(event:MessageEvent)=>{if(event.source!==frame.contentWindow||event.origin!==runtime)return;
+    if(event.data?.type==='frame-ready'){frame.contentWindow!.postMessage({type:'start',source:'print("legacy runtime works")',token},runtime);return;}
+    if(event.data?.token!==token)return;messages.push(event.data.payload);
+    if(['done','error'].includes(event.data.payload?.type)){clearTimeout(timer);window.removeEventListener('message',listener);frame.remove();resolve(messages);}
+   };window.addEventListener('message',listener);
+  });
+ },process.env.VITE_RUNTIME_ORIGIN||'http://127.0.0.1:4174');
+ expect(messages.find(m=>m.type==='ready')).toEqual({type:'ready'});expect(messages.some(m=>m.type==='trace')).toBe(false);expect(messages.at(-1).type).toBe('done');expect(messages.map(m=>m.text||'').join('')).toContain('legacy runtime works');
+});
 test('paused highlight stays aligned while scrolling; narrow controls fit and keyboard focus stays usable',async({page})=>{
  await page.locator('#code').fill('# comment\n'.repeat(40)+'x = 1\nprint(x)');await page.locator('#run').click();await page.locator('#pause').click();await ready(page);
  await expect(page.locator('#code')).toHaveAttribute('data-execution-line','41');

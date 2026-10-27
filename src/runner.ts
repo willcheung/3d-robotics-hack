@@ -47,7 +47,7 @@ export class Runner {
     if (this.dead || event.source !== this.frame?.contentWindow || event.origin !== this.origin) return;
     if (++this.messages > LIMITS.messages) return this.fail('Too many runtime messages. Program stopped.');
     if (event.data?.type === 'frame-ready' && !this.ready) {
-      this.send({ type: 'start', source: this.source }); return;
+      this.send({ type: 'start', source: this.source, trace: true }); return;
     }
     if (event.data?.token !== this.token) return;
     await this.receivePayload(event.data.payload);

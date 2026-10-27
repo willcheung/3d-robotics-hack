@@ -103,9 +103,10 @@ def _student_return(code, offset, result):
         run_sync(_trace_line(caller.f_lineno))
 can_run_sync()
 `);
-    send({ type: 'ready', tracing: Boolean(tracing) });
+    // Legacy app parsers require the original one-field ready message.
+    send(m.trace === true ? { type: 'ready', tracing: Boolean(tracing) } : { type: 'ready' });
     py.globals.set('_student_source', m.source);
-    py.globals.set('_tracing_enabled', Boolean(tracing));
+    py.globals.set('_tracing_enabled', m.trace === true && Boolean(tracing));
     await py.runPythonAsync(`
 import ast, inspect
 _student_code = compile(_student_source, 'student.py', 'exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)

@@ -17,7 +17,9 @@ if (allowedParents.includes(parentOrigin) && parent !== window) {
         send(data);
       };
       worker.onerror = () => { dispose(); send({ type: 'error', text: 'Python worker could not load. Check the runtime origin, then Run again.' }); };
-      worker.postMessage({ type: 'run', source: m.source });
+      // Opt in per run so an older app remains compatible during promotion
+      // and rollback of this independently hosted runtime.
+      worker.postMessage({ type: 'run', source: m.source, trace: m.trace === true });
     } else if (m.token === token && m.type === 'reply') {
       worker?.postMessage(m);
     } else if (m.token === token && m.type === 'stop') dispose();

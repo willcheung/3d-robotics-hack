@@ -2,7 +2,7 @@
 
 ## Current manual goal: execution tracing in both languages
 
-The owner requested native current-line highlighting, execution speed, Pause and Step one line for Python and Java across every playable mission, with tests for loops, branches and synchronized robot motion. Implement TRACE-01 under [EXECUTION-TRACING.md](EXECUTION-TRACING.md), preserving real runtimes, immutable source/drafts, checked progress and bounded isolation. Test all L01–L04 journeys and recovery; inspect desktop/narrow screenshots and retain exact-source evidence. This authorizes implementation and local checks. It does not authorize merge, deployment, live provider consumption, later lessons or account changes.
+The owner requested native current-line highlighting, execution speed, Pause and Step one line for Python and Java across every playable mission, with tests for loops, branches and synchronized robot motion. Implement TRACE-01 under [EXECUTION-TRACING.md](EXECUTION-TRACING.md), preserving real runtimes, immutable source/drafts, checked progress and bounded isolation. Test all L01–L04 journeys and recovery; inspect desktop/narrow screenshots and retain exact-source evidence. The owner subsequently authorized hosted tests, then merge and deployment if everything passes, followed by live verification of highlighting, speed, Pause and Step in Python and Java across all four missions. Use disposable fixtures and existing staging/production services; preserve accounts, data, quotas, credentials and settings. Later lessons and unrelated account changes remain outside scope.
 
 ## Completed goal: family arena MVP
 
