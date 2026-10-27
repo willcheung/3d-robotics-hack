@@ -6,7 +6,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { StringDecoder } from 'node:string_decoder';
 const key=Buffer.from(process.env.RELAY_KEY || '');
 delete process.env.RELAY_KEY;
-let child, started=false, runResponse;
+let child, started=false, runResponse, tracing=false;
 const stop=()=>{if(child) {try {process.kill(-child.pid,'SIGKILL');} catch {} child=null;}};
 const server=http.createServer(async(req,res)=>{
  const supplied=Buffer.from(req.headers.authorization || '');
@@ -18,10 +18,11 @@ const server=http.createServer(async(req,res)=>{
    const {id,value}=JSON.parse(raw);
    if(!child || !Number.isSafeInteger(id) || id<1 || !(value===null || typeof value==='number'&&Number.isFinite(value))) throw Error('Invalid reply');
    runResponse.write(JSON.stringify({replied:id})+'\n');
-   child.stdin.write(String(value)+'\n');res.end('ok');return;
+   child.stdin.write((tracing&&id>2000?'TRACE':String(value))+'\n');res.end('ok');return;
   }
   if(req.url!=='/start' || started) throw Error('Already started');
-  const {source,language}=JSON.parse(raw);
+  const {source,language,trace}=JSON.parse(raw);
+  tracing=trace===true;
   if(typeof source!=='string'||source.length>16000||!['java','python'].includes(language)) throw Error('Invalid program');
   started=true;
   await writeFile(`/opt/robot/${language==='java'?'Main.java':'student.py'}`,source,{mode:0o444});
@@ -30,7 +31,7 @@ const server=http.createServer(async(req,res)=>{
   res.flushHeaders();
   // All writable locations are memory-backed; no host mounts, network, sudo,
   // inherited credentials, or writable runtime. A VM deadline survives gateway loss.
-  const args=['-n','/usr/bin/bwrap','--unshare-all','--die-with-parent','--new-session','--ro-bind','/','/','--ro-bind','/proc','/proc','--dev','/dev','--perms','1777','--tmpfs','/tmp','--perms','0777','--tmpfs','/work','--chdir','/work','--uid','10001','--gid','10001','--cap-drop','ALL','--clearenv','--setenv','PATH','/usr/bin:/bin','--setenv','HOME','/work','/bin/bash','/opt/robot/hosted-run.sh',language];
+  const args=['-n','/usr/bin/bwrap','--unshare-all','--die-with-parent','--new-session','--ro-bind','/','/','--ro-bind','/proc','/proc','--dev','/dev','--perms','1777','--tmpfs','/tmp','--perms','0777','--tmpfs','/work','--chdir','/work','--uid','10001','--gid','10001','--cap-drop','ALL','--clearenv','--setenv','PATH','/usr/bin:/bin','--setenv','HOME','/work','/bin/bash','/opt/robot/hosted-run.sh',language,tracing?'trace':'run'];
   child=spawn('/usr/bin/sudo',args,{detached:true,env:{PATH:'/usr/bin:/bin'},stdio:['pipe','pipe','pipe']});
   let bytes=0;
   const emit=data=>{if(!res.destroyed&&!res.write(JSON.stringify(data)+'\n')) stop();};
@@ -45,4 +46,4 @@ const server=http.createServer(async(req,res)=>{
  } catch {if(!res.headersSent)res.writeHead(400);res.end();}
 });
 server.listen(3000,'0.0.0.0');
-setTimeout(()=>{stop();server.close();process.exit(0);},65000).unref();
+setTimeout(()=>{stop();server.close();process.exit(0);},345000).unref();

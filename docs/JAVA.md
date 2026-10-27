@@ -58,3 +58,7 @@ A crash of the preview process can leave a stopped container record (or a create
 ## Hosted Java
 
 Local Docker is a development runner and must remain loopback-only. Hosted Java uses the separate authenticated Sandbox service in [HOSTED.md](HOSTED.md); a static upload alone cannot run Java or family services. See [DEPLOYMENT.md](DEPLOYMENT.md) for packaging, staging and release acceptance. No host Docker socket or credential-bearing JDK is exposed to a learner.
+
+## Practice execution tracing (review candidate)
+
+Rebuild the image after this change. Traced Run compiles the original source with debug line information and uses the JDK’s JDI API inside the disposable container. Loop/branch/method locations and helper returns drive the shared highlight; Pause/Step also gate trusted motion and command replies. No debug port leaves the container. Traced practice has a 345-second container deadline (45-second startup plus five-minute playback); ordinary checks retain 65 seconds and 45/20 phase limits. The two trace JVMs use bounded 24/64 MiB heaps and 32/48 MiB metaspace within the unchanged 256 MiB aggregate limit. See [EXECUTION-TRACING.md](EXECUTION-TRACING.md) for controls, limits and coverage.

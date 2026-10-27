@@ -8,8 +8,9 @@ async function execute(source,language='java',hooks={}){
  let state=initialState(),run,cleanup,name;const messages=[];
  run=new SandboxRun(source,async m=>{
   messages.push(m);hooks.message?.(run,m);
+  if(m.type==='trace'&&!run.dead)await run.reply(m.id,null);
   if(m.type==='command'&&!run.dead){try{let value=null;if(m.command.op==='wait')for(let i=0;i<m.command.value;i++)state=tick(state);else{const r=command(state,m.command);state=r.state;value=r.value;}await run.reply(m.id,value);}catch(e){run.fail(e.message);}}
- },e=>{cleanup=e;},{language,purpose:'acceptance-test',onSession:c=>{name=c.name;hooks.session?.(run);}});
+ },e=>{cleanup=e;},{language,purpose:'acceptance-test',trace:hooks.trace===true,onSession:c=>{name=c.name;hooks.session?.(run);}});
  await run.finished;assert.equal(cleanup,undefined);
  if(name)assert.equal((await Sandbox.get({name})).status,'stopped','VM must be stopped after every outcome');
  return {state,messages,text:messages.map(m=>m.text??'').join(''),terminal:messages.at(-1)?.type};
@@ -53,4 +54,31 @@ test('live provider: output flood, cancellation during startup and child process
 test('live provider: the real execution deadline stops an infinite program',async()=>{
  const began=Date.now();const r=await execute(main('while(true){}'));
  assert.equal(r.terminal,'error');assert.ok(Date.now()-began<45000);assert.ok(!r.messages.some(m=>m.type==='done'));
+});
+
+test('live provider: JDI reports actual loop, branch and helper-return lines inside the isolated VM',async()=>{
+ const source=`public class Main {
+ static double power() {
+  return .5;
+ }
+ public static void main(String[] args) throws Exception {
+  Robot.servo(120);
+  for(int i=0;i<2;i++) {
+   if(i==0) {
+    Robot.motor(power());
+   } else {
+    Robot.motor(0);
+   }
+   Robot.waitTicks(5);
+  }
+  System.out.println(Robot.clock());
+ }
+}`;
+ const result=await execute(source,'java',{trace:true});assert.equal(result.terminal,'done',result.text);assert.equal(result.state.ticks,10);assert.ok(Math.abs(result.state.angle-3)<1e-8);
+ const visits=result.messages.filter(m=>m.type==='trace').map(m=>m.line);assert.equal(visits.filter(l=>l===8).length,2);assert.equal(visits.filter(l=>l===13).length,2);assert.ok(visits.indexOf(9)<visits.indexOf(11));
+ const at=result.messages.findIndex(m=>m.type==='command'&&m.command.op==='motor');assert.equal(result.messages[at-1].line,9,'helper returns must restore the actuator caller');
+});
+test('live provider: Stop retires a VM suspended at a real JDI line',async()=>{
+ const result=await execute(main('Robot.motor(.5);Robot.waitTicks(50);'),'java',{trace:true,message:(run,m)=>{if(m.type==='trace')run.stop();}});
+ assert.equal(result.messages.filter(m=>m.type==='trace').length,1);assert.equal(result.messages.some(m=>m.type==='done'),false);assert.equal(result.state.ticks,0);
 });

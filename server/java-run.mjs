@@ -1,23 +1,27 @@
 import { spawn, execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { ExecutionBudget } from '../src/execution-budget.ts';
+import { parseMessage, LIMITS } from '../src/protocol.ts';
 import { StringDecoder } from 'node:string_decoder';
 
 export const JAVA_IMAGE = 'robolab-java:s02';
 export const JAVA_LIMITS = Object.freeze({ source:16000, output:8192, line:8192, compileMs:45000, runMs:20000, commands:2000 });
-export function containerArgs(name,image=JAVA_IMAGE) {
+export function containerArgs(name,image=JAVA_IMAGE,trace=false) {
   return ['create','--name',name,'--interactive','--network','none','--read-only','--cap-drop','ALL',
     '--security-opt','no-new-privileges','--memory','256m','--memory-swap','256m','--cpus','1','--pids-limit','64',
     '--ulimit','nofile=128:128','--ulimit','core=0:0','--log-driver','none',
     '--tmpfs','/work:rw,noexec,nosuid,nodev,size=64m,uid=10001,gid=10001,mode=700',
-    '--tmpfs','/tmp:rw,noexec,nosuid,nodev,size=8m,uid=10001,gid=10001,mode=700',image];
+    '--tmpfs','/tmp:rw,noexec,nosuid,nodev,size=8m,uid=10001,gid=10001,mode=700',
+    ...(trace?['--entrypoint','/usr/bin/timeout',image,'--signal=KILL','345s','/bin/sh','/opt/robot/run.sh','trace']:[image])];
 }
 function docker(args) {
   return new Promise((resolve,reject) => execFile('docker',args,{timeout:15000,maxBuffer:65536},(error,stdout) => error ? reject(new Error('Java sandbox is unavailable. Your draft is safe; try Python or ask the workshop owner to start Java.')) : resolve(stdout.trim())));
 }
 /** One disposable container, including compilation. No source ever executes on the host. */
 export class JavaRun {
-  constructor(source, onMessage, onClosed = () => {}, {image=JAVA_IMAGE} = {}) {
+  constructor(source, onMessage, onClosed = () => {}, {image=JAVA_IMAGE, trace=false} = {}) {
     if (typeof source !== 'string' || source.length > JAVA_LIMITS.source) throw new Error('Program is too long (16,000 character limit).');
+    this.trace=trace===true;this.nextTraceId=2001;this.budget=new ExecutionBudget(JAVA_LIMITS.runMs,()=>this.fail('20 second runtime work limit reached. Try fewer steps.'));
     this.image=image;this.source=source; this.onMessage=onMessage; this.onClosed=onClosed;
     this.name=`robolab-java-${randomUUID()}`; this.dead=false; this.compiled=false;
     this.pending=null; this.nextId=1; this.output=0; this.buffers={out:'',err:''}; this.decoders={out:new StringDecoder('utf8'),err:new StringDecoder('utf8')}; this.child=null;
@@ -27,7 +31,7 @@ export class JavaRun {
   emit(message) { if (!this.dead) this.onMessage(message); }
   async start() {
     try {
-      await docker(containerArgs(this.name,this.image));
+      await docker(containerArgs(this.name,this.image,this.trace));
       this.created=true;
       if (this.dead) return;
       await new Promise(resolve => {
@@ -49,7 +53,7 @@ export class JavaRun {
       });
     } catch(e) { this.fail(e.message); }
     finally {
-      this.dead=true; clearTimeout(this.timer);
+      this.dead=true; clearTimeout(this.timer); this.budget.stop();
       try { if(this.created) await docker(['rm','--force',this.name]); }
       catch { /* Preserve failure visibly; the container still has hard resource limits. */ this.onClosed(new Error(`Cleanup could not be confirmed for ${this.name}.`)); return; }
       this.onClosed();
@@ -72,15 +76,20 @@ export class JavaRun {
     if (Buffer.byteLength(line)>JAVA_LIMITS.line) return this.fail('Java output line limit reached.');
     if (stream==='out' && line==='@compiled' && !this.compiled) {
       this.compiled=true; clearTimeout(this.timer);
-      this.timer=setTimeout(()=>this.fail('20 second run limit reached. Try fewer steps, then Run again.'),JAVA_LIMITS.runMs);
-      this.emit({type:'ready'}); return;
+      this.timer=setTimeout(()=>this.fail(this.trace?'Practice playback limit reached (5 minutes, including Pause). Run again.':'20 second run limit reached. Try fewer steps, then Run again.'),this.trace?LIMITS.practiceMs:JAVA_LIMITS.runMs);
+      if(this.trace)this.budget.resume();
+      this.emit({type:'ready',...(this.trace?{tracing:true}:{})}); return;
     }
     if (stream==='out' && line.startsWith('@robot ')) {
       try {
-        const msg=JSON.parse(line.slice(7));
+        const msg=parseMessage(JSON.parse(line.slice(7)));
+        if (this.trace && msg.type==='trace') {
+          if(!this.compiled || this.pending!==null || msg.id!==this.nextTraceId++ || msg.line>16001) throw new Error();
+          this.pending=msg.id;this.budget.pause();this.emit(msg);return;
+        }
         if (!this.compiled || this.pending!==null || msg.type!=='command' || Object.keys(msg).length!==3 || msg.id!==this.nextId || this.nextId>JAVA_LIMITS.commands) throw new Error();
-        this.pending=msg.id; this.nextId++; this.emit(msg); return;
-      } catch { return this.fail('Invalid or overlapping Java robot command.'); }
+        this.pending=msg.id; this.nextId++; if(this.trace)this.budget.pause(); this.emit(msg); return;
+      } catch (error) { return this.fail(error instanceof Error && error.message ? error.message.slice(-4096) : 'Invalid or overlapping Java robot command.'); }
     }
     this.output+=Buffer.byteLength(line+'\n');
     if(this.output>JAVA_LIMITS.output) return this.fail('Console limit reached (8 KB). Try printing less.');
@@ -88,12 +97,12 @@ export class JavaRun {
   }
   reply(id,value) {
     if (this.dead || !this.compiled || id!==this.pending || !(value===null || (typeof value==='number' && Number.isFinite(value)))) throw new Error('Unexpected robot reply.');
-    this.pending=null; this.child.stdin.write(String(value)+'\n');
+    const tracing=this.pending>2000;this.pending=null;if(this.trace)this.budget.resume();this.child.stdin.write((tracing?'TRACE':String(value))+'\n');
   }
   fail(text) { if (!this.dead) this.emit({type:'error',text}); this.stop(); }
   stop() {
     if (this.dead) return;
-    this.dead=true; clearTimeout(this.timer);
+    this.dead=true; clearTimeout(this.timer); this.budget.stop();
     // Disconnect the CLI and kill the entire container, including child processes.
     this.child?.kill('SIGKILL');
     // start() waits for CLI close and removes the container in finally. If

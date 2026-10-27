@@ -1,12 +1,12 @@
 # Family arena: minimum lovable release
 
-Status: implementation authorized October 18, 2026, after the plan/persona review. The owner selected the family MVP including parents and deferred the global leaderboard. Local candidate: `codex/family-arena`, based on landed main `fb19c43118c4e7eb58108f3e2fd02ead2ea991c5`. This is an unreleased review candidate; merge, deployment and publication of student data remain separate. See PROGRESS.md for current checks and exact source.
+Status: released October 18, 2026. The owner authorized implementation including parents, then testing and production deployment. [PR #16](https://github.com/willcheung/3d-robotics-hack/pull/16) is merged and live; exact tested source `c12a9bd483ed4bc2b89f9facabdce9b9adfb2fb5`, merge `9a86d8cea5b92b915abba4556161483a77d17da9`. PROGRESS.md records CI and staging/candidate/public evidence. Global leaderboard remains deferred. The planning reviews below are historical source-based evidence, distinct from software qualification and learner observation.
 
 ## The first useful release
 
 Turn the family’s administrative progress list into an inviting competition between students and parents, using the same view for both. Include existing active parent profiles alongside active students, using each profile’s own saved progress and identical scoring and badges. Label parent rows **Parent**. Ship one understandable score, four collectible mission badges, a visible next win and safe resume. Keep the existing four missions, real Python/Java runtimes, checked unlocks, free practice and saved work. No new account type or parent-provisioning flow is needed.
 
-The earlier interactive concept is a visual reference, not the specification: its fixed 100-point challenge rewards and “no retry penalty” copy are superseded by the ten-try bands below. No synthetic scores or players enter the live product.
+The earlier interactive concept is a visual reference, not the specification: its fixed 100-point challenge rewards and “no retry penalty” copy are superseded by the ten-try bands below. Customer standings use persisted participant progress; do not populate them with sample players or scores. Disposable QA fixtures remain separate.
 
 - **Family arena:** rank, family display name, earned points, completed missions/badges and a **Parent** label on parent rows. Mark the signed-in participant “You,” whether parent or student. A parent's selected child can additionally be labeled “Selected student” without changing whose row is “You.” Equal points share a rank; zero points displays “Not ranked yet.” A one-child family can compete with its parent. Preserve existing family profile limits and the six-student limit.
 - **My progress, for parents and students:** the same standings plus own mission progress, badge collection and Continue to the correct saved mission/challenge. Default to the signed-in profile's own progress, including the parent's existing drafts/completions. Name the actual remaining job and reward, for example “Complete East lookout · 90 points available”; include the 200-point badge bonus only when that success would finish the mission. Parents may inspect a student's aggregate progress separately; Continue always resumes the signed-in participant's own work. Student accounts never switch into another participant's drafts.
@@ -105,7 +105,7 @@ Reuse `tests/family.test.mjs` and the existing conditional MemoryStore/API fixtu
 
 ## Next action
 
-The owner authorized ARENA-01, including parents, and explicitly deferred global implementation. Landed account navigation was reconciled and exclusive ARENA-01 ownership claimed before source edits. Complete the local regression/evidence gate, preserve the tested review candidate, and keep ARENA-02 deferred. The review record below is historical planning evidence, followed by implementation evidence in PROGRESS.md.
+The authorized family MVP is released. Collect owner/learner feedback; keep ARENA-02 deferred as requested. No global publication, further mission or new gamification is authorized by this release.
 
 ## Review record
 
@@ -157,9 +157,9 @@ This planning-only validation is superseded by the authorized implementation rec
 | Engineering persona | 1 + readback | Native review complete | Atomic ordering and baseline migration amendments verified in plan |
 | RoboLab personas | 1 synthesis | Source-based review complete | Learning claims, free practice/help, recovery and evidence limits preserved |
 | Subsequent parent-participation amendment | 1 scoped check | Plan/source consistency checked | Same profile scoring/badges, Parent labels, own resume and separate admin; global student-only eligibility specified |
-| Outside provider / full autoplan | 0 | Not run | No cross-provider or full-workflow clearance claimed |
+| Outside LLM reviewer / full autoplan | 0 | Not run | No cross-provider or full-workflow clearance claimed |
 
-**VERDICT:** Plan review complete; ARENA-01 implementation was subsequently authorized. Local software checks and native implementation review are recorded separately in PROGRESS.md; release verification remains separate.
+**VERDICT:** Plan review complete; ARENA-01 implementation was subsequently authorized. Local software checks and native implementation review are recorded separately in PROGRESS.md; subsequent release verification is recorded there as well.
 
 **UNRESOLVED DECISIONS:**
 - Delivery sequence resolved by the owner: implement the family MVP now; global leaderboard later. Global publication is not authorized.

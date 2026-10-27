@@ -83,7 +83,7 @@ export async function saveDraft(store,session,data){
 export const validAttempt=id=>typeof id==='string'&&/^[a-f0-9-]{36}$/.test(id);
 const signature=data=>hashCode(JSON.stringify([data.source,data.language,data.target]));
 const CHECK_RECEIPT_TTL=7*86400000;
-export async function reserveRun(store,session,id,input){
+export async function reserveRun(store,session,id,input,{practice=false}={}){
  if(!validAttempt(id))throw new HttpError(400,'Invalid run identifier.');
  return update(store,familyPath(session.familyId),f=>{
   const p=profileIn(f,session),now=Date.now(),day=new Date(now).toISOString().slice(0,10);
@@ -102,7 +102,7 @@ export async function reserveRun(store,session,id,input){
   if(f.daily.day!==day)f.daily={day,count:0};
   if(f.daily.count>=60)throw new HttpError(429,'The family’s 60 hosted runs for today are used. Python practice is still available.');
   if(input){p.arena??=initialArena(p.completed);p.arena.revision++;}
-  f.daily.count++;f.runs.push({id,profileId:p.id,until:now+120000,...(input?{signature:signature(input),target:input.target,checkRevision:p.arena.revision}:{})});return {value:f,result:null};
+  f.daily.count++;f.runs.push({id,profileId:p.id,until:now+(practice?420000:120000),...(input?{signature:signature(input),target:input.target,checkRevision:p.arena.revision}:{})});return {value:f,result:null};
  });
 }
 export async function releaseRun(store,session,id,checkRevision){await update(store,familyPath(session.familyId),f=>{if(!f)return {value:f};f.runs=f.runs.filter(r=>r.id!==id||r.profileId!==session.profileId||checkRevision!==undefined&&r.checkRevision!==checkRevision);return {value:f};});}
@@ -202,7 +202,7 @@ export async function createFamily(store,{name,key},password,{now=Date.now()}={}
  await current(store,invitation);return {code,session:invitation};
 }
 // Public family creation must not multiply the service's compute allowance.
-export async function reserveServiceRun(store,session,id,{now=Date.now()}={}){
+export async function reserveServiceRun(store,session,id,{now=Date.now(),practice=false}={}){
  return update(store,SERVICE_LIMIT_PATH,old=>{
   const day=new Date(now).toISOString().slice(0,10),quota=old??{day,count:0,runs:[]};
   quota.runs=quota.runs.filter(r=>r.until>now);
@@ -211,7 +211,7 @@ export async function reserveServiceRun(store,session,id,{now=Date.now()}={}){
   if(quota.runs.some(r=>r.key===key))return {value:quota};
   if(quota.runs.length>=2)throw new HttpError(429,'The hosted robots are busy. Please try again shortly. Python practice is available.');
   if(quota.count>=120)throw new HttpError(429,'Today’s hosted run allowance is used. Please return tomorrow; Python practice is still available.');
-  quota.count++;quota.runs.push({key,until:now+120000});return {value:quota};
+  quota.count++;quota.runs.push({key,until:now+(practice?420000:120000)});return {value:quota};
  });
 }
 export async function releaseServiceRun(store,session,id){

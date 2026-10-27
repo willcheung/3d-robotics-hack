@@ -320,3 +320,24 @@ h1 {font-size:30px;line-height:1.2;letter-spacing:-1px;margin:6px 0 0;}
 @media(max-width:760px){.arena-layout{grid-template-columns:1fr}.arena-own{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.arena-own>span,.arena-own>.arena-total,.arena-own>p{grid-column:1}.arena-next{grid-column:2;grid-row:1/4;margin:0;padding:0 0 0 16px;border-top:0;border-left:1px solid #39465e}.arena-heading{display:block}.arena-rules{max-width:none;margin-top:10px}.arena-badges>div{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.arena-own{display:block}.arena-next{border-left:0;border-top:1px solid #39465e;margin-top:16px;padding:16px 0 0}.arena-board td,.arena-board tbody th,.arena-board thead th{padding:13px 8px}.arena-player{gap:7px}.arena-avatar{width:28px;height:34px;font-size:16px}.arena-player strong{font-size:14px}.arena-points{font-size:20px}.arena-rank{font-size:20px;width:48px}.arena-unranked{max-width:55px;font-size:12px}.arena-player small{font-size:12px}.arena-heading #arena-title{font-size:27px}}
 @media(forced-colors:active){.arena-you,.arena-own,.arena-board,.arena-badge,.arena-avatar{background:Canvas;color:CanvasText;border-color:CanvasText}.arena-you{outline:2px solid Highlight;outline-offset:-2px}.arena-role{background:Canvas;color:CanvasText}}
+
+/* A separate painted row leaves the native editor's selection and undo intact. */
+.editor-surface{isolation:isolate;overflow:hidden}
+.execution-line{position:absolute;left:0;right:0;background:#d5f67426;border-left:3px solid #d5f674;pointer-events:none;z-index:-1}
+.execution-line[hidden]{display:none}
+.execution-controls{border-top:1px solid #2c4247;padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#c6d7ce}
+.execution-controls label{display:flex;gap:7px;align-items:center;font-size:11px}
+.execution-controls select{width:auto;max-width:145px;background:#192f35;color:#deeadf;border-color:#52696a;min-height:36px}
+.execution-controls button{background:#192f35;border:1px solid #52696a;border-radius:5px;color:#deeadf;min-height:36px;padding:6px 10px;font-size:11px}
+.execution-controls p{flex-basis:100%;margin:2px 0 0;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.execution-controls small{font-size:10px;line-height:1.6;color:#a5bbb2}
+@media(forced-colors:active){.execution-line{background:Canvas;border:2px solid Highlight;z-index:0}.execution-controls{color:CanvasText}}
+@media(max-width:420px){.execution-controls{padding:10px}.execution-controls label{flex-basis:100%}}
+
+/* Reuse the existing Run row instead of pushing the first editable lines down. */
+.run-bar{flex-wrap:wrap;gap:6px;padding-inline:12px}
+.run-bar button{padding-inline:8px;gap:5px;font-size:11px}
+.run-bar button.primary{min-width:95px}
+.run-bar kbd{display:none}
+.run-bar label{display:flex;align-items:center;font-size:0}
+.run-bar select{width:106px;min-height:44px;background:#192f35;color:#deeadf;border-color:#52696a;font-size:11px}

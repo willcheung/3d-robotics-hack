@@ -18,7 +18,7 @@ export function javaApi(appOrigin) {
       if(req.url==='/api/java/run') {
         if(active?.run.dead) await active.run.finished;
         if(active) {json(res,409,{error:'Java is still stopping another run. Try again in a moment.'});return true;}
-        if(!data || Object.keys(data).length!==1 || typeof data.source!=='string' || data.source.length>16000) {json(res,400,{error:'Java source must be at most 16,000 characters.'});return true;}
+        if(!data || Object.keys(data).some(key=>!['source','trace'].includes(key)) || data.trace!==undefined&&typeof data.trace!=='boolean' || typeof data.source!=='string' || data.source.length>16000) {json(res,400,{error:'Java source must be at most 16,000 characters.'});return true;}
         const id=randomUUID();
         res.writeHead(200,{'Content-Type':'application/x-ndjson','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
         res.write(JSON.stringify({type:'session',id})+'\n');
@@ -26,7 +26,7 @@ export function javaApi(appOrigin) {
         const run=session.run=new JavaRun(data.source,message=>{
           if(res.destroyed) return;
           if(!res.write(JSON.stringify(message)+'\n')) run.stop();
-        },error=>{if(error) console.error(error.message);else if(active===session) active=null;res.end();});
+        },error=>{if(error) console.error(error.message);else if(active===session) active=null;res.end();},{trace:data.trace===true});
         res.once('close',()=>run.stop());
       } else if(req.url==='/api/java/reply') {
         if(!active || data?.session!==active.id || Object.keys(data).length!==3) {json(res,404,{error:'Java run is no longer active.'});return true;}

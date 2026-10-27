@@ -242,3 +242,19 @@ test('parent dashboard retains a real activity date from older history without e
  const {store,parent,a,b}=await fixtures();await recordAttempt(store,a,attempt({source:'private older code',outcome:'missed'}));const record=await current(store,a),date=record.profile.history[0].at;delete record.profile.lastActivity;await store.write(`families/${a.familyId}.json`,record.family,(await store.read(`families/${a.familyId}.json`)).etag);
  const f=await current(store,parent),card=view(f.family,f.profile).students.find(p=>p.id===a.profileId);assert.equal(card.lastActivity,date);assert.equal(JSON.stringify(card).includes('private older code'),false);assert.equal(view(f.family,f.family.profiles.find(p=>p.id===b.profileId)).students[0].lastActivity,undefined);
 });
+
+test('teaching playback leases cover five minutes without changing scored-check leases or concurrency caps',async()=>{
+ const {reserveServiceRun,releaseServiceRun}=await import('../server/family-store.mjs');
+ const {store,a,b}=await fixtures(),practice=randomUUID(),now=Date.now();
+ await reserveRun(store,a,practice,undefined,{practice:true});
+ const f=(await current(store,a)).family;
+ assert.ok(f.runs[0].until>=now+420000&&f.runs[0].until<=Date.now()+420000);
+ await assert.rejects(reserveRun(store,a,randomUUID(),undefined,{practice:true}),e=>e.status===409);
+ await releaseRun(store,a,practice);
+ const check=attempt();await reserveRun(store,a,check.id,check);
+ assert.ok((await current(store,a)).family.runs[0].until<=Date.now()+120000);
+ await reserveServiceRun(store,a,practice,{now,practice:true});await reserveServiceRun(store,b,randomUUID(),{now});
+ await reserveServiceRun(store,b,randomUUID(),{now:now+120001});
+ await assert.rejects(reserveServiceRun(store,a,randomUUID(),{now:now+120001}),e=>e.status===429);
+ await releaseServiceRun(store,a,practice);
+});

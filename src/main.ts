@@ -6,6 +6,7 @@ import {missionAccess} from './progression.ts';
 import { Runner, type RunStatus } from './runner.ts';
 import { StationScene } from './scene.ts';
 import { attachEditor } from './editor.ts';
+import { executionView } from './execution-view.ts';
 import { attachHighlighting } from './highlighting.ts';
 import { attachFamily } from './family.ts';
 import { pythonStarter, javaStarter } from './starters.ts';
@@ -55,7 +56,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <svg class="component-lines" aria-hidden="true"><g data-part="motor"><line/><circle r="5"/></g><g data-part="servo"><line/><circle r="5"/></g><g data-part="gripper"><line/><circle r="5" cx="0" cy="0"/></g></svg>
 <div class="component-label motor-label" id="motor-label"><strong>1 · MOTOR</strong><span>Base turns left / right</span><code>motor(power)</code></div>
 <div class="component-label servo-label" id="servo-label"><strong>2 · SERVO</strong><span>Joint tilts lamp up / down</span><code>servo(degrees)</code></div><div class="component-label gripper-label" id="gripper-label" hidden><strong>3 · GRIPPER</strong><span>Opens / closes the jaws</span><code>grip(millimetres)</code></div><div class="camera-tools"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="top-view" aria-label="Top view">${icons.cube}</button><button id="view-reset" aria-label="Reset camera">${icons.reset}</button></div><div class="scene-caption">DRAG TO ORBIT <span>·</span> SCROLL TO ZOOM <span>·</span> RIGHT-DRAG TO PAN</div></div><p class="motion-key"><code>motor</code> turns the tower + pointer. <code>servo</code> tilts the lamp.<br><code>wait(ticks)</code> lets both movements advance. <code>motor(0)</code> stops the turn.</p><div id="crew-status" class="crew-status" role="status" aria-live="polite">${missions.beacon.waiting}</div><section id="patrol-progress" class="patrol-progress" aria-label="Route checkpoint progress" hidden></section><section id="arm-progress" class="arm-progress" aria-label="Parcel and joint state" hidden></section><div class="telemetry"><div><span>LIGHT DIRECTION</span><strong id="pointer-value">0.0<em>°</em></strong><small id="pointer-target">target 60°</small></div><div><span>TILT SERVO</span><strong id="scanner-value">90.0<em>°</em></strong><small id="scanner-target">target 120°</small></div><div><span>SIMULATED TIME</span><strong id="time-value">0.00<em>s</em></strong><small>50 ticks / second</small></div></div></section>
-<section id="code-panel" class="code-panel" aria-label="Python editor"><div class="panel-heading"><span id="file-name" class="file-name"><i>Py</i> signal.py</span><label class="language-control">LANGUAGE <select id="language" aria-label="Programming language"><option value="python">Python</option><option value="java">Java</option></select></label></div><p class="editor-help" id="editor-help"># lines are notes. <code>await</code> waits for a robot call to return. <a href="#commands-help" data-help="commands-help">Commands & numbers</a></p><div class="experiment-tools"><div class="first-edit"><button id="find-edit">Find first edit</button><p id="next-edit"></p><a href="#hints-help" data-help="hints-help">Hints</a></div><p class="predict-line"><strong>Before Run</strong> <span id="predict-prompt"></span></p></div><div class="editor-wrap"><pre id="line-numbers" aria-hidden="true"></pre><div class="editor-surface"><pre class="code-highlight" aria-hidden="true"><code id="highlighted-code"></code></pre><textarea id="code" aria-label="Python code" aria-describedby="editor-shortcuts" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div><p id="editor-shortcuts" class="editor-shortcuts">Tab: indent · Shift+Tab: unindent · Esc, then Tab: leave editor</p><div class="editor-footer"><span id="draft-status">Draft saved on this device</span><button id="restore">${icons.reset} Restore example</button><button id="return-draft" hidden>Return to my draft</button></div><div class="run-bar"><button id="run" class="primary">${icons.play} Run code <kbd>⌘ ↵</kbd></button><button id="stop" disabled>${icons.stop} Stop</button><button id="reset" aria-label="Reset robot">${icons.reset} Reset</button></div><details id="output-panel"><summary class="console-heading"><span>Console output</span><span id="runtime-label">Printed messages and errors</span><b>+</b></summary><pre id="console" tabindex="0" aria-label="Python console">Your print() output will appear here.</pre></details></section>
+<section id="code-panel" class="code-panel" aria-label="Python editor"><div class="panel-heading"><span id="file-name" class="file-name"><i>Py</i> signal.py</span><label class="language-control">LANGUAGE <select id="language" aria-label="Programming language"><option value="python">Python</option><option value="java">Java</option></select></label></div><p class="editor-help" id="editor-help"># lines are notes. <code>await</code> waits for a robot call to return. <a href="#commands-help" data-help="commands-help">Commands & numbers</a></p><div class="experiment-tools"><div class="first-edit"><button id="find-edit">Find first edit</button><p id="next-edit"></p><a href="#hints-help" data-help="hints-help">Hints</a></div><p class="predict-line"><strong>Before Run</strong> <span id="predict-prompt"></span></p></div><div class="editor-wrap"><pre id="line-numbers" aria-hidden="true"></pre><div class="editor-surface"><div id="execution-line" class="execution-line" hidden aria-hidden="true"></div><pre class="code-highlight" aria-hidden="true"><code id="highlighted-code"></code></pre><textarea id="code" aria-label="Python code" aria-describedby="editor-shortcuts" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div><p id="editor-shortcuts" class="editor-shortcuts">Tab: indent · Shift+Tab: unindent · Esc, then Tab: leave editor</p><div class="editor-footer"><span id="draft-status">Draft saved on this device</span><button id="restore">${icons.reset} Restore example</button><button id="return-draft" hidden>Return to my draft</button></div><div class="execution-controls" role="group" aria-label="Execution playback"><label>Speed <select id="execution-speed" aria-label="Execution speed"><option value="0.25">0.25× · slowest</option><option value="0.5">0.5× · slow</option><option value="1" selected>1× · normal</option><option value="2">2× · fast</option></select></label><button id="pause" disabled>Pause</button><button id="step" disabled>Step one line</button><p id="execution-status" role="status" aria-live="polite">Follow code and robot together. Pause to inspect, then Step one line.</p><small>Step finishes one source line. A wait line moves the robot; setting a motor or joint alone does not. Practice playback ends after 5 minutes, including Pause.</small></div><div class="run-bar"><button id="run" class="primary">${icons.play} Run code <kbd>⌘ ↵</kbd></button><button id="stop" disabled>${icons.stop} Stop</button><button id="reset" aria-label="Reset robot">${icons.reset} Reset</button></div><details id="output-panel"><summary class="console-heading"><span>Console output</span><span id="runtime-label">Printed messages and errors</span><b>+</b></summary><pre id="console" tabindex="0" aria-label="Python console">Your print() output will appear here.</pre></details></section>
 </div>
 <section id="feedback" class="feedback" role="status" aria-live="polite"><div class="feedback-icon">↗</div><div class="feedback-copy"><p id="result-label" hidden>✓ Challenge complete</p><h2 id="feedback-title">Ready to run</h2><p id="feedback-text"></p><div id="run-explanation" hidden><p id="run-observation"></p><h3>Why it worked</h3><p id="run-reason"></p><small>From the last run · editing your draft does not change this result.</small></div></div><span id="status-pill">READY</span></section>
 <div id="run-followup" hidden><p id="reflect-prompt"></p><div class="next-actions"><p id="next-help"></p><button id="next-rescue" disabled>Next rescue →</button></div></div>
@@ -70,6 +71,11 @@ const code = el<HTMLTextAreaElement>('code');
 // Keep Run and help above the long commented program.
 const runBar=document.querySelector('.run-bar')!;
 el('code-panel').insertBefore(runBar,document.querySelector('.editor-wrap'));
+// Keep the controls in the existing Run row so code stays in the laptop
+// viewport; the live line status and teaching explanation stay below the editor.
+const playbackControls=document.querySelector('.execution-controls')!;
+runBar.append(playbackControls.querySelector('label')!,el('pause'),el('step'));
+runBar.setAttribute('role','group');runBar.setAttribute('aria-label','Run and execution controls');
 runBar.after(el('feedback'),el('run-followup'));
 // Links open the relevant disclosure and move keyboard focus to its destination.
 document.addEventListener('click',event=>{
@@ -98,6 +104,8 @@ try {
 } catch { /* Keep both drafts in memory when storage is unavailable. */ }
 code.value = drafts[language];
 const highlight = attachHighlighting(code, el('highlighted-code'));
+const execution = executionView(code, el('execution-line'), el('execution-status'));
+let playbackPaused = false, traceAvailable = false;
 const pythonHelp = el('editor-help').innerHTML;
 const pythonApi = document.querySelector('.api-table')!.innerHTML;
 const pythonAwait = el('await-guide').innerHTML;
@@ -249,6 +257,7 @@ function setStatus(next: RunStatus, detail?: string) {
     feedback('Let’s fix that and try again.', hint, 'error');
     el('console').textContent += `\n${error}`;
   }
+  if(!active) { execution.clear(); traceAvailable=false;el<HTMLSelectElement>('execution-speed').disabled=false; el<HTMLButtonElement>('pause').disabled=true;el<HTMLButtonElement>('step').disabled=true; }
   if(!active) recordAttempt(next==='finished'?(success?'reached':'missed'):next==='stopped'?'stopped':detail?.includes('unavailable')?'unavailable':'error',detail);
   showState();
 }
@@ -257,15 +266,20 @@ function run() {
   const current = ++generation;
   runner?.stop(); state = initialState(selected); success = false; showState(); el('console').textContent = '';
   saveDraft();el<HTMLDetailsElement>('output-panel').open=false;
+  execution.start(code.value);playbackPaused=false;traceAvailable=false;el<HTMLSelectElement>('execution-speed').disabled=false;
+  el('pause').textContent='Pause';el<HTMLButtonElement>('pause').disabled=false;el<HTMLButtonElement>('step').disabled=false;
   attempt={id:crypto.randomUUID(),source:code.value,language,target:selected,owner:family.profileId()};
   try { runner = new Runner(code.value, {
+    tracing: available => { if(generation===current) { traceAvailable=available; execution.capability(available);el<HTMLSelectElement>('execution-speed').disabled=!available;if(!available)el<HTMLSelectElement>('execution-speed').value='1';el<HTMLButtonElement>('pause').disabled=!available;el<HTMLButtonElement>('step').disabled=!available; } },
+    playback: value => { if(generation===current) { playbackPaused=value.paused;execution.update(value);el('pause').textContent=value.paused?'Resume':'Pause';el<HTMLButtonElement>('step').disabled=value.stepping||!traceAvailable;el('pause').setAttribute('aria-pressed',String(value.paused)); } },
     snapshot: value => { if (generation === current) { state = value; showState(); } },
     status: (value, detail) => { if (generation === current) setStatus(value, detail); },
     output: text => { if (generation === current) { el<HTMLDetailsElement>('output-panel').open=true; el('console').textContent += text; el('console').scrollTop = el('console').scrollHeight; } },
-  }, language, selected); } catch (e) { setStatus('error', String(e)); }
+  }, language, selected); runner.setSpeed(Number(el<HTMLSelectElement>('execution-speed').value)); } catch (e) { setStatus('error', String(e)); }
 }
 function reset() {
   recordAttempt('stopped');
+  execution.clear();traceAvailable=false;el<HTMLSelectElement>('execution-speed').disabled=false;el<HTMLButtonElement>('pause').disabled=true;el<HTMLButtonElement>('step').disabled=true;
   ++generation; runner?.stop(); runner = undefined; state = initialState(selected); success = false; status = 'idle';
   el<HTMLButtonElement>('run').disabled = false; el<HTMLButtonElement>('stop').disabled = true;
   el('status-pill').textContent = 'READY'; el('runtime-label').textContent = 'Ready for your code'; el('console').textContent = language==='java'?'Your System.out.println output will appear here.':'Your print() output will appear here.';
@@ -279,6 +293,9 @@ el<HTMLSelectElement>('language').onchange = event => {
   try {localStorage.setItem('robolab.s01.language',language);} catch {}
   feedback(`${language==='java'?'Java':'Python'} draft ready.`, '');
 };
+el('pause').onclick = () => { if(playbackPaused)runner?.resume();else runner?.pause(); };
+el('step').onclick = () => runner?.step();
+el('execution-speed').onchange = () => runner?.setSpeed(Number(el<HTMLSelectElement>('execution-speed').value));
 el('run').onclick = run;
 el('stop').onclick = () => runner?.stop();
 el('reset').onclick = () => {if(!locked())reset();};

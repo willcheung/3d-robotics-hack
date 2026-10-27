@@ -4,6 +4,12 @@ Kickoff is authorized. Each delivered chunk must be a runnable, self-contained a
 
 FOUNDATION.md is the current cross-slice acceptance contract and implemented/planned capability ledger. Detailed engineering coverage is retained in ENGINEERING-CHECKS.md. That document is not the execution queue. Vercel build/hosting requirements and the separately authorized DEPLOY-01 gate are in DEPLOYMENT.md. Every slice retains a deployable web build; no automatic deployment is authorized.
 
+## TRACE-01 — Native source execution playback
+
+- Status: validated_local; owner-authorized manual implementation on `codex/execution-tracing`, base `763c5ac`, implementation checkpoint `8e2da0e`, exclusive claim `1181109`. This is a local review candidate, not landed work.
+- Scope: Python/Java source lines, loops/branches/helpers, synchronized speed/Pause/Step across L01–L04. [EXECUTION-TRACING.md](EXECUTION-TRACING.md) freezes behavior, limits and acceptance.
+- Preserve score checks, original source/drafts and runtime isolation. Hosted qualification and deployment remain separate; do not mark done before accepted work lands.
+
 ## FE-01 — Family access and automatic progress
 
 - Status: review; implemented and locally validated in [draft PR #10](https://github.com/willcheung/3d-robotics-hack/pull/10). Family implementation/test checkpoint: `5983230a046ee6cf31a3a14e1e329de67b835306`; exact-head CI is recorded on the PR.
@@ -28,7 +34,7 @@ Read BUDGET.md for the temporary owner-authorized exception to the reserve thres
 
 - Parent participation is in MVP scope: rank existing active parent and student profiles together using each profile's own progress, the identical scoring/badges and a Parent label. “You” and Continue refer to the signed-in profile. Keep parent admin controls separate and preserve student-only provisioning lists; share only aggregate participant achievements.
 
-- Status: validated_local on `codex/family-arena`; owner authorized family MVP implementation/testing, including parents, and deferred global. Exact source, local checks, partial broader-suite limits and remaining publication/release gates are recorded in PROGRESS.md.
+- Status: done; PR #16 is merged and live after owner-authorized testing/deployment. Exact source, CI and staging/candidate/public qualification are recorded in PROGRESS.md. Global remains deferred.
 - Contract: [ARENA-MVP.md](ARENA-MVP.md). One minimum lovable slice: shared family ranks, own progress/Continue, four mission badges and per-challenge ten-try rewards (100 down to 50, plus 200 per mission). Free Run/help, shared ties, truthful legacy unknown counts and no time scoring.
 - Reuse: released authoritative checks, existing private family document/CAS, sessions, one-active-run guard and current UI. Add small durable scoring fields; no new service, achievement framework or performance evaluator.
 - Kickoff gates satisfied: family-first split explicitly selected, landed account navigation reconciled from main `fb19c43`, exclusive ownership claimed before source edits. MVP counts only trusted terminal reached/missed checks; every error/Stop/unknown outcome is uncharged unless finalization already won before a late Stop/response loss. The earlier planning-only GitHub outage is historical; implementation kickoff used live ownership/PR inspection.

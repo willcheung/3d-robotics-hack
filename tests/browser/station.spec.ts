@@ -152,9 +152,11 @@ test('hard stop infinite Python loop, retain code, new worker recovers', async (
   await expect(page.getByLabel('Python code',{exact:true})).toHaveValue(source);
   await run(page,good); await done(page); await expect(page.locator('#feedback')).toHaveClass(/success/);
 });
-test('automatic deadline terminates infinite loop', async ({page}) => {
-  await run(page,'while True:\n    pass');
-  await expect(page.locator('#feedback')).toHaveClass(/error/,{timeout:35000}); await expect(page.getByLabel('Python console')).toContainText('20 second run limit'); await expect(page.locator('iframe')).toHaveCount(0);
+test('automatic runtime-work deadline terminates unresponsive native Python', async ({page}) => {
+  // Teaching delays at traceable loop lines are excluded from runtime work.
+  // This native calculation cannot reach another source boundary or robot reply.
+  await run(page,'sum(range(10**12))');
+  await expect(page.locator('#feedback')).toHaveClass(/error/,{timeout:35000}); await expect(page.getByLabel('Python console')).toContainText('20 second runtime work limit'); await expect(page.locator('iframe')).toHaveCount(0);
 });
 test('output flood is bounded, terminates and can run again', async ({page}) => {
   await run(page,"while True:\n    print('x' * 1024)"); await error(page,/Console limit/);
@@ -223,6 +225,7 @@ await asyncio.sleep(0.2)`);
   const consoleText=await page.getByLabel('Python console').innerText();
   expect(consoleText).toContain('APP FETCH BLOCKED'); expect(consoleText).toContain('NETWORK BLOCKED'); expect(consoleText).toContain('SOCKET BLOCKED'); expect(consoleText).not.toContain('UNSAFE');
   expect(consoleText).toContain('HAS DOCUMENT False'); expect(consoleText).toContain('HAS LOCALSTORAGE False'); expect(consoleText).toContain('HAS PARENT False');
+  expect(consoleText).toContain('Browser callbacks run without line controls');
   expect(consoleText).toContain('CSP worker-src');
   expect(consoleText).toContain('CSP connect-src');
 });
@@ -258,7 +261,18 @@ test('running source snapshot is stable while student edits the next draft', asy
 });
 test('slow browser frames catch up without skipping fixed model ticks', async ({page}) => {
   await run(page, good.replace('wait, angle', 'wait, angle, clock') + '\nprint("SIMULATED", await clock())');
+  await page.locator('#pause').click();
   await expect(page.locator('#runtime-label')).toHaveText('Python is running');
+  // Start the rendering stress at a known motion boundary. Native tracing
+  // deliberately paces the setup lines too; their reading time is separate
+  // from this test's unchanged eight-second bound for the two-second move.
+  await expect(page.locator('#code')).toHaveAttribute('data-execution-line','1');
+  for (const line of [2,3,4]) {
+    await page.locator('#step').click();
+    await expect(page.locator('#code')).toHaveAttribute('data-execution-line',String(line));
+    await expect(page.locator('#step')).toBeEnabled();
+  }
+  await expect(page.locator('#time-value')).toHaveText('0.00s');
   // Compete for the UI thread like software rendering on a slow machine.
   // This does not replace clocks, model functions, messages, or real Python.
   await page.evaluate(() => {
@@ -271,6 +285,7 @@ test('slow browser frames catch up without skipping fixed model ticks', async ({
     };
     requestAnimationFrame(busyFrame);
   });
+  await page.locator('#pause').click();
   await expect(page.locator('#runtime-label')).toHaveText('Code finished running', {timeout:8000});
   await expect(page.locator('#feedback')).toHaveClass(/success/);
   await expect(page.locator('#pointer-value')).toHaveText('60.0°');
