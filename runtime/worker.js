@@ -75,10 +75,22 @@ sys.modules['robot'] = robot
     const tracing = await py.runPythonAsync(`
 from pyodide.ffi import can_run_sync, run_sync
 from _robot_rpc import trace as _trace_line
+_callback_notice = False
+def _can_trace():
+    global _callback_notice
+    if can_run_sync():
+        return True
+    # A browser may call a Python proxy synchronously. Such an entry cannot
+    # suspend: preserve its original semantics instead of crashing the worker.
+    if not _callback_notice:
+        print('Browser callbacks run without line controls; their synchronous entry cannot pause.')
+        _callback_notice = True
+    return False
 def _student_trace(code, line):
     if code.co_filename != 'student.py':
         return sys.monitoring.DISABLE
-    run_sync(_trace_line(line))
+    if _can_trace():
+        run_sync(_trace_line(line))
 def _student_return(code, offset, result):
     if code.co_filename != 'student.py':
         return sys.monitoring.DISABLE
@@ -87,7 +99,7 @@ def _student_return(code, offset, result):
     caller = sys._getframe(1).f_back
     while caller and caller.f_code.co_filename != 'student.py':
         caller = caller.f_back
-    if caller:
+    if caller and _can_trace():
         run_sync(_trace_line(caller.f_lineno))
 can_run_sync()
 `);

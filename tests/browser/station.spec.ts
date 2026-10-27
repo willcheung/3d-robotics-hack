@@ -225,6 +225,7 @@ await asyncio.sleep(0.2)`);
   const consoleText=await page.getByLabel('Python console').innerText();
   expect(consoleText).toContain('APP FETCH BLOCKED'); expect(consoleText).toContain('NETWORK BLOCKED'); expect(consoleText).toContain('SOCKET BLOCKED'); expect(consoleText).not.toContain('UNSAFE');
   expect(consoleText).toContain('HAS DOCUMENT False'); expect(consoleText).toContain('HAS LOCALSTORAGE False'); expect(consoleText).toContain('HAS PARENT False');
+  expect(consoleText).toContain('Browser callbacks run without line controls');
   expect(consoleText).toContain('CSP worker-src');
   expect(consoleText).toContain('CSP connect-src');
 });

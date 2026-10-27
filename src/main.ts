@@ -71,7 +71,11 @@ const code = el<HTMLTextAreaElement>('code');
 // Keep Run and help above the long commented program.
 const runBar=document.querySelector('.run-bar')!;
 el('code-panel').insertBefore(runBar,document.querySelector('.editor-wrap'));
-runBar.after(document.querySelector('.execution-controls')!);
+// Keep the controls in the existing Run row so code stays in the laptop
+// viewport; the live line status and teaching explanation stay below the editor.
+const playbackControls=document.querySelector('.execution-controls')!;
+runBar.append(playbackControls.querySelector('label')!,el('pause'),el('step'));
+runBar.setAttribute('role','group');runBar.setAttribute('aria-label','Run and execution controls');
 runBar.after(el('feedback'),el('run-followup'));
 // Links open the relevant disclosure and move keyboard focus to its destination.
 document.addEventListener('click',event=>{

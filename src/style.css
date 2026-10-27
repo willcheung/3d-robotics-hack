@@ -333,3 +333,11 @@ h1 {font-size:30px;line-height:1.2;letter-spacing:-1px;margin:6px 0 0;}
 .execution-controls small{font-size:10px;line-height:1.6;color:#a5bbb2}
 @media(forced-colors:active){.execution-line{background:Canvas;border:2px solid Highlight;z-index:0}.execution-controls{color:CanvasText}}
 @media(max-width:420px){.execution-controls{padding:10px}.execution-controls label{flex-basis:100%}}
+
+/* Reuse the existing Run row instead of pushing the first editable lines down. */
+.run-bar{flex-wrap:wrap;gap:6px;padding-inline:12px}
+.run-bar button{padding-inline:8px;gap:5px;font-size:11px}
+.run-bar button.primary{min-width:95px}
+.run-bar kbd{display:none}
+.run-bar label{display:flex;align-items:center;font-size:0}
+.run-bar select{width:106px;min-height:44px;background:#192f35;color:#deeadf;border-color:#52696a;font-size:11px}

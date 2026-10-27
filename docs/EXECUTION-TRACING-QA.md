@@ -30,6 +30,7 @@ The designer/critic/model lenses retained purpose-first lessons and setters-vers
 
 - Unknown/late Sandbox.create resolution and failed cleanup remain provider-uncertainty boundaries. The gateway startup timer is not a proof of provider creation latency; lease arithmetic alone cannot establish cleanup.
 - Actual hosted JDI launch inside bubblewrap/private loopback; protected Function streaming, replies, Pause/Step/Stop and cleanup on the new packaged deadlines. Existing provider evidence predates this debugger.
+- Synchronous JavaScript-to-Python callbacks preserve their original behavior with an explicit console notice; their internal lines cannot pause. The real SOP/CSP browser fixture reproduces and verifies this recovery. Released lessons do not use this advanced interop.
 - Real non-Chromium/device acceptance. Python line controls require browser stack switching; ordinary Run is retained when unavailable. Java trace support is independent of that browser feature.
 - Java multi-threaded programs: released lessons are single-threaded; JDI suspends all debuggee threads at source boundaries. No concurrent-language-debugger claim is made.
 - A real learner explaining the relation between a highlighted wait, a powered motor, branch selection and loop repetition. Completion alone is not evidence of understanding.
