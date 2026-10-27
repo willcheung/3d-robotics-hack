@@ -11,10 +11,11 @@ permissions:
 jobs:
   acceptance:
     runs-on: ubuntu-latest
-    # The 223-case acceptance suite exceeded the old 25-minute job limit
-    # with no failing case (run 39082870829). Leave package/cleanup headroom;
+    # Native playback expands acceptance to 281 cases. Run 40459848601 hit
+    # 35 minutes with all earlier groups and 90/107 browser cases passing.
+    # Leave room for the remaining cases, packages and evidence cleanup;
     # individual test and student-runtime deadlines remain unchanged.
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
