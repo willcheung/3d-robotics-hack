@@ -6,7 +6,7 @@ FOUNDATION.md is the current cross-slice acceptance contract and implemented/pla
 
 ## TRACE-01 — Native source execution playback
 
-- Status: in_progress; owner-authorized manual implementation on `codex/execution-tracing`, base `763c5ac`, exclusive claim `1181109`.
+- Status: validated_local; owner-authorized manual implementation on `codex/execution-tracing`, base `763c5ac`, implementation checkpoint `8e2da0e`, exclusive claim `1181109`. This is a local review candidate, not landed work.
 - Scope: Python/Java source lines, loops/branches/helpers, synchronized speed/Pause/Step across L01–L04. [EXECUTION-TRACING.md](EXECUTION-TRACING.md) freezes behavior, limits and acceptance.
 - Preserve score checks, original source/drafts and runtime isolation. Hosted qualification and deployment remain separate; do not mark done before accepted work lands.
 
