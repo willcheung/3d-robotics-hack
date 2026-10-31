@@ -1,8 +1,8 @@
 # Manual goal contract
 
-## Current follow-up: half-speed default
+## Completed follow-up: half-speed default
 
-The owner requested half-speed slow mode as the default for execution playback. Set the shared practice selector to **0.5× · slow** for Python and Java across L01–L04. Validate the default with real execution, speed changes, Pause and Step, retaining the existing release gates for this playback follow-up. No new lesson, account or runtime mechanism is included.
+The owner requested half-speed slow mode as the default for execution playback. Set the shared practice selector to **0.5× · slow** for Python and Java across L01–L04. Validate the default with real execution, speed changes, Pause and Step, retaining the existing release gates for this playback follow-up. No new lesson, account or runtime mechanism is included. [PR #18](https://github.com/willcheung/3d-robotics-hack/pull/18) is merged as `24b22b519ee65ab18c6cbf925975473f283060af` and the app passed live both-language playback checks across all four lessons. PROGRESS.md records exact-source CI, protected qualification and public evidence.
 
 ## Completed goal: execution tracing in both languages
 
