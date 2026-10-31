@@ -1,5 +1,9 @@
 # Manual goal contract
 
+## Current follow-up: half-speed default
+
+The owner requested half-speed slow mode as the default for execution playback. Set the shared practice selector to **0.5× · slow** for Python and Java across L01–L04. Validate the default with real execution, speed changes, Pause and Step, retaining the existing release gates for this playback follow-up. No new lesson, account or runtime mechanism is included.
+
 ## Completed goal: execution tracing in both languages
 
 The owner requested native current-line highlighting, execution speed, Pause and Step one line for Python and Java across every playable mission, with tests for loops, branches and synchronized robot motion. Implement TRACE-01 under [EXECUTION-TRACING.md](EXECUTION-TRACING.md), preserving real runtimes, immutable source/drafts, checked progress and bounded isolation. Test all L01–L04 journeys and recovery; inspect desktop/narrow screenshots and retain exact-source evidence. The owner subsequently authorized hosted tests, then merge and deployment if everything passes, followed by live verification of highlighting, speed, Pause and Step in Python and Java across all four missions. Use disposable fixtures and existing staging/production services; preserve accounts, data, quotas, credentials and settings. Later lessons and unrelated account changes remain outside scope.

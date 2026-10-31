@@ -39,7 +39,7 @@ for(const language of ['python','java'] as const){
  });
  test(`${language}: Pause freezes motion, Step finishes wait, edits and Stop recover`,async({page})=>{
   const source=language==='python'?'from robot import motor, wait\nawait motor(.5)\nawait wait(100)\nawait motor(0)':'public class Main {\n public static void main(String[] args) throws Exception {\n Robot.motor(.5);\n Robot.waitTicks(100);\n Robot.motor(0);\n }\n}';
-  await page.locator('#language').selectOption(language);await page.locator('#execution-speed').selectOption('0.5');await page.locator('#code').fill(source);await page.locator('#run').click();await ready(page);
+  await page.locator('#language').selectOption(language);await expect(page.locator('#execution-speed')).toHaveValue('0.5');await page.locator('#code').fill(source);await page.locator('#run').click();await ready(page);
   await expect(page.locator('#pointer-value')).not.toHaveText('0.0°');
   await page.locator('#pause').click();const frozen=await page.locator('#time-value').textContent();
   await page.waitForTimeout(300);await expect(page.locator('#time-value')).toHaveText(frozen!);
@@ -55,7 +55,7 @@ for(const language of ['python','java'] as const){
  });
  for(const mission of ['L01','L02','L03','L04'] as const){
   test(`${mission} ${language}: traced reference preserves model result at both speeds`,async({page})=>{
-   test.setTimeout(120000);await openMission(page,mission);await page.locator('#language').selectOption(language);
+   test.setTimeout(120000);await openMission(page,mission);await page.locator('#language').selectOption(language);await expect(page.locator('#execution-speed')).toHaveValue('0.5');
    const source=mission==='L01'?(language==='python'?pythonStarter:javaStarter).replace('turn_ticks = 50','turn_ticks = 100').replace('turnTicks = 50','turnTicks = 100'):mission==='L02'?sensorReference[language]:mission==='L03'?patrolReference[language]:armReference[language];
    await page.locator('#code').fill(source);
    const times:string[]=[];
