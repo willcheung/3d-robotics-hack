@@ -373,6 +373,7 @@ test('invalid robot values stop without losing code or unlocking progress', asyn
 });
 
 test('range edges and travel clamps finish after a delayed Python startup', async ({page}) => {
+  await page.locator('#execution-speed').selectOption('1');
   let delayed = false;
   await page.route(url=>url.origin===runtimeOrigin && url.searchParams.has('parent'), async route => {
     delayed = true;
