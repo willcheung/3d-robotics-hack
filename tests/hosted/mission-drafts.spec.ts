@@ -8,7 +8,8 @@ import {armMoved} from '../../src/arm-lesson.ts';
 test.skip(!process.env.FAMILY_UI_MEMORY,'Disposable local accounts and isolated runtimes; providers are a separate gate.');
 const sourceFor=(id:LessonId,index:number,language:Language)=>index===2?getLesson(id).transferReference[language]:index===0?getLesson(id).reference[language]:id==='L01'?getLesson(id).reference[language].replace('turn_ticks = 100','turn_ticks = 150'):id==='L03'?patrolExtra[language]:id==='L04'?armMoved[language]:getLesson(id).reference[language];
 async function state(page:Page){return (await page.request.get('/api/family')).json();}
-async function run(page:Page,source:string){await page.locator('#code').fill(source);await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});}
+// Keep this timed account-progression fixture at its original normal pace; slow playback has separate coverage.
+async function run(page:Page,source:string){await page.locator('#execution-speed').selectOption('1');await page.locator('#code').fill(source);await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:60000});}
 for(const language of ['python','java'] as const)test(`${language}: practice then scored checks complete all four missions and updates the parent, reload and another device`,async({page,browser})=>{
  test.setTimeout(240000);await page.request.post('/__test/newday');await parentEmail(page,`${language}-progress-parent@example.test`,true);const codes=await addStudents(page,['Pilot A','Pilot B']);
  const ctx=await browser.newContext(),child=await ctx.newPage();
