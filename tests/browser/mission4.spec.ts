@@ -2,6 +2,8 @@ import {openMission,openHints,readHints} from '../learning-ui.ts';
 import {test,expect,type Page} from '../workshop-fixture.ts';
 import {armReference,armMoved,armTransfer} from '../../src/arm-lesson.ts';
 async function run(page:Page,source?:string){
+ // Preserve this suite's original normal-speed completion window; tracing tests cover slow playback.
+ await page.locator('#execution-speed').selectOption('1');
  if(source!==undefined)await page.locator('#code').fill(source);
  await page.locator('#run').click();await expect(page.locator('#status-pill')).not.toHaveText('LOADING',{timeout:47000});await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:22000});
  // Explicit fixture check after successful practice; real server scoring is covered by family-ui.

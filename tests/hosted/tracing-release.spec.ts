@@ -30,7 +30,8 @@ for(const language of ['python','java'] as const)for(const id of ['L01','L02','L
   const source=getLesson(id).reference[language],rows=source.split('\n');
   const waitLine=rows.findIndex(row=>language==='python'?row.trim().startsWith('await wait('):row.trim().startsWith('Robot.waitTicks('))+1;
   expect(waitLine).toBeGreaterThan(0);
-  await page.locator('#code').fill(source);await page.locator('#execution-speed').selectOption('0.5');
+  await page.locator('#code').fill(source);await expect(page.locator('#execution-speed')).toHaveValue('0.5');
+  await page.locator('#code-panel').screenshot({path:test.info().outputPath(`${id}-${language}-default-speed.png`)});
   await page.evaluate(()=>{(window as any).traceLines=[];new MutationObserver(()=>{const n=Number(document.querySelector('#code')!.getAttribute('data-execution-line'));const visits=(window as any).traceLines;if(n&&visits.at(-1)!==n)visits.push(n);}).observe(document.querySelector('#code')!,{attributes:true,attributeFilter:['data-execution-line']});});
   await page.evaluate(()=>{(window as any).motionSamples=[];new MutationObserver(()=>{const sim=parseFloat(document.querySelector('#time-value')!.textContent!);const samples=(window as any).motionSamples;if(sim&&samples.at(-1)?.sim!==sim)samples.push({sim,wall:performance.now(),speed:(document.querySelector('#execution-speed') as HTMLSelectElement).value});}).observe(document.querySelector('#time-value')!,{subtree:true,childList:true,characterData:true});});
   await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('RUNNING',{timeout:50000});
@@ -55,9 +56,10 @@ for(const language of ['python','java'] as const)for(const id of ['L01','L02','L
   if(id==='L02'){const untaken=rows.findIndex(row=>row.includes(language==='python'?'await motor(-0.5)':'Robot.motor(-0.5)'))+1;expect(visits).not.toContain(untaken);await expect(page.locator('#console')).toContainText('Decision: turn right');}
   // A second real run at normal speed must retain the exact final model time.
   await page.locator('#execution-speed').selectOption('1');await page.locator('#run').click();await expect(page.locator('#status-pill')).toHaveText('FINISHED',{timeout:70000});await expect(page.locator('#time-value')).toHaveText(finalTime);await expect(page.locator('#feedback')).toHaveClass(/success/);
-  await page.locator('#reset').click();await expect(page.locator('#execution-line')).toBeHidden();await expect(page.locator('#code')).toHaveValue(source);
+  await page.locator('#reset').click();await expect(page.locator('#execution-line')).toBeHidden();await expect(page.locator('#code')).toHaveValue(source);await expect(page.locator('#execution-speed')).toHaveValue('1');
   // Retire a real suspended run, including a Java VM, and preserve the source.
   await page.locator('#run').click();await page.locator('#pause').click();await expect(page.locator('#code')).toHaveAttribute('data-execution-line',/\d+/,{timeout:50000});await page.locator('#stop').click();await expect(page.locator('#status-pill')).toHaveText('STOPPED');await expect(page.locator('#code')).toHaveValue(source);
   await expect.poll(async()=>{const r=await page.request.get(origin+'/api/family',{headers:bypass?{'x-vercel-protection-bypass':bypass}:{}});return (await r.json()).runBusy;},{timeout:30000}).toBe(false);
+  await page.reload();await expect(page.locator('#execution-speed')).toHaveValue('0.5');
  });
 }

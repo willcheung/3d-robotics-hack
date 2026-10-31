@@ -2,6 +2,8 @@ import {openMission,openHints,readHints,openCommands} from '../learning-ui.ts';
 import {test,expect,type Page} from '../workshop-fixture.ts';
 import {patrolReference,patrolExtra,patrolTransfer} from '../../src/patrol-lesson.ts';
 async function run(page:Page,source?:string){
+ // Preserve this suite's original normal-speed completion window; tracing tests cover slow playback.
+ await page.locator('#execution-speed').selectOption('1');
  if(source!==undefined)await page.locator('#code').fill(source);
  await page.locator('#run').click();
  // Startup and execution have separate product deadlines.

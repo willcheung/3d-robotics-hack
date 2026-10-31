@@ -1,5 +1,11 @@
 # Public progress
 
+## TRACE-01 follow-up — Half-speed default, October 30, 2026
+
+- Status: `in_progress`; owner requested **0.5× · slow** as the default. Base `b6b79f089dec471d91b159adf3f8660bfc382e0f`; branch `codex/half-speed-default` in the primary checkout; exclusive remote claim `1aacd771bf38c378a9770d69045848e9e18993bf`. No competing ownership ref was present; unrelated PR #15 and worktrees are preserved.
+- Change: initialize the shared practice selector at half speed. Existing playback checks now exercise the default before changing speed; the slow-render benchmark explicitly selects its original 1× pace. Source/model/runtime mechanisms and score checks are untouched.
+- Evidence pending: build/unit and affected real Python/Java browser checks, screenshots, exact-head CI and release qualification. No follow-up merge/deployment is claimed. Next: complete affected checks, then record the exact tested commit and release state.
+
 ## TRACE-01 — Execution highlighting and playback, October 26, 2026
 
 - Status: done; [PR #17](https://github.com/willcheung/3d-robotics-hack/pull/17) is merged, deployed and verified on [RoboLab](https://robolab.vibecodingdad.com). The owner explicitly authorized hosted qualification, merge/deployment conditional on passing checks and live verification of Python/Java playback across L01–L04.

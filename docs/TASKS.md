@@ -6,6 +6,7 @@ FOUNDATION.md is the current cross-slice acceptance contract and implemented/pla
 
 ## TRACE-01 — Native source execution playback
 
+- October 30 follow-up: `in_progress`; make **0.5× · slow** the initial shared practice selection. Python/Java playback and all four missions require affected checks; original release evidence below remains historical.
 - Status: done; [PR #17](https://github.com/willcheung/3d-robotics-hack/pull/17) merged, deployed and verified on [RoboLab](https://robolab.vibecodingdad.com). Exact tested source `4cfd37f117caef6192922d18ef5ed75e481630fb`; identical-tree merge `204b09982ad58881b1987577435fcac12ea8194a`. Full CI and staging/candidate/public evidence are in PROGRESS.md.
 - Scope: Python/Java source lines, loops/branches/helpers, synchronized speed/Pause/Step across L01–L04. [EXECUTION-TRACING.md](EXECUTION-TRACING.md) freezes behavior, limits and acceptance.
 - Preserve score checks, original source/drafts and runtime isolation. Hosted qualification, accepted landing and live verification are complete. Actual learner/device evaluation remains separate.

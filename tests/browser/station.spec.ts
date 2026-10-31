@@ -260,6 +260,7 @@ test('running source snapshot is stable while student edits the next draft', asy
   await page.getByRole('button',{name:'Run code'}).click(); await done(page); await expect(page.getByLabel('Python console')).toContainText('NEXT DRAFT'); await expect(page.locator('#pointer-value')).toHaveText('0.0°');
 });
 test('slow browser frames catch up without skipping fixed model ticks', async ({page}) => {
+  await page.locator('#execution-speed').selectOption('1');
   await run(page, good.replace('wait, angle', 'wait, angle, clock') + '\nprint("SIMULATED", await clock())');
   await page.locator('#pause').click();
   await expect(page.locator('#runtime-label')).toHaveText('Python is running');
@@ -372,6 +373,7 @@ test('invalid robot values stop without losing code or unlocking progress', asyn
 });
 
 test('range edges and travel clamps finish after a delayed Python startup', async ({page}) => {
+  await page.locator('#execution-speed').selectOption('1');
   let delayed = false;
   await page.route(url=>url.origin===runtimeOrigin && url.searchParams.has('parent'), async route => {
     delayed = true;
